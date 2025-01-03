@@ -12,10 +12,12 @@ class ActivitySubscription extends Model
     protected $fillable = [
         'interests_id',
         'title',
+        'expire_days',
         'description',
         'category_id',
         'type',
         'status',
+        'cost',
     ];
 
     public function interests()

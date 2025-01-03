@@ -50,6 +50,20 @@
                                         <input type="text" class="form-control" id="title" name="title" value="{{ old('title', $activity->title) }}" required>
                                     </div>
                                 </div>
+
+                                <div class="form-group row">
+                                    <label for="title" class="col-sm-2 col-form-label">Expire Days</label>
+                                    <div class="col-sm-10">
+                                        <input type="number" class="form-control" id="title" name="expire_days" value="{{ old('expire_days', $activity->expire_days) }}" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <label for="title" class="col-sm-2 col-form-label">Cost</label>
+                                    <div class="col-sm-10">
+                                        <input type="number" class="form-control" id="cost" name="cost" value="{{ old('cost', $activity->cost) }}" required>
+                                    </div>
+                                </div>
                             
                                 <div class="form-group row">
                                     <label for="description" class="col-sm-2 col-form-label">Description</label>

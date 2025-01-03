@@ -102,6 +102,31 @@
                                     </div>
                                 </div>
 
+
+                                <div class="form-group row">
+                                    <div class="col-sm-12">
+                                        <div class="form-floating">
+                                            <input type="number" class="form-control" id="expire_days" name="expire_days" placeholder="Enter Expire Days" required>
+                                            <label for="expire_days">Expire Days &nbsp;<span style="color:red;">*</span></label>
+                                        </div>
+                                        @error('expire_days')
+                                        <div style="color:red">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <div class="col-sm-12">
+                                        <div class="form-floating">
+                                            <input type="number" class="form-control" id="cost" name="cost" placeholder="Enter Cost" required>
+                                            <label for="cost">Cost &nbsp;<span style="color:red;">*</span></label>
+                                        </div>
+                                        @error('cost')
+                                        <div style="color:red">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+
                                 
                             
                             

@@ -52,6 +52,8 @@
                         <th>Title</th>
                         <th>Description</th>
                         <th>Category</th>
+                        <th>Expire Days</th>
+                        <th>Cost</th>
                         <th>Type</th>
                         <th>Interests</th>
                         <th>Status</th>
@@ -65,6 +67,8 @@
                             <td>{{ $item->title }}</td>
                             <td>{{ $item->description }}</td>
                             <td>{{ $item->category->category ?? 'N/A' }}</td>
+                            <td>{{ $item->expire_days ?? 'N/A' }}</td>
+                            <td>{{ $item->cost ?? 'N/A' }}</td>
                             <td>{{ ucfirst($item->type) }}</td>
                             <td>
                                 @if($item->interests_id)

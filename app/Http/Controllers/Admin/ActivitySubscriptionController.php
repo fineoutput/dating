@@ -46,6 +46,7 @@ class ActivitySubscriptionController extends Controller
      */
     public function store(Request $request)
     {
+      
 
         // Validate incoming data
         $validatedData = $request->validate([
@@ -59,6 +60,8 @@ class ActivitySubscriptionController extends Controller
         // Create a new ActivitySubscription
         $activity = new ActivitySubscription();
         $activity->title = $request->title;
+        $activity->cost = $request->cost;
+        $activity->expire_days = $request->expire_days;
         $activity->description = $request->description;
         $activity->category_id = $request->category_id;
         $activity->type = $request->type;
@@ -118,6 +121,8 @@ class ActivitySubscriptionController extends Controller
 
     // Update the activity fields
     $activity->title = $request->title;
+    $activity->cost = $request->cost;
+    $activity->expire_days = $request->expire_days;
     $activity->description = $request->description;
     $activity->category_id = $request->category_id;
     $activity->type = $request->type;

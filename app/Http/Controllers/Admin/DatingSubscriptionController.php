@@ -120,6 +120,7 @@ class DatingSubscriptionController extends Controller
     $interest = DatingSubscription::findOrFail($id);
 
     // Update the subscription with the validated data
+    $interest->type = $request->type;
     $interest->free_dating_feature = $request->has('free_dating_feature') ? '1' : '0';
     $interest->unlimited_swipes = $request->has('unlimited_swipes') ? '1' : '0';
     $interest->swipe_message = $request->has('swipe_message') ? '1' : '0';

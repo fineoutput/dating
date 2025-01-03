@@ -42,6 +42,18 @@
                             <hr style="margin-bottom: 50px;background-color: darkgrey;">
                             <form action="{{ route('datingSubscription.store') }}" method="post" enctype="multipart/form-data">
                                 @csrf
+
+
+                                <div class="form-group row">
+                                    <div class="col-sm-12"><br>
+                                        <label class="form-label" style="margin-left: 10px" for="power">Select type</label>
+                                        <select class="form-select" name="type" id="">
+                                            <option value="">Select</option>
+                                            <option value="free">Free Dating Feature</option>
+                                            <option value="paid">Subscription Feature</option>
+                                        </select>
+                                    </div>
+                                </div>
                             
                                 <div class="form-group row">
                                     <div class="col-sm-12">
@@ -55,6 +67,7 @@
                                     </div>
                                 </div>
 
+
                                 <div class="form-group row">
                                     <div class="col-sm-12">
                                         <div class="form-floating">
@@ -67,7 +80,7 @@
                                     </div>
                                 </div>
                             
-                                <div class="form-group row">
+                                {{-- <div class="form-group row">
                                     <div class="col-sm-12">
                                         <div class="form-check">
                                             <input type="checkbox" class="form-check-input" id="free_dating_feature" name="free_dating_feature" value="1">
@@ -77,7 +90,7 @@
                                         <div style="color:red">{{ $message }}</div>
                                         @enderror
                                     </div>
-                                </div>
+                                </div> --}}
                             
                                 <div class="form-group row">
                                     <div class="col-sm-12">

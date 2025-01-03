@@ -44,6 +44,19 @@
                                 @csrf
                                 @method('PUT') <!-- This is important for PUT request -->
                             
+
+                                <div class="form-group row">
+                                    <div class="col-sm-12"><br>
+                                        <label class="form-label" style="margin-left: 10px" for="power">Select type</label>
+                                        <select class="form-select" name="type" id="">
+                                            <option value="">Select</option>
+                                            <option value="free" {{ $interest->type == 'free' ? 'selected' : '' }}>Free Dating Feature</option>
+                                            <option value="paid" {{ $interest->type == 'paid' ? 'selected' : '' }}>Subscription Feature</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+
                                 <div class="form-group row">
                                     <div class="col-sm-12">
                                         <div class="form-floating">
@@ -69,7 +82,7 @@
                                 </div>
                             
                                 <!-- Checkbox Fields -->
-                                <div class="form-group row">
+                                {{-- <div class="form-group row">
                                     <div class="col-sm-12">
                                         <div class="form-check">
                                             <input type="checkbox" class="form-check-input" id="free_dating_feature" name="free_dating_feature" value="1" {{ old('free_dating_feature', $interest->free_dating_feature) === '1' ? 'checked' : '' }}>
@@ -79,7 +92,7 @@
                                         <div style="color:red">{{ $message }}</div>
                                         @enderror
                                     </div>
-                                </div>
+                                </div> --}}
                             
                                 <div class="form-group row">
                                     <div class="col-sm-12">

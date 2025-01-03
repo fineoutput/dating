@@ -47,7 +47,7 @@ class DatingSubscriptionController extends Controller
     
     $validatedData = $request->validate([
         'expire_days' => 'required|integer|min:1',
-        'free_dating_feature' => 'nullable|boolean',
+        // 'free_dating_feature' => 'nullable|boolean',
         'unlimited_swipes' => 'nullable|boolean',
         'swipe_message' => 'nullable|boolean',
         'backtrack' => 'nullable|boolean',
@@ -60,7 +60,7 @@ class DatingSubscriptionController extends Controller
     $free->fill($request->all());
 
     // Handle checkboxes and set defaults if null
-    $free->free_dating_feature = $request->free_dating_feature ?? 0;
+    // $free->free_dating_feature = $request->free_dating_feature ?? 0;
     $free->unlimited_swipes = $request->unlimited_swipes ?? 0;
     $free->swipe_message = $request->swipe_message ?? 0;
     $free->backtrack = $request->backtrack ?? 0;

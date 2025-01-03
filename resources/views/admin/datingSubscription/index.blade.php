@@ -50,7 +50,7 @@
                       <tr>
                         <th>#</th>
                         <th data-priority="1">Expire Days</th>
-                        <th data-priority="2">Free Dating Feature</th>
+                        <th data-priority="2">Dating Feature Type</th>
                         <th data-priority="3">Unlimited Swipes</th>
                         <th data-priority="4">Swipe Message</th>
                         <th data-priority="4">Backtrack</th>
@@ -69,10 +69,10 @@
                             {{$data->expire_days ?? ''}}
                         </td>
                         <td>
-                            @if( $data->free_dating_feature == 0)
-                            No
+                            @if( $data->type == 'free')
+                            Free dating features
                             @else
-                            Yes
+                            Subscription features
                             @endif
                         </td>
                         <td>

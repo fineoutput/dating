@@ -10,8 +10,11 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ContactUsController;
 use App\Http\Controllers\Admin\CrmController;
+use App\Http\Controllers\Admin\DatingSubscriptionController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Auth\adminlogincontroller;
+use App\Http\Controllers\Admin\InterestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,11 +43,12 @@ Route::group(['prefix' => '/'], function () {
 //======================================= ADMIN ===================================================
 Route::group(['prifix' => 'admin'], function () {
     Route::group(['middleware'=>'admin.guest'],function(){
-
+ 
         Route::get('/admin_index', [adminlogincontroller::class, 'admin_login'])->name('admin_login');
-        Route::post('/login_process', [adminlogincontroller::class, 'admin_login_process'])->name('admin_login_process');
-
+        Route::post('/login_process', [adminlogincontroller::class, 'admin_login_process'])
+        ->name('admin_login_process');
     });
+
 Route::group(['middleware'=>'admin.auth'],function(){
 
  Route::get('/index', [TeamController::class, 'admin_index'])->name('admin_index');
@@ -61,7 +65,10 @@ Route::post('/add_team_process', [TeamController::class, 'add_team_process'])->n
 Route::get('/UpdateTeamStatus/{status}/{id}', [TeamController::class, 'UpdateTeamStatus'])->name('UpdateTeamStatus');
 Route::get('/deleteTeam/{id}', [TeamController::class, 'deleteTeam'])->name('deleteTeam');
 
-
+// Add Notification
+Route::match(['get','post'],'/add_notification', [NotificationController::class, 'add_notification'])->name('add_notification');
+Route::get('/notifications', [NotificationController::class, 'notifications'])->name('Notification.index');
+Route::get('/deletenotification/{id}', [NotificationController::class, 'deletenotification'])->name('deletenotification');
 
 // Admin CRM settings ------------------------
 Route::get('/add_settings', [CrmController::class, 'add_settings'])->name('add_settings');
@@ -70,6 +77,43 @@ Route::get('/update_settings/{id}', [CrmController::class, 'update_settings'])->
 Route::post('/add_settings_process', [CrmController::class, 'add_settings_process'])->name('add_settings_process');
 Route::post('/update_settings_process/{id}', [CrmController::class, 'update_settings_process'])->name('update_settings_process');
 Route::get('/deletesetting/{id}', [CrmController::class, 'deletesetting'])->name('deletesetting');
+
+Route::resource('interests', InterestController::class);
+Route::get('/intereststatus/{status}/{id}', [InterestController::class, 'updateStatus'])->name('intereststatus');
+
+Route::get('users', [UserController::class, 'index'])->name('users.index');
+Route::get('users/create-or-edit/{id?}', [UserController::class, 'createOrEdit'])->name('users.createOrEdit');
+Route::post('users/store-or-update/{id?}', [UserController::class, 'storeOrUpdate'])->name('users.storeOrUpdate');
+Route::delete('users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+Route::get('/cities/{stateId}', [UserController::class, 'getCitiesByState']);
+Route::get('/user/status/{action}/{id}', [UserController::class, 'updateStatus'])->name('userststatus');
+
+
+Route::get('activity-coin', [UserController::class, 'activityCoinView'])->name('activityCoinView');
+Route::get('/user/add-activity-coin/{id}', [UserController::class, 'addcoin'])->name('activityCoin');
+Route::post('/user/{id}/create-coin', [UserController::class, 'createCoin'])->name('createCoin');
+
+
+
+
+
+Route::get('coin-category', [CategoryController::class, 'index'])->name('coinCategoryindex');
+Route::get('coin-category-create', [CategoryController::class, 'create'])->name('coinCategoryCreate');
+Route::post('coin-category-store', [CategoryController::class, 'store'])->name('coinCategoryCreate.store');
+Route::get('/coin-category/{id}/edit', [CategoryController::class, 'edit'])->name('coin-category.edit');
+Route::put('/coin-category/{id}', [CategoryController::class, 'update'])->name('coin-category.update');
+Route::delete('/coin-category-delete/{id}', [CategoryController::class, 'destroy'])->name('coin-category.delete');
+Route::get('/coin-category/{status}/{id}/update-status', [CategoryController::class, 'updateStatus'])->name('coin-category.update-status');
+
+
+Route::get('dating-subscription', [DatingSubscriptionController::class, 'index'])->name('datingsubscriptionindex');
+Route::get('dating-subscription-create', [DatingSubscriptionController::class, 'create'])->name('datingsubscriptionCreate');
+Route::post('dating-subscription-store', [DatingSubscriptionController::class, 'store'])->name('datingSubscription.store');
+Route::get('/dating-subscription/{id}/edit', [DatingSubscriptionController::class, 'edit'])->name('datingsubscription.edit');
+Route::put('/dating-subscription/{id}', [DatingSubscriptionController::class, 'update'])->name('datingSubscription.update');
+Route::delete('/dating-subscription-delete/{id}', [DatingSubscriptionController::class, 'destroy'])->name('datingsubscription.delete');
+
+Route::get('/dating-subscription/{status}/{id}/update-status', [DatingSubscriptionController::class, 'updateStatus'])->name('dating-subscription.update-status');
 
     });
 

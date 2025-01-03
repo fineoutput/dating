@@ -18,8 +18,17 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'number',
         'name',
         'email',
+        'age',
+        'gender',
+        'looking_for',
+        'interest',
+        'profile_image',
+        'state',
+        'city',
+        'status',
         'password',
     ];
 
@@ -34,11 +43,14 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be cast.
+     * Encrypt the password before saving it to the database.
      *
-     * @var array<string, string>
+     * @param  string  $value
+     * @return void
      */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
+    public function setPasswordAttribute($value)
+    {
+        $this->attributes['password'] = bcrypt($value);
+    }
+
 }

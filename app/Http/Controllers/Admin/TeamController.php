@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\adminmodel\Team;
 use App\adminmodel\AdminSidebar;
+use App\Models\User;
+use App\Models\Interest;
 use App\adminmodel\AdminSidebar2;
 use App\adminmodel\Order1Modal;
 use App\adminmodel\UserModal;
@@ -19,8 +21,14 @@ class TeamController extends Controller
 			$services = json_decode($req->session()->get('services'));
 			
 			if (in_array(1, $services) || in_array(999, $services)) {
-				
-				return view('admin/index');
+				$data['user'] = User::count();
+				$data['block'] = User::where('status',0)->count();
+				$data['active'] = User::where('status',1)->count();
+				$data['active'] = User::where('status',1)->count();
+				$data['activein'] = Interest::where('status',1)->count();
+				$data['blockin'] = Interest::where('status',0)->count();
+				$data['Interest'] = Interest::all()->count();
+				return view('admin/index',$data);
 			} else {
 				$service = AdminSidebar::where('id', $services[0])->first();
 				if ($service->url == "#") {

@@ -26,7 +26,7 @@ class adminlogincontroller extends Controller
       'password' => 'required'
   ]);
   if($validator->passes()){
-       if (Auth::guard('admin')->attempt(['email' => $req->email, 'password' => $req->password], $req->get('remember'))){
+       if (Auth::guard('admin')->attempt(['email' => $req->email, 'password' => $req->password])){
 
            $admin = Auth::guard('admin')->user();
           if($admin->is_active==1){

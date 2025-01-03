@@ -12,7 +12,7 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-12">
-                <div class="page-title-box">
+                <div class="page-title-box"> 
                     <h4 class="page-title">Dashboard</h4>
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item active">Welcome to {{config('constants.options.SITE_NAME')}} Dashboard</li>
@@ -37,6 +37,138 @@
                                         <h3 class="mb-3 mt-0">0</h3>
                                         <div class="">
                                             <span class="ml-2">Total Orders</span>
+                                        </div>
+                                    </div>
+                                    <div class="mini-stat-icon">
+                                        <i class="mdi mdi-shopping display-2"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-danger mini-stat position-relative">
+                        <a href="#">
+                            <div class="card-body">
+                                <div class="mini-stat-desc">
+                                    <h6 class="text-uppercase verti-label text-white-50">Total Users</h6>
+                                    <div class="text-white">
+                                        <h6 class="text-uppercase mt-0 text-white-50">Total Users</h6>
+                                        <h3 class="mb-3 mt-0">{{$user}}</h3>
+                                        <div class="">
+                                            <span class="ml-2">Total Users</span>
+                                        </div>
+                                    </div>
+                                    <div class="mini-stat-icon">
+                                        <i class="mdi mdi-shopping display-2"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-danger mini-stat position-relative">
+                        <a href="#">
+                            <div class="card-body">
+                                <div class="mini-stat-desc">
+                                    <h6 class="text-uppercase verti-label text-white-50">Block Users</h6>
+                                    <div class="text-white">
+                                        <h6 class="text-uppercase mt-0 text-white-50">Block Users</h6>
+                                        <h3 class="mb-3 mt-0">{{$block}}</h3>
+                                        <div class="">
+                                            <span class="ml-2">Block Users</span>
+                                        </div>
+                                    </div>
+                                    <div class="mini-stat-icon">
+                                        <i class="mdi mdi-shopping display-2"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-danger mini-stat position-relative">
+                        <a href="#">
+                            <div class="card-body">
+                                <div class="mini-stat-desc">
+                                    <h6 class="text-uppercase verti-label text-white-50">Active Users</h6>
+                                    <div class="text-white">
+                                        <h6 class="text-uppercase mt-0 text-white-50">Active Users</h6>
+                                        <h3 class="mb-3 mt-0">{{$active}}</h3>
+                                        <div class="">
+                                            <span class="ml-2">Active Users</span>
+                                        </div>
+                                    </div>
+                                    <div class="mini-stat-icon">
+                                        <i class="mdi mdi-shopping display-2"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-danger mini-stat position-relative">
+                        <a href="#">
+                            <div class="card-body">
+                                <div class="mini-stat-desc">
+                                    <h6 class="text-uppercase verti-label text-white-50">Total Interest</h6>
+                                    <div class="text-white">
+                                        <h6 class="text-uppercase mt-0 text-white-50">Total Interest</h6>
+                                        <h3 class="mb-3 mt-0">{{$Interest}}</h3>
+                                        <div class="">
+                                            <span class="ml-2">Total Interest</span>
+                                        </div>
+                                    </div>
+                                    <div class="mini-stat-icon">
+                                        <i class="mdi mdi-shopping display-2"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-danger mini-stat position-relative">
+                        <a href="#">
+                            <div class="card-body">
+                                <div class="mini-stat-desc">
+                                    <h6 class="text-uppercase verti-label text-white-50">Active Interest</h6>
+                                    <div class="text-white">
+                                        <h6 class="text-uppercase mt-0 text-white-50">Active Interest</h6>
+                                        <h3 class="mb-3 mt-0">{{$activein}}</h3>
+                                        <div class="">
+                                            <span class="ml-2">Active Interest</span>
+                                        </div>
+                                    </div>
+                                    <div class="mini-stat-icon">
+                                        <i class="mdi mdi-shopping display-2"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-danger mini-stat position-relative">
+                        <a href="#">
+                            <div class="card-body">
+                                <div class="mini-stat-desc">
+                                    <h6 class="text-uppercase verti-label text-white-50">Block Interest</h6>
+                                    <div class="text-white">
+                                        <h6 class="text-uppercase mt-0 text-white-50">Block Interest</h6>
+                                        <h3 class="mb-3 mt-0">{{$blockin}}</h3>
+                                        <div class="">
+                                            <span class="ml-2">Block Interest</span>
                                         </div>
                                     </div>
                                     <div class="mini-stat-icon">

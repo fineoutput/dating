@@ -47,6 +47,18 @@
       /* margin-left: 10px; */
       margin-right: 10px;
     }
+    .alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.text-danger {
+    color: red;
+    font-size: 14px;
+}
+
   </style>
 </head>
 
@@ -84,28 +96,39 @@
             <span aria-hidden="true">&times;</span>
         </div>
         @endif
+
+        @if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
         <!-- End show success and error messages -->
 
 
-        <form action="{{route('admin_login_process')}}" method="post">
+        <form action="{{ route('admin_login_process') }}" method="POST">
           @csrf
           <div class="pom-agile">
-            <span class="fa fa-user-o" aria-hidden="true"></span>
-            <input placeholder="Username" name="email" class="user" type="email" required="">
+              <span class="fa fa-user-o" aria-hidden="true"></span>
+              <input placeholder="Email" name="email" class="user" type="email" required="" value="{{ old('email') }}">
+              
+              <!-- Display error for email field if available -->
+              @error('email')
+                  <div class="text-danger">{{ $message }}</div>
+              @enderror
           </div>
           <div class="pom-agile">
-            <span class="fa fa-key" aria-hidden="true"></span>
-            <input placeholder="Password" name="password" class="pass" type="password" required="">
-          </div>
-          <div class="sub-w3l">
-
-            <!-- <a href="#" id="butpas">Forgot Password?</a> -->
-            <div class="clear"></div>
+              <span class="fa fa-key" aria-hidden="true"></span>
+              <input placeholder="Password" name="password" class="pass" type="password" required="">
           </div>
           <div class="right-w3l">
-            <input type="submit" value="Login">
+              <input type="submit" value="Login">
           </div>
-        </form>
+      </form>
+      
         <br />
         <form action="{{route('admin_change_password')}}" method="post">
           @csrf

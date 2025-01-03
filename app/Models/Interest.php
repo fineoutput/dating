@@ -14,4 +14,6 @@ class Interest extends Model
         'status', 
         'icon'
     ];
+
+    
 }

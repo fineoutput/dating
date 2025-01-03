@@ -7,6 +7,7 @@ use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Admin\SliderController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\ActivitySubscriptionController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ContactUsController;
 use App\Http\Controllers\Admin\CrmController;
@@ -114,6 +115,15 @@ Route::put('/dating-subscription/{id}', [DatingSubscriptionController::class, 'u
 Route::delete('/dating-subscription-delete/{id}', [DatingSubscriptionController::class, 'destroy'])->name('datingsubscription.delete');
 
 Route::get('/dating-subscription/{status}/{id}/update-status', [DatingSubscriptionController::class, 'updateStatus'])->name('dating-subscription.update-status');
+
+Route::get('activity-subscription', [ActivitySubscriptionController::class, 'index'])->name('activitysubscriptionindex');
+Route::get('activity-subscription-create', [ActivitySubscriptionController::class, 'create'])->name('activitysubscriptionCreate');
+Route::post('activity-subscription-store', [ActivitySubscriptionController::class, 'store'])->name('activitySubscription.store');
+Route::get('/activity-subscription/{id}/edit', [ActivitySubscriptionController::class, 'edit'])->name('activitysubscription.edit');
+Route::put('/Activity-subscription/{id}', [ActivitySubscriptionController::class, 'update'])->name('activitySubscription.update');
+Route::delete('/activity-subscription-delete/{id}', [ActivitySubscriptionController::class, 'destroy'])->name('activitysubscription.delete');
+
+Route::get('/activity-subscription/{status}/{id}/update-status', [ActivitySubscriptionController::class, 'updateStatus'])->name('activity-subscription.update-status');
 
     });
 

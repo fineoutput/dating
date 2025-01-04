@@ -108,7 +108,7 @@ class DatingSubscriptionController extends Controller
       // Validate the input data
       $request->validate([
         'expire_days' => 'required|integer',
-        'cost' => 'required|numeric',
+        // 'cost' => 'required|numeric',
         'free_dating_feature' => 'nullable|boolean',
         'unlimited_swipes' => 'nullable|boolean',
         'swipe_message' => 'nullable|boolean',

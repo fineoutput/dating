@@ -1,6 +1,17 @@
 @extends('admin.base_template')
 
 @section('main')
+
+<style>
+  
+    form {
+      margin-top: 20px;
+    }
+    
+    select {
+      width: 400px;
+    }
+    </style>
 <!-- Start content -->
 <div class="content">
     <div class="container-fluid">
@@ -67,7 +78,7 @@
                                     </div>
                                 </div>
 
-                                <div class="form-group row">
+                                {{-- <div class="form-group row">
                                     <div class="col-sm-12"><br>
                                         <label class="form-label" style="margin-left: 10px" for="power">Select Interest</label>
                                         <select class="form-select" name="interests_id[]" multiple>
@@ -77,6 +88,22 @@
                                             @endforeach
                                         </select>
                                     </div>
+                                </div> --}}
+
+                                
+                                <div class="form-group row">
+                                    <div class="col-sm-12"><br>
+                                        <label class="form-label" style="margin-left: 10px" for="power">Select Interest</label>
+                                        <div id="output"></div>
+                                        <select data-placeholder="" name="interests_id[]" multiple class="chosen-select">
+                                            @foreach($interest as $value)
+                                            <option value="{{ $value->id ?? '' }}">{{ $value->name ?? '' }}</option>
+                                        @endforeach
+                                        </select>
+                                        @error('property_id')
+                                            <div style="color:red;">{{ $message }}</div>
+                                        @enderror
+                                    </div>
                                 </div>
 
                                 <div class="form-group row">
@@ -85,7 +112,7 @@
                                         <select class="form-select" name="category_id" id="">
                                             <option value="">Select</option>
                                             @foreach($category as $value)
-                                                <option value="{{$value->id ?? ''}}">{{$value->category ?? ''}}</option>
+                                                <option value="{{$value->id ?? ''}}">{{$value->feature ?? ''}}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -115,17 +142,7 @@
                                     </div>
                                 </div>
 
-                                <div class="form-group row">
-                                    <div class="col-sm-12">
-                                        <div class="form-floating">
-                                            <input type="number" class="form-control" id="cost" name="cost" placeholder="Enter Cost" required>
-                                            <label for="cost">Cost &nbsp;<span style="color:red;">*</span></label>
-                                        </div>
-                                        @error('cost')
-                                        <div style="color:red">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
+                               
 
                                 
                             
@@ -146,4 +163,11 @@
         <!-- end page content-->
     </div> <!-- container-fluid -->
 </div> <!-- content -->
+<link rel="stylesheet" href="https://harvesthq.github.io/chosen/chosen.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+<script src="https://harvesthq.github.io/chosen/chosen.jquery.js"></script>
+<script>
+    document.getElementById('output').innerHTML = location.search;
+    $(".chosen-select").chosen();
+</script>
 @endsection

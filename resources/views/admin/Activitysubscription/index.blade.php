@@ -68,7 +68,7 @@
                             <td>{{ $item->description }}</td>
                             <td>{{ $item->category->category ?? 'N/A' }}</td>
                             <td>{{ $item->expire_days ?? 'N/A' }}</td>
-                            <td>{{ $item->cost ?? 'N/A' }}</td>
+                            <td>{{ $item->category->cost ?? 'N/A' }}</td>
                             <td>{{ ucfirst($item->type) }}</td>
                             <td>
                                 @if($item->interests_id)

@@ -19,7 +19,7 @@ class ActivitySubscriptionController extends Controller
      */
     public function index()
     {
-        $data = ActivitySubscription::with(['category', 'interests'])->get(); // Fetch all interests
+        $data = ActivitySubscription::with(['category', 'interests'])->orderBy('id', 'desc')->get();
         $tital = "Activity Subscription";
         return view('admin.Activitysubscription.index', compact('data','tital'));
     }
@@ -60,7 +60,7 @@ class ActivitySubscriptionController extends Controller
         // Create a new ActivitySubscription
         $activity = new ActivitySubscription();
         $activity->title = $request->title;
-        $activity->cost = $request->cost;
+        // $activity->cost = $request->cost;
         $activity->expire_days = $request->expire_days;
         $activity->description = $request->description;
         $activity->category_id = $request->category_id;
@@ -121,7 +121,7 @@ class ActivitySubscriptionController extends Controller
 
     // Update the activity fields
     $activity->title = $request->title;
-    $activity->cost = $request->cost;
+    // $activity->cost = $request->cost;
     $activity->expire_days = $request->expire_days;
     $activity->description = $request->description;
     $activity->category_id = $request->category_id;

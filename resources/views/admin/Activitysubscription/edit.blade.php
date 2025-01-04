@@ -1,6 +1,16 @@
 @extends('admin.base_template')
 
 @section('main')
+<style>
+  
+    form {
+      margin-top: 20px;
+    }
+    
+    select {
+      width: 400px;
+    }
+    </style>
 <!-- Start content -->
 <div class="content">
     <div class="container-fluid">
@@ -57,13 +67,6 @@
                                         <input type="number" class="form-control" id="title" name="expire_days" value="{{ old('expire_days', $activity->expire_days) }}" required>
                                     </div>
                                 </div>
-
-                                <div class="form-group row">
-                                    <label for="title" class="col-sm-2 col-form-label">Cost</label>
-                                    <div class="col-sm-10">
-                                        <input type="number" class="form-control" id="cost" name="cost" value="{{ old('cost', $activity->cost) }}" required>
-                                    </div>
-                                </div>
                             
                                 <div class="form-group row">
                                     <label for="description" class="col-sm-2 col-form-label">Description</label>
@@ -99,7 +102,8 @@
                                 <div class="form-group row">
                                     <label for="interests_id" class="col-sm-2 col-form-label">Interests</label>
                                     <div class="col-sm-10">
-                                        <select class="form-select" name="interests_id[]" id="interests_id" multiple required>
+                                        <div id="output"></div>
+                                        <select data-placeholder="" name="interests_id[]" multiple class="chosen-select">
                                             @foreach($interests as $interest)
                                                 <option value="{{ $interest->id }}" 
                                                     {{ in_array($interest->id, explode(',', $activity->interests_id)) ? 'selected' : '' }}>
@@ -109,6 +113,7 @@
                                         </select>
                                     </div>
                                 </div>
+                                
                             
                                 <div class="form-group row">
                                     <div class="col-sm-12">
@@ -124,4 +129,11 @@
         <!-- end page content-->
     </div> <!-- container-fluid -->
 </div> <!-- content -->
+<link rel="stylesheet" href="https://harvesthq.github.io/chosen/chosen.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+<script src="https://harvesthq.github.io/chosen/chosen.jquery.js"></script>
+<script>
+    document.getElementById('output').innerHTML = location.search;
+    $(".chosen-select").chosen();
+</script>
 @endsection

@@ -179,15 +179,12 @@
                                                     {{ $interest->name }}
                                                 </option>
                                             @endforeach
-                                        </select>
-                                        
-                                        
-                                        
-                                                                        
+                                        </select>                              
                                         @error('interest')
-                                            <div style="color:red">{{ $message }}</div>
+                                            <div style="color:red">{{   $message }}</div>
                                         @enderror
                                     </div>
+
                                 </div>
 
                                 <div class="form-group">

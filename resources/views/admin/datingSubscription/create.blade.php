@@ -72,7 +72,7 @@
                                     <div class="col-sm-12">
                                         <div class="form-floating">
                                             <input type="number" class="form-control" id="cost" name="cost" placeholder="Enter Cost" >
-                                            <label for="cost">Cost &nbsp;<span style="color:red;">*</span></label>
+                                            <label for="cost">Cost &nbsp;<span style="color:gray;">(Optional Free Dating Feature)</span></label>
                                         </div>
                                         @error('cost')
                                         <div style="color:red">{{ $message }}</div>

@@ -72,8 +72,8 @@
                                 <div class="form-group row">
                                     <div class="col-sm-12">
                                         <div class="form-floating">
-                                            <input type="number" class="form-control" id="cost" name="cost" placeholder="Enter Cost" value="{{ old('cost', $interest->cost) }}" required>
-                                            <label for="cost">Cost &nbsp;<span style="color:red;">*</span></label>
+                                            <input type="number" class="form-control" id="cost" name="cost" placeholder="Enter Cost" value="{{ old('cost', $interest->cost) }}" >
+                                            <label for="cost">Cost &nbsp;<span style="color:gray;">(Optional Free Dating Feature)</span></label>
                                         </div>
                                         @error('cost')
                                         <div style="color:red">{{ $message }}</div>

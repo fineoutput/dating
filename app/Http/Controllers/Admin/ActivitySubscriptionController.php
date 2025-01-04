@@ -32,7 +32,7 @@ class ActivitySubscriptionController extends Controller
     public function create()
     {
         // dd('sdfa');
-        $interest = Interest::all();
+        $interest = Interest::all()->where('status',1);
         $category = CoinCategory::all();
         $tital = "Activity Subscription";
         return view('admin.Activitysubscription.create', compact('tital','interest','category'));
@@ -98,7 +98,7 @@ class ActivitySubscriptionController extends Controller
      {
         $data['activity']  = ActivitySubscription::findOrFail($id); // Fetch all interests
         $data['categories']  = CoinCategory::all(); // Fetch all interests
-        $data['interests']  = Interest::all(); // Fetch all interests
+        $data['interests']  = Interest::all()->where('status',1); // Fetch all interests
          $data['tital'] = "Activity Subscription Edit";
          return view('admin.Activitysubscription.edit', $data);
      }

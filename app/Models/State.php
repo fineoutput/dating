@@ -11,7 +11,7 @@ class State extends Model
     
     public function cities()
     {
-        return $this->hasMany(City::class);
+        return $this->hasMany(Citys::class);
     }
 }
 

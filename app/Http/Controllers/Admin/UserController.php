@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\City;
 use App\Models\State;
+use App\Models\Citys;
 use App\Models\Interest;
 use Illuminate\Support\Facades\Hash;
 
@@ -141,7 +142,7 @@ class UserController extends Controller
 
     public function getCitiesByState($stateId)
     {
-    $cities = City::where('state_id', $stateId)->get(['id', 'city_name']);
+    $cities = Citys::where('state_id', $stateId)->get(['id', 'city_name']);
     return response()->json(['cities' => $cities]);
     }
 

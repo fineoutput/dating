@@ -45,60 +45,60 @@
                                 @method('PUT')
                             
                                 <div class="form-group row">
+                                    <div class="col-sm-12"><br>
+                                        <label class="form-label" style="margin-left: 10px" for="power">Select Category</label>
+                                        <select class="form-select" name="category" value="{{ old('category', $interest->category ?? '') }}">
+                                            <option value="">Select</option>
+                                            <option value="bronze" {{ (isset($interest->category) && $interest->category == 'bronze') ? 'selected' : '' }}>Bronze</option>
+                                            <option value="silver" {{ (isset($interest->category) && $interest->category == 'silver') ? 'selected' : '' }}>Silver</option>
+                                            <option value="gold" {{ (isset($interest->category) && $interest->category == 'gold') ? 'selected' : '' }}>Gold</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                               <div class="form-group row">
                                     <div class="col-sm-12">
                                         <div class="form-floating">
-                                            <input type="text" class="form-control" value="{{ old('category', $interest->category) }}" id="category" name="category" placeholder="Enter Category" required>
-                                            <label for="category">Enter Category &nbsp;<span style="color:red;">*</span></label>
+                                            <input type="number" class="form-control" value="{{ old('extend_chat_coin', $interest->extend_chat_coin ?? '') }}" id="extend_chat_coin" name="extend_chat_coin" placeholder="Enter Extend chat" required>
+                                            <label for="extend_chat_coin">Enter Extend chat Coin &nbsp;<span style="color:red;">*</span></label>
                                         </div>
-                                        @error('category')
+                                        @error('extend_chat_coin')
                                         <div style="color:red">{{$message}}</div>
                                         @enderror
                                     </div>
                                 </div>
-                            
+
                                 <div class="form-group row">
                                     <div class="col-sm-12">
                                         <div class="form-floating">
-                                            <input type="text" class="form-control" value="{{ old('feature', $interest->feature) }}" id="feature" name="feature" placeholder="Enter Feature" required>
-                                            <label for="feature">Enter Feature &nbsp;<span style="color:red;">*</span></label>
+                                            <input type="number" class="form-control" value="{{ old('monthly_activities_coin', $interest->monthly_activities_coin ?? '') }}" id="monthly_activities_coin" name="monthly_activities_coin" placeholder="Enter Monthly Activities Coin" required>
+                                            <label for="monthly_activities_coin">Enter Monthly Activities Coin &nbsp;<span style="color:red;">*</span></label>
                                         </div>
-                                        @error('feature')
+                                        @error('monthly_activities_coin')
                                         <div style="color:red">{{$message}}</div>
                                         @enderror
                                     </div>
                                 </div>
-                            
+
                                 <div class="form-group row">
                                     <div class="col-sm-12">
                                         <div class="form-floating">
-                                            <input type="text" class="form-control" value="{{ old('bronze', $interest->bronze) }}" id="bronze" name="bronze" placeholder="Enter Bronze" required>
-                                            <label for="bronze">Enter Bronze &nbsp;<span style="color:red;">*</span></label>
+                                            <input type="number" class="form-control" value="{{ old('monthly_interests_coin', $interest->monthly_interests_coin ?? '') }}" id="monthly_interests_coin" name="monthly_interests_coin" placeholder="Enter Monthly Interests Coin" required>
+                                            <label for="monthly_interests_coin">Enter Monthly Interests Coin &nbsp;<span style="color:red;">*</span></label>
                                         </div>
-                                        @error('bronze')
+                                        @error('monthly_interests_coin')
                                         <div style="color:red">{{$message}}</div>
                                         @enderror
                                     </div>
                                 </div>
-                            
+
                                 <div class="form-group row">
                                     <div class="col-sm-12">
                                         <div class="form-floating">
-                                            <input type="text" class="form-control" value="{{ old('silver', $interest->silver) }}" id="silver" name="silver" placeholder="Enter Silver" required>
-                                            <label for="silver">Enter Silver &nbsp;<span style="color:red;">*</span></label>
+                                            <input type="number" class="form-control" value="{{ old('interest_messages_coin', $interest->interest_messages_coin ?? '') }}" id="interest_messages_coin" name="interest_messages_coin" placeholder="Enter Interest Messages Coin" required>
+                                            <label for="interest_messages_coin">Enter Interest Messages Coin &nbsp;<span style="color:red;">*</span></label>
                                         </div>
-                                        @error('silver')
-                                        <div style="color:red">{{$message}}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                            
-                                <div class="form-group row">
-                                    <div class="col-sm-12">
-                                        <div class="form-floating">
-                                            <input type="text" class="form-control" value="{{ old('gold', $interest->gold) }}" id="gold" name="gold" placeholder="Enter Gold" required>
-                                            <label for="gold">Enter Gold &nbsp;<span style="color:red;">*</span></label>
-                                        </div>
-                                        @error('gold')
+                                        @error('interest_messages_coin')
                                         <div style="color:red">{{$message}}</div>
                                         @enderror
                                     </div>

@@ -50,10 +50,10 @@
                       <tr>
                         <th>#</th>
                         <th data-priority="1">Category</th>
-                        <th data-priority="2">Feateure</th>
-                        <th data-priority="3">Bronze</th>
-                        <th data-priority="4">Silver</th>
-                        <th data-priority="4">Gold</th>
+                        <th data-priority="2">Extend Chat Coin</th>
+                        <th data-priority="3">Monthly Activities Coin</th>
+                        <th data-priority="4">Monthly Interests Coin</th>
+                        <th data-priority="4">Interest Messages Coin</th>
                         <th data-priority="4">Cost</th>
                         <th data-priority="4">Description</th>
                         <th data-priority="4">Status</th>
@@ -65,11 +65,11 @@
                       @foreach($data as $data)
                       <tr>
                         <th>{{$a = $loop->index+1}}</th>
-                        <td>{{ $data->category}}</td>
-                        <td>{{ $data->feature}}</td>
-                        <td>{{ $data->bronze}}</td>
-                        <td>{{ $data->silver}}</td>
-                        <td>{{ $data->gold}}</td>
+                        <td>{{ $data->category ?? ''}}</td>
+                        <td>{{ $data->extend_chat_coin ?? ''}}</td>
+                        <td>{{ $data->monthly_activities_coin ?? ''}}</td>
+                        <td>{{ $data->monthly_interests_coin ?? ''}}</td>
+                        <td>{{ $data->interest_messages_coin ?? ''}}</td>
                         <td>{{ $data->cost}}</td>
                         <td>{{ $data->description}}</td>
                         @if($data->status == 1)

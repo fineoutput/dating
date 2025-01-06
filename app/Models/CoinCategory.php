@@ -9,10 +9,10 @@ class CoinCategory extends Model
     protected $table = 'coincategory';
     protected $fillable = [
         'category',
-        'feature',
-        'bronze',
-        'silver',
-        'gold',
+        'extend_chat_coin',
+        'monthly_activities_coin',
+        'monthly_interests_coin',
+        'interest_messages_coin',
         'cost',
         'description',
         'status',

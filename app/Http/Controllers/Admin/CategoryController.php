@@ -44,16 +44,19 @@ class CategoryController extends Controller
     {
        
         $validated = $request->validate([
-            'category' => 'required|string|max:255',
-            'feature' => 'required|string|max:255',
+            'cost' => 'required',
+            'extend_chat_coin' => 'required',
+            'monthly_activities_coin' => 'required',
+            'monthly_interests_coin' => 'required',
+            'interest_messages_coin' => 'required',
         ]);
-        // Create the new interest
+
         $interest = CoinCategory::create([
             'category' => $request->category,
-            'feature' => $request->feature,
-            'bronze' => $request->bronze,
-            'silver' => $request->silver,
-            'gold' => $request->gold,
+            'extend_chat_coin' => $request->extend_chat_coin,
+            'monthly_activities_coin' => $request->monthly_activities_coin,
+            'monthly_interests_coin' => $request->monthly_interests_coin,
+            'interest_messages_coin' => $request->interest_messages_coin,
             'cost' => $request->cost,
             'description' => $request->description,
         ]);
@@ -95,11 +98,10 @@ class CategoryController extends Controller
         
        
     $validated = $request->validate([
-        'category'    => 'required|string|max:255',
-        'feature'     => 'required|string|max:255',
-        'bronze'      => 'nullable|numeric',
-        'silver'      => 'nullable|numeric',
-        'gold'        => 'nullable|numeric',
+        'extend_chat_coin' => 'nullable|numeric',
+        'monthly_activities_coin'  => 'nullable|numeric',
+        'monthly_interests_coin'   => 'nullable|numeric',
+        'interest_messages_coin'   => 'nullable|numeric',
         'cost'        => 'nullable|numeric',
         'description' => 'nullable|string',
     ]);
@@ -108,10 +110,10 @@ class CategoryController extends Controller
 
     // Assign validated data to the model
     $interest->category = $request->category;
-    $interest->feature = $request->feature;
-    $interest->bronze = $request->bronze;
-    $interest->silver = $request->silver;
-    $interest->gold = $request->gold;
+    $interest->extend_chat_coin = $request->extend_chat_coin;
+    $interest->monthly_activities_coin = $request->monthly_activities_coin;
+    $interest->monthly_interests_coin = $request->monthly_interests_coin;
+    $interest->interest_messages_coin = $request->interest_messages_coin;
     $interest->cost = $request->cost;
     $interest->description = $request->description;
 

@@ -44,7 +44,7 @@
                                 @csrf
                             
                                 <div class="form-group row">
-                                    <div class="col-sm-12">
+                                    {{-- <div class="col-sm-12">
                                         <div class="form-floating">
                                             <input type="text" class="form-control" value="" id="category" name="category" placeholder="Enter Category" required>
                                             <label for="category">Enter Category &nbsp;<span style="color:red;">*</span></label>
@@ -65,15 +65,27 @@
                                         <div style="color:red">{{$message}}</div>
                                         @enderror
                                     </div>
+                                </div> --}}
+
+                                <div class="form-group row">
+                                    <div class="col-sm-12"><br>
+                                        <label class="form-label" style="margin-left: 10px" for="power">Select Category</label>
+                                        <select class="form-select" name="category">
+                                            <option value="">Select</option>
+                                            <option value="bronze">Bronze</option>
+                                            <option value="silver">Silver</option>
+                                            <option value="gold">Gold</option>
+                                        </select>
+                                    </div>
                                 </div>
 
                                 <div class="form-group row">
                                     <div class="col-sm-12">
                                         <div class="form-floating">
-                                            <input type="text" class="form-control" value="" id="bronze" name="bronze" placeholder="Enter Bronze" required>
-                                            <label for="bronze">Enter Bronze &nbsp;<span style="color:red;">*</span></label>
+                                            <input type="number" class="form-control" value="" id="extend_chat_coin" name="extend_chat_coin" placeholder="Enter Extend chat" required>
+                                            <label for="extend_chat_coin">Enter Extend chat Coin &nbsp;<span style="color:red;">*</span></label>
                                         </div>
-                                        @error('bronze')
+                                        @error('extend_chat_coin')
                                         <div style="color:red">{{$message}}</div>
                                         @enderror
                                     </div>
@@ -82,10 +94,10 @@
                                 <div class="form-group row">
                                     <div class="col-sm-12">
                                         <div class="form-floating">
-                                            <input type="text" class="form-control" value="" id="silver" name="silver" placeholder="Enter Silver" required>
-                                            <label for="silver">Enter Silver &nbsp;<span style="color:red;">*</span></label>
+                                            <input type="number" class="form-control" value="" id="monthly_activities_coin" name="monthly_activities_coin" placeholder="Enter Extend chat" required>
+                                            <label for="monthly_activities_coin">Enter Monthly Activities Coin &nbsp;<span style="color:red;">*</span></label>
                                         </div>
-                                        @error('silver')
+                                        @error('monthly_activities_coin')
                                         <div style="color:red">{{$message}}</div>
                                         @enderror
                                     </div>
@@ -94,10 +106,22 @@
                                 <div class="form-group row">
                                     <div class="col-sm-12">
                                         <div class="form-floating">
-                                            <input type="text" class="form-control" value="" id="gold" name="gold" placeholder="Enter Gold" required>
-                                            <label for="gold">Enter Gold &nbsp;<span style="color:red;">*</span></label>
+                                            <input type="number" class="form-control" value="" id="monthly_interests_coin" name="monthly_interests_coin" placeholder="Enter Extend chat" required>
+                                            <label for="monthly_interests_coin">Enter Monthly Interests Coin &nbsp;<span style="color:red;">*</span></label>
                                         </div>
-                                        @error('gold')
+                                        @error('monthly_interests_coin')
+                                        <div style="color:red">{{$message}}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <div class="col-sm-12">
+                                        <div class="form-floating">
+                                            <input type="number" class="form-control" value="" id="interest_messages_coin" name="interest_messages_coin" placeholder="Enter Extend chat" required>
+                                            <label for="interest_messages_coin">Enter Interest Messages Coin &nbsp;<span style="color:red;">*</span></label>
+                                        </div>
+                                        @error('interest_messages_coin')
                                         <div style="color:red">{{$message}}</div>
                                         @enderror
                                     </div>

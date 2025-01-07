@@ -33,7 +33,7 @@ class ActivitySubscriptionController extends Controller
     {
         // dd('sdfa');
         $interest = Interest::all()->where('status',1);
-        $category = CoinCategory::all();
+        $category = CoinCategory::where('status',1)->get();
         $tital = "Activity Subscription";
         return view('admin.Activitysubscription.create', compact('tital','interest','category'));
     }

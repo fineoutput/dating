@@ -46,9 +46,7 @@ class ActivitySubscriptionController extends Controller
      */
     public function store(Request $request)
     {
-      
-
-        // Validate incoming data
+        
         $validatedData = $request->validate([
             'interests_id' => 'required',
             'title' => 'required|string|max:255',

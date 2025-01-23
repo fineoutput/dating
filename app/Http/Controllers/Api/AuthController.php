@@ -133,6 +133,11 @@ class AuthController extends Controller
                 ]);
                 UnverifyUser::where('number', $request->number)->delete();
                 $token = $newUser->createToken('token')->plainTextToken;
+                $userss = User::where('email', $newUser->email)->first();
+                if ($userss) {
+                    $userss->auth = $token;
+                    $userss->save();
+                }
                 return response()->json(['message' => 'User verified and moved to users table successfully!', 'token' => $token], 200);
             } else {
                 return response()->json(['message' => 'User not found or email or phone not verified.'], 404);
@@ -225,12 +230,12 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-
+        // Validate the request input
         $validator = Validator::make($request->all(), [
             'number' => 'required|string|exists:users,number',
             'password' => 'required|string|min:6',
         ]);
-
+    
         if ($validator->fails()) {
             $errors = [];
             foreach ($validator->errors()->getMessages() as $field => $messages) {
@@ -245,6 +250,8 @@ class AuthController extends Controller
         }
         $user = Auth::user();
         $token = $user->createToken('token')->plainTextToken;
+        $user->auth = $token;
+        $user->save();
         return response()->json([
             'message' => 'Login successful.',
             'token' => $token,

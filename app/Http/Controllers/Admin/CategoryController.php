@@ -109,7 +109,7 @@ class CategoryController extends Controller
     $interest = CoinCategory::findOrFail($id);
 
     // Assign validated data to the model
-    $interest->category = $request->category;
+    // $interest->category = $request->category;
     $interest->extend_chat_coin = $request->extend_chat_coin;
     $interest->monthly_activities_coin = $request->monthly_activities_coin;
     $interest->monthly_interests_coin = $request->monthly_interests_coin;

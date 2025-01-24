@@ -50,10 +50,10 @@
                       <tr>
                         <th>#</th>
                         <th data-priority="1">Category</th>
-                        <th data-priority="2">Extend Chat Coin</th>
-                        <th data-priority="3">Monthly Activities Coin</th>
-                        <th data-priority="4">Monthly Interests Coin</th>
-                        <th data-priority="4">Interest Messages Coin</th>
+                        <th data-priority="2">Extend Chat </th>
+                        <th data-priority="3">Monthly Activities </th>
+                        <th data-priority="4">Monthly Interests </th>
+                        <th data-priority="4">Interest Messages </th>
                         <th data-priority="4">Cost</th>
                         <th data-priority="4">Description</th>
                         {{-- <th data-priority="4">Status</th> --}}

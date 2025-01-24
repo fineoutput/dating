@@ -50,7 +50,7 @@
                       <tr>
                         <th>#</th>
                         <th>Title</th>
-                        <th>Activity Coin Count</th>
+                        <th>Free Activity Count</th>
                         <th>Interests Count</th>
                         <th>Message Count</th>
                         {{-- <th>Category</th> --}}

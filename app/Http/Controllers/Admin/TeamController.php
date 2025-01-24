@@ -140,7 +140,7 @@ class TeamController extends Controller
 				'power' => $req->input('power'),
 				'image' => $fullimagepath,
 				'ip' => $req->ip(),
-				'added_by' => $req->input('admin_id'),
+				'added_by' => 1,
 				'is_active' => 1,
 			];
 			$last_id = Team::create($teamInfo);

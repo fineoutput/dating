@@ -40,7 +40,7 @@
                 <div class="col-md-10">
                   <h4 class="mt-0 header-title">View {{$tital}} List</h4>
                 </div>
-                <div class="col-md-2"> <a class="btn btn-info cticket" href="{{route('datingsubscriptionCreate')}}" role="button" style="margin-left: 20px;"> Add {{$tital}}</a></div>
+                {{-- <div class="col-md-2"> <a class="btn btn-info cticket" href="{{route('datingsubscriptionCreate')}}" role="button" style="margin-left: 20px;"> Add {{$tital}}</a></div> --}}
               </div>
               <hr style="margin-bottom: 50px;background-color: darkgrey;">
               <div class="table-rep-plugin">
@@ -49,15 +49,16 @@
                     <thead>
                       <tr>
                         <th>#</th>
-                        <th data-priority="1">Expire Days</th>
+                      
                         <th data-priority="2">Dating Feature Type</th>
-                        <th data-priority="3">Unlimited Swipes</th>
-                        <th data-priority="4">Swipe Message</th>
-                        <th data-priority="4">Backtrack</th>
-                        <th data-priority="4">Access Admirers</th>
+                        <th data-priority="3">Swipes Count</th>
+                        <th data-priority="4">Message Count</th>
+                        {{-- <th data-priority="4">Backtrack</th>
+                        <th data-priority="4">Access Admirers</th> --}}
+                        <th data-priority="1">Expire Days</th>
                         <th data-priority="4">Cost</th>
-                        <th data-priority="4">Status</th>
-                        <th data-priority="5">created_at</th>
+                        {{-- <th data-priority="4">Status</th> --}}
+                        {{-- <th data-priority="5">created_at</th> --}}
                         <th data-priority="6">Action</th>
                       </tr>
                     </thead>
@@ -65,9 +66,7 @@
                       @foreach($data as $data)
                       <tr>
                         <th>{{$a = $loop->index+1}}</th>
-                        <td>
-                            {{$data->expire_days ?? ''}}
-                        </td>
+                       
                         <td>
                             @if( $data->type == 'free')
                             Free dating features
@@ -76,20 +75,12 @@
                             @endif
                         </td>
                         <td>
-                            @if($data->unlimited_swipes == 0)
-                            No
-                            @else
-                            Yes
-                            @endif
+                            {{$data->unlimited_swipes ?? 'N/A'}}
                         </td>
                         <td>
-                            @if($data->swipe_message == 0)
-                            No
-                            @else
-                            Yes
-                            @endif
+                            {{ $data->swipe_message ?? 'N/A' }}
                         </td>
-                        <td>
+                        {{-- <td>
                             @if($data->backtrack == 0)
                             No    
                             @else
@@ -102,9 +93,12 @@
                             @else
                             Yes
                             @endif
-                        </td>
-                        <td>{{ $data->cost ?? ''}}</td>
-                        @if($data->status == 1)
+                        </td> --}}
+                        <td>
+                          {{$data->expire_days ?? 'N/A'}}
+                      </td>
+                        <td>{{ $data->cost ?? 'N/A'}}</td>
+                        {{-- @if($data->status == 1)
                         <td>
                           <p class="label pull-right status-active">Active</p>
                         </td>
@@ -112,13 +106,13 @@
                         <td>
                           <p class="label pull-right status-inactive">InActive</p>
                         </td>
-                        @endif
-                        <td>{{ formatDateTime($data->created_at) }}</td>
+                        @endif --}}
+                        {{-- <td>{{ formatDateTime($data->created_at) }}</td> --}}
                         <td>
                           <div class="btn-group" id="btns<?php echo $a ?>">
 
 
-                            @if ($data->status == 1)
+                            {{-- @if ($data->status == 1)
                                 <a href="{{ route('dating-subscription.update-status', ['status' => 'inactive', 'id' => base64_encode($data->id)]) }}" 
                                 data-toggle="tooltip" data-placement="top" title="Set to Inactive">
                                     <i class="fas fa-check success-icon"></i>
@@ -128,8 +122,10 @@
                                 data-toggle="tooltip" data-placement="top" title="Set to Active">
                                     <i class="fas fa-times danger-icon"></i>
                                 </a>
-                            @endif
-                            <a href="javascript:();" class="dCnf" mydata="<?php echo $a ?>" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fas fa-trash danger-icon"></i></a>
+                            @endif --}}
+
+                            {{-- <a href="javascript:();" class="dCnf" mydata="<?php echo $a ?>" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fas fa-trash danger-icon"></i></a> --}}
+
                             <a href="{{ route('datingsubscription.edit', $data->id) }}" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fas fa-edit info-icon"></i></a>
 
                           </div>

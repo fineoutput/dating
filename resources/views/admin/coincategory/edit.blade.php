@@ -44,7 +44,7 @@
                                 @csrf
                                 @method('PUT')
                             
-                                <div class="form-group row">
+                                {{-- <div class="form-group row">
                                     <div class="col-sm-12"><br>
                                         <label class="form-label" style="margin-left: 10px" for="power">Select Category</label>
                                         <select class="form-select" name="category" value="{{ old('category', $interest->category ?? '') }}">
@@ -54,7 +54,7 @@
                                             <option value="gold" {{ (isset($interest->category) && $interest->category == 'gold') ? 'selected' : '' }}>Gold</option>
                                         </select>
                                     </div>
-                                </div>
+                                </div> --}}
 
                                <div class="form-group row">
                                     <div class="col-sm-12">

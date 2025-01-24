@@ -107,24 +107,24 @@ class ActivitySubscriptionController extends Controller
        
       // Validate the input data
       $validatedData = $request->validate([
-        'interests_id' => 'required|array', // Validate as an array of interest IDs
-        'title' => 'required|string|max:255',
-        'description' => 'nullable|string',
-        'category_id' => 'required', // Ensure the category exists
-        'type' => 'required', // Example types, adjust as needed
+        // 'interests_id' => 'required|array', // Validate as an array of interest IDs
+        // 'title' => 'required|string|max:255',
+        // 'description' => 'nullable|string',
+        // 'category_id' => 'required', // Ensure the category exists
+        // 'type' => 'required', // Example types, adjust as needed
     ]);
 
     // Find the ActivitySubscription by ID
     $activity = ActivitySubscription::findOrFail($id);
 
     // Update the activity fields
-    $activity->title = $request->title;
+    // $activity->title = $request->title;
     // $activity->cost = $request->cost;
-    $activity->expire_days = $request->expire_days;
-    $activity->description = $request->description;
-    $activity->category_id = $request->category_id;
-    $activity->type = $request->type;
-    $activity->interests_id = implode(',', $request->interests_id); // Store interests as comma-separated values
+    $activity->activity_count = $request->activity_count;
+    $activity->message_count = $request->message_count;
+    $activity->interests_count = $request->interests_count;
+    // $activity->type = $request->type;
+    // $activity->interests_id = implode(',', $request->interests_id); // Store interests as comma-separated values
 
     // Save the updated data
     $activity->save();

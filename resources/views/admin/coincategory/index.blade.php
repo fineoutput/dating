@@ -40,7 +40,7 @@
                 <div class="col-md-10">
                   <h4 class="mt-0 header-title">View {{$tital}} List</h4>
                 </div>
-                <div class="col-md-2"> <a class="btn btn-info cticket" href="{{route('coinCategoryCreate')}}" role="button" style="margin-left: 20px;"> Add {{$tital}}</a></div>
+                {{-- <div class="col-md-2"> <a class="btn btn-info cticket" href="{{route('coinCategoryCreate')}}" role="button" style="margin-left: 20px;"> Add {{$tital}}</a></div> --}}
               </div>
               <hr style="margin-bottom: 50px;background-color: darkgrey;">
               <div class="table-rep-plugin">
@@ -56,8 +56,8 @@
                         <th data-priority="4">Interest Messages Coin</th>
                         <th data-priority="4">Cost</th>
                         <th data-priority="4">Description</th>
-                        <th data-priority="4">Status</th>
-                        <th data-priority="5">created_at</th>
+                        {{-- <th data-priority="4">Status</th> --}}
+                        {{-- <th data-priority="5">created_at</th> --}}
                         <th data-priority="6">Action</th>
                       </tr>
                     </thead>
@@ -72,7 +72,7 @@
                         <td>{{ $data->interest_messages_coin ?? ''}}</td>
                         <td>{{ $data->cost}}</td>
                         <td>{{ $data->description}}</td>
-                        @if($data->status == 1)
+                        {{-- @if($data->status == 1)
                         <td>
                           <p class="label pull-right status-active">Active</p>
                         </td>
@@ -80,12 +80,12 @@
                         <td>
                           <p class="label pull-right status-inactive">InActive</p>
                         </td>
-                        @endif
-                        <td>{{ formatDateTime($data->created_at) }}</td>
+                        @endif --}}
+                        {{-- <td>{{ formatDateTime($data->created_at) }}</td> --}}
                         <td>
                           <div class="btn-group" id="btns<?php echo $a ?>">
 
-
+{{-- 
                             @if ($data->status == 1)
                                 <a href="{{ route('coin-category.update-status', ['status' => 'inactive', 'id' => base64_encode($data->id)]) }}" 
                                 data-toggle="tooltip" data-placement="top" title="Set to Inactive">
@@ -96,12 +96,13 @@
                                 data-toggle="tooltip" data-placement="top" title="Set to Active">
                                     <i class="fas fa-times danger-icon"></i>
                                 </a>
-                            @endif
-                            <a href="javascript:();" class="dCnf" mydata="<?php echo $a ?>" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fas fa-trash danger-icon"></i></a>
+                            @endif --}}
+
+                            {{-- <a href="javascript:();" class="dCnf" mydata="<?php echo $a ?>" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fas fa-trash danger-icon"></i></a> --}}
                             <a href="{{ route('coin-category.edit', $data->id) }}" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fas fa-edit info-icon"></i></a>
 
                           </div>
-                          <div style="display:none" id="cnfbox<?php echo $a ?>">
+                          {{-- <div style="display:none" id="cnfbox<?php echo $a ?>">
                             <p> Are you sure delete this </p>
                             <form id="deleteForm<?php echo $a; ?>" action="{{ route('coin-category.delete', $data->id) }}" method="post" style="display:inline;">
                               @csrf
@@ -111,7 +112,7 @@
                               </button>
                           </form>
                             <a href="javascript:();" class="cans btn btn-default" mydatas="<?php echo $a ?>">No</a>
-                          </div>
+                          </div> --}}
                         </td>
                       </tr>
                       @endforeach

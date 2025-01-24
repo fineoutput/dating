@@ -54,28 +54,40 @@
                                 @csrf
                                 @method('PUT')
                             
-                                <div class="form-group row">
+                                {{-- <div class="form-group row">
                                     <label for="title" class="col-sm-2 col-form-label">Title</label>
                                     <div class="col-sm-10">
                                         <input type="text" class="form-control" id="title" name="title" value="{{ old('title', $activity->title) }}" required>
                                     </div>
-                                </div>
+                                </div> --}}
 
                                 <div class="form-group row">
-                                    <label for="title" class="col-sm-2 col-form-label">Expire Days</label>
-                                    <div class="col-sm-10">
-                                        <input type="number" class="form-control" id="title" name="expire_days" value="{{ old('expire_days', $activity->expire_days) }}" required>
+                                    <label for="title" class="col-sm-2 col-form-label">Activity Coin Count</label>
+                                    <div class="col-sm-4">
+                                        <input type="number" class="form-control" id="title" name="activity_count" value="{{ old('activity_count', $activity->activity_count) }}" required>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="title" class="col-sm-2 col-form-label">Interests Count</label>
+                                    <div class="col-sm-4">
+                                        <input type="number" class="form-control" id="title" name="interests_count" value="{{ old('interests_count', $activity->interests_count) }}" required>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="title" class="col-sm-2 col-form-label">Message Count</label>
+                                    <div class="col-sm-4">
+                                        <input type="number" class="form-control" id="title" name="message_count" value="{{ old('message_count', $activity->message_count) }}" required>
                                     </div>
                                 </div>
                             
-                                <div class="form-group row">
+                                {{-- <div class="form-group row">
                                     <label for="description" class="col-sm-2 col-form-label">Description</label>
                                     <div class="col-sm-10">
                                         <textarea class="form-control" id="description" name="description">{{ old('description', $activity->description) }}</textarea>
                                     </div>
-                                </div>
+                                </div> --}}
                             
-                                <div class="form-group row">
+                                {{-- <div class="form-group row">
                                     <label for="category_id" class="col-sm-2 col-form-label">Category</label>
                                     <div class="col-sm-10">
                                         <select class="form-select" name="category_id" id="category_id" required>
@@ -97,9 +109,9 @@
                                             <option value="paid" {{ $activity->type == 'paid' ? 'selected' : '' }}>Paid</option>
                                         </select>
                                     </div>
-                                </div>
+                                </div> --}}
                             
-                                <div class="form-group row">
+                                {{-- <div class="form-group row">
                                     <label for="interests_id" class="col-sm-2 col-form-label">Interests</label>
                                     <div class="col-sm-10">
                                         <div id="output"></div>
@@ -112,7 +124,7 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                </div>
+                                </div> --}}
                                 
                             
                                 <div class="form-group row">

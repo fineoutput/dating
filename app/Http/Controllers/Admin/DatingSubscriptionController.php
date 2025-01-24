@@ -97,7 +97,7 @@ class DatingSubscriptionController extends Controller
      public function edit($id)
      {
         $data['interest']  = DatingSubscription::findOrFail($id); // Fetch all interests
-         $data['tital'] = "Coin Category Edit";
+         $data['tital'] = " Dating Feature Subscription Edit";
          return view('admin.datingSubscription.edit', $data);
      }
 
@@ -107,25 +107,27 @@ class DatingSubscriptionController extends Controller
        
       // Validate the input data
       $request->validate([
-        'expire_days' => 'required|integer',
+        // 'expire_days' => 'required|integer',
         // 'cost' => 'required|numeric',
-        'free_dating_feature' => 'nullable|boolean',
-        'unlimited_swipes' => 'nullable|boolean',
-        'swipe_message' => 'nullable|boolean',
-        'backtrack' => 'nullable|boolean',
-        'access_admirers' => 'nullable|boolean',
+        // 'free_dating_feature' => 'nullable',
+        'unlimited_swipes' => 'nullable',
+        'swipe_message' => 'nullable',
+        // 'backtrack' => 'nullable',
+        // 'access_admirers' => 'nullable',
     ]);
 
     // Find the dating subscription by ID
     $interest = DatingSubscription::findOrFail($id);
 
     // Update the subscription with the validated data
-    $interest->type = $request->type;
-    $interest->free_dating_feature = $request->has('free_dating_feature') ? '1' : '0';
-    $interest->unlimited_swipes = $request->has('unlimited_swipes') ? '1' : '0';
-    $interest->swipe_message = $request->has('swipe_message') ? '1' : '0';
-    $interest->backtrack = $request->has('backtrack') ? '1' : '0';
-    $interest->access_admirers = $request->has('access_admirers') ? '1' : '0';
+    // $interest->type = $request->type;
+    // $interest->free_dating_feature = $request->has('free_dating_feature') ? '1' : '0';
+    $interest->unlimited_swipes = $request->unlimited_swipes;
+    $interest->swipe_message = $request->swipe_message;
+    $interest->cost = $request->cost;
+    $interest->expire_days = $request->expire_days;
+    // $interest->backtrack = $request->backtrack;
+    // $interest->access_admirers = $request->access_admirers;
 
     // Save the updated subscription
     $interest->save();

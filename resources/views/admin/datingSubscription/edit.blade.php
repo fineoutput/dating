@@ -47,15 +47,24 @@
 
                                 <div class="form-group row">
                                     <div class="col-sm-12"><br>
-                                        <label class="form-label" style="margin-left: 10px" for="power">Select type</label>
-                                        <select class="form-select" name="type" id="">
+                                        <label class="form-label" style="margin-left: 10px" for="power">
+                                            
+                                            @if($interest->type == 'free')
+                                             Free Dating Feature
+                                            @else
+                                             Subscription features
+                                            @endif
+                                        </label>
+                                        {{-- <select class="form-select" name="type" id="">
                                             <option value="">Select</option>
                                             <option value="free" {{ $interest->type == 'free' ? 'selected' : '' }}>Free Dating Feature</option>
                                             <option value="paid" {{ $interest->type == 'paid' ? 'selected' : '' }}>Subscription Feature</option>
-                                        </select>
+                                        </select> --}}
                                     </div>
                                 </div>
 
+                                
+                                @if($interest->type == 'paid')
 
                                 <div class="form-group row">
                                     <div class="col-sm-12">
@@ -68,7 +77,7 @@
                                         @enderror
                                     </div>
                                 </div>
-                            
+
                                 <div class="form-group row">
                                     <div class="col-sm-12">
                                         <div class="form-floating">
@@ -80,6 +89,10 @@
                                         @enderror
                                     </div>
                                 </div>
+                                @else
+
+                                @endif
+                                
                             
                                 <!-- Checkbox Fields -->
                                 {{-- <div class="form-group row">
@@ -94,31 +107,38 @@
                                     </div>
                                 </div> --}}
                             
-                                <div class="form-group row">
-                                    <div class="col-sm-12">
-                                        <div class="form-check">
-                                            <input type="checkbox" class="form-check-input" id="unlimited_swipes" name="unlimited_swipes" value="1" {{ old('unlimited_swipes', $interest->unlimited_swipes) === '1' ? 'checked' : '' }}>
-                                            <label class="form-check-label" for="unlimited_swipes">Unlimited Swipes</label>
-                                        </div>
-                                        @error('unlimited_swipes')
-                                        <div style="color:red">{{ $message }}</div>
-                                        @enderror
+                               @if($interest->type == 'free')
+                               <div class="form-group row">
+                                <div class="col-sm-4">
+                                    <div class="form-check">
+                                        <label class="form-check-label" for="unlimited_swipes">Swipes Count</label>
+                                        <input type="number" class="form-control" id="unlimited_swipes" name="unlimited_swipes" value="{{ old('unlimited_swipes', $interest->unlimited_swipes) }}">
+                                        
                                     </div>
+                                    @error('unlimited_swipes')
+                                    <div style="color:red">{{ $message }}</div>
+                                    @enderror
                                 </div>
-                            
-                                <div class="form-group row">
-                                    <div class="col-sm-12">
-                                        <div class="form-check">
-                                            <input type="checkbox" class="form-check-input" id="swipe_message" name="swipe_message" value="1" {{ old('swipe_message', $interest->swipe_message) === '1' ? 'checked' : '' }}>
-                                            <label class="form-check-label" for="swipe_message">Swipe Message</label>
-                                        </div>
-                                        @error('swipe_message')
-                                        <div style="color:red">{{ $message }}</div>
-                                        @enderror
+                            {{-- </div>
+                        
+                            <div class="form-group row"> --}}
+                                <div class="col-sm-4">
+                                    <div class="form-check">
+                                        <label class="form-check-label" for="swipe_message">Message Count</label>
+
+                                        <input type="number" class="form-control" id="swipe_message" name="swipe_message" value="{{ old('swipe_message', $interest->swipe_message) }}">
+                                        
                                     </div>
+                                    @error('swipe_message')
+                                    <div style="color:red">{{ $message }}</div>
+                                    @enderror
                                 </div>
+                            </div>
+                               @else
+                                   
+                               @endif
                             
-                                <div class="form-group row">
+                                {{-- <div class="form-group row">
                                     <div class="col-sm-12">
                                         <div class="form-check">
                                             <input type="checkbox" class="form-check-input" id="backtrack" name="backtrack" value="1" {{ old('backtrack', $interest->backtrack) === '1' ? 'checked' : '' }}>
@@ -140,7 +160,7 @@
                                         <div style="color:red">{{ $message }}</div>
                                         @enderror
                                     </div>
-                                </div>
+                                </div> --}}
                             
                                 <div class="form-group">
                                     <div class="w-100 text-center">

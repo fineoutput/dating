@@ -44,6 +44,10 @@ return [
             'driver' => 'session',
             'provider' => 'admins',
         ],
+        'api' => [
+                'driver' => 'sanctum',  // Or 'sanctum' if using Sanctum for API authentication
+                'provider' => 'users',   // This refers to the provider for the `users` table
+        ],
     ],
 
     /*

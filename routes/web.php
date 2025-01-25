@@ -16,6 +16,8 @@ use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Auth\adminlogincontroller;
 use App\Http\Controllers\Admin\InterestController;
+use App\Http\Controllers\Admin\VibeController;
+use App\Http\Controllers\Admin\ExpenseController;
 
 /*
 |--------------------------------------------------------------------------
@@ -95,7 +97,8 @@ Route::get('/user/add-activity-coin/{id}', [UserController::class, 'addcoin'])->
 Route::post('/user/{id}/create-coin', [UserController::class, 'createCoin'])->name('createCoin');
 
 
-
+Route::get('/vibes', [VibeController::class, 'index'])->name('vibe.index');
+Route::get('/expense', [ExpenseController::class, 'index'])->name('expense.index');
 
 
 Route::get('coin-category', [CategoryController::class, 'index'])->name('coinCategoryindex');

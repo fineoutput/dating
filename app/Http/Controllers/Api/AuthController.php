@@ -228,6 +228,36 @@ class AuthController extends Controller
         return $this->successResponse('OTP verified successfully!', true,200);
     }
 
+    // public function login(Request $request)
+    // {
+    //     // Validate the request input
+    //     $validator = Validator::make($request->all(), [
+    //         'number' => 'required|string|exists:users,number',
+    //         'password' => 'required|string|min:6',
+    //     ]);
+    
+    //     if ($validator->fails()) {
+    //         $errors = [];
+    //         foreach ($validator->errors()->getMessages() as $field => $messages) {
+    //             $errors[$field] = $messages[0];
+    //             break; 
+    //         }
+    //         return response()->json(['errors' => $errors], 400);
+    //     }
+    //     $credentials = $request->only('number', 'password');
+    //     if (!Auth::attempt($credentials)) {
+    //         return $this->successResponse('Invalid credentials. Please check your number and password.', false, 401);
+    //     }
+    //     $user = Auth::user();
+    //     $token = $user->createToken('token')->plainTextToken;
+    //     $user->auth = $token;
+    //     $user->save();
+    //     return response()->json([
+    //         'message' => 'Login successful.',
+    //         'token' => $token,
+    //     ], 200);
+    // }
+
     public function login(Request $request)
     {
         // Validate the request input
@@ -237,26 +267,25 @@ class AuthController extends Controller
         ]);
     
         if ($validator->fails()) {
-            $errors = [];
-            foreach ($validator->errors()->getMessages() as $field => $messages) {
-                $errors[$field] = $messages[0];
-                break; 
-            }
-            return response()->json(['errors' => $errors], 400);
+            return response()->json(['message' => 'Invalid credentials'], 400);
         }
+    
+        // Attempt to authenticate the user
         $credentials = $request->only('number', 'password');
         if (!Auth::attempt($credentials)) {
-            return $this->successResponse('Invalid credentials. Please check your number and password.', false, 401);
+            return response()->json(['message' => 'Unauthorized'], 401);
         }
+    
+        // If authentication is successful, create a token for the user
         $user = Auth::user();
-        $token = $user->createToken('token')->plainTextToken;
-        $user->auth = $token;
-        $user->save();
+        $token = $user->createToken('YourAppName')->plainTextToken;
+    
         return response()->json([
-            'message' => 'Login successful.',
+            'message' => 'Login successful',
             'token' => $token,
-        ], 200);
+        ]);
     }
+
 
     public function logout(Request $request)
     {

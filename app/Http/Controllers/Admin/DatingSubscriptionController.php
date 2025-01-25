@@ -103,8 +103,6 @@ class DatingSubscriptionController extends Controller
 
     public function update(Request $request, $id)
     {
-        
-       
       // Validate the input data
       $request->validate([
         // 'expire_days' => 'required|integer',

@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\InterestController;
+use App\Http\Controllers\Api\ActivityController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,10 +17,23 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('logout', [AuthController::class, 'logout']);
-});
-
 Route::post('signup', [AuthController::class, 'signup']);
 Route::post('verify_auth_otp', [AuthController::class, 'verify_auth_otp']);
 Route::post('login', [AuthController::class, 'login']);
+
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('activity-store', [ActivityController::class, 'activitystore']);
+    Route::get('activitys', [ActivityController::class, 'activitys']);
+    Route::get('find-matching-users-interest', [ActivityController::class, 'findMatchingUsers']);
+    Route::get('find-matching-users-activity', [ActivityController::class, 'findMatchingactivity']);
+});
+
+
+Route::get('interest', [InterestController::class, 'interest']);
+Route::get('vibes', [InterestController::class, 'vibes']);
+Route::get('expense', [InterestController::class, 'expense']);
+
+
+

@@ -101,17 +101,17 @@ class UserController extends Controller
             $user->profile_image = json_encode($imagePaths);
         }
 
-    $user->name = $request->name;
-    $user->number = $request->number;
-    $user->email = $request->email;
-    $user->age = $request->age;
-    $user->gender = $request->gender;
-    $user->looking_for = $request->looking_for;
-    $user->state = $request->state;
-    $user->city = $request->city; 
-    $user->status = $request->status; 
-    $user->password = $request->password; 
-    $user->interest = json_encode($request->interest);
+            $user->name = $request->name;
+            $user->number = $request->number;
+            $user->email = $request->email;
+            $user->age = $request->age;
+            $user->gender = $request->gender;
+            $user->looking_for = $request->looking_for;
+            $user->state = $request->state;
+            $user->city = $request->city; 
+            $user->status = 1; 
+            $user->password = $request->password; 
+            $user->interest = json_encode($request->interest);
         // Save the user
         $user->save();
 

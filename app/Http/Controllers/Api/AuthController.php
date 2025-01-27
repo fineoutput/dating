@@ -278,9 +278,8 @@ class AuthController extends Controller
         return response()->json(['message' => 'User not found'], 404);
     }
 
-    // Case 1: If it's a special number (0000000000), skip OTP validation and automatically generate token
+   
     if ($request->number == '0000000000') {
-        // Automatically verify OTP as '1234'
         if ($request->otp != '1234') {
             return response()->json(['message' => 'Invalid OTP'], 400);
         }

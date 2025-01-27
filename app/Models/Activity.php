@@ -20,6 +20,11 @@ class Activity extends Model
         'expense_id',
         'other_activity',
         'status',
+        'title',
+        'description',
+        'location',
+        'amount',
+        'image',
     ];
     
 }

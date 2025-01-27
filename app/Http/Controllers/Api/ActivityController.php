@@ -24,28 +24,27 @@ class ActivityController extends Controller
 {
     public function activitystore(Request $request)
 {
-    if (Auth::check()) {
-    } else {
+    if (!Auth::check()) {
         return response()->json([
             'message' => 'Unauthorized. Please log in.',
         ], 401);
     }
 
     $user = Auth::user();
-    // return $user; 
 
+    // Validation for incoming request
     $validator = Validator::make($request->all(), [
         'title' => 'required',
-        'when_time' => 'required',
         'location' => 'required',
-        'when_time' => 'required',
         'how_many' => 'required|integer',
-        'start_time' => 'required',
-        'end_time' => 'required',
+        'start_time' => 'required|date_format:H:i:s',
+        'end_time' => 'required|date_format:H:i:s',
         'interests_id' => 'required',
         'expense_id' => 'required',
         'description' => 'required',
         'other_activity' => 'nullable|string',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        'amount' => 'nullable|numeric',
     ]);
 
     if ($validator->fails()) {
@@ -55,27 +54,57 @@ class ActivityController extends Controller
         ], 422);
     }
 
-    $startTime = Carbon::createFromFormat('d-m-Y H:i:s', $request->start_time)->format('Y-m-d H:i:s');
-    $endTime = Carbon::createFromFormat('d-m-Y H:i:s', $request->end_time)->format('Y-m-d H:i:s');
+    // Parse start_time and end_time, assuming the current date if only time is provided
+    try {
+        $startTime = $this->parseTimeToDate($request->start_time);
+        $endTime = $this->parseTimeToDate($request->end_time);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Invalid time format. Expected H:i:s.',
+            'error' => $e->getMessage(),
+        ], 422);
+    }
+
+    $imagePath = null;
+    if ($request->hasFile('image')) {
+        $image = $request->file('image');
+        $imagePath = $image->move(public_path('images/activities'), $image->getClientOriginalName());
+        $imagePath = asset('images/activities/' . $image->getClientOriginalName());
+    }
 
     $activity = Activity::create([
         'where_to' => $request->where_to,
+        'title' => $request->title,
+        'location' => $request->location,
         'when_time' => $request->when_time,
         'how_many' => $request->how_many,
         'start_time' => $startTime,
         'end_time' => $endTime,
-        'interests_id' => $request->interests_id,
-        'expense_id' => $request->expense_id,
-        'other_activity' => $request->other_activity,
+        'interests_id' => implode(',', (array)$request->interests_id), 
+        'expense_id' => implode(',', (array)$request->expense_id),
         'status' => 1,
         'description' => $request->description,
+        'other_activity' => $request->other_activity,
         'user_id' => $user->id,
+        'image' => $imagePath,
+        'amount' => $request->amount, 
     ]);
-
+ 
     return response()->json([
         'message' => 'Activity created successfully',
         'data' => $activity,
-    ], 201);
+    ], 200);
+}
+
+private function parseTimeToDate($time)
+{
+    $todayDate = Carbon::today()->format('Y-m-d');
+    $dateTime = $todayDate . ' ' . $time;
+    try {
+        return Carbon::createFromFormat('Y-m-d H:i:s', $dateTime)->format('Y-m-d H:i:s');
+    } catch (\Exception $e) {
+        throw new \Exception('Invalid time format.');
+    }
 }
 
 
@@ -92,7 +121,7 @@ class ActivityController extends Controller
     
         $activities = Activity::where('user_id', $user->id)
             ->whereDate('when_time', $todayDate) 
-            ->where('end_time', '>', $currentTime)
+            ->where('end_time', '<', $currentTime)
             ->get();
 
         if ($activities->isEmpty()) {

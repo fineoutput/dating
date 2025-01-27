@@ -56,7 +56,7 @@ class UserController extends Controller
         // dd($request->all());
         $request->validate([
             'name' => 'required|string|max:255',
-            'number' => 'required|string',
+            'number' => 'required|string|unique:users,number',
             'email' => 'required|string|email|max:255|unique:users,email,' . $id,
             'age' => 'required|string|max:255',
             'gender' => 'required|string|max:255',
@@ -109,6 +109,7 @@ class UserController extends Controller
     $user->looking_for = $request->looking_for;
     $user->state = $request->state;
     $user->city = $request->city; 
+    $user->status = $request->status; 
     $user->password = $request->password; 
     $user->interest = json_encode($request->interest);
         // Save the user

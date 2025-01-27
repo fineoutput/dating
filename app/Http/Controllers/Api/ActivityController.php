@@ -108,31 +108,50 @@ private function parseTimeToDate($time)
 }
 
 
-    public function useractivitys(Request $request)
-    {
-        $user = Auth::user();
-        
-        if (!$user) {
-            return response()->json(['message' => 'User not authenticated'], 401);
-        }
-        // return Carbon::now('Asia/Kolkata');
-        $currentTime = Carbon::now('Asia/Kolkata');
-        $todayDate = Carbon::today('Asia/Kolkata');
+public function useractivitys(Request $request)
+{
+    $user = Auth::user();
     
-        $activities = Activity::where('user_id', $user->id)
-            ->whereDate('when_time', $todayDate) 
-            ->where('end_time', '<', $currentTime)
-            ->get();
-
-        if ($activities->isEmpty()) {
-            return response()->json(['message' => 'No upcoming activities found'], 404);
-        }
-
-        return response()->json([
-            'message' => 'User activities fetched successfully',
-            'data' => $activities,
-        ]);
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], 401);
     }
+    
+    // Get the current time and today's date in the 'Asia/Kolkata' timezone
+    $currentTime = Carbon::now('Asia/Kolkata');
+    $todayDate = Carbon::today('Asia/Kolkata');
+    
+    // Fetch activities for the authenticated user
+    $activities = Activity::where('user_id', $user->id)
+        ->whereDate('when_time', $todayDate) 
+        ->where('end_time', '<', $currentTime)
+        ->get();
+    
+    // If no activities are found
+    if ($activities->isEmpty()) {
+        return response()->json(['message' => 'No upcoming activities found'], 404);
+    }
+    
+    $activitiesArray = $activities->map(function ($activity) {
+        return [
+            'id' => $activity->id,
+            'title' => $activity->title,
+            'description' => $activity->description,
+            'location' => $activity->location,
+            'when_time' => $activity->when_time,
+            'start_time' => $activity->start_time,
+            'end_time' => $activity->end_time,
+            'how_many' => $activity->how_many,
+            'interests_id' => $activity->interests_id,  
+            'expense_id' => $activity->expense_id,     
+            'status' => $activity->status,
+        ];
+    });
+
+    return response()->json([
+        'message' => 'User activities fetched successfully',
+        'data' => $activitiesArray,
+    ]);
+}
 
 
     

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\InterestController;
 use App\Http\Controllers\Api\ActivityController;
+use App\Http\Controllers\Api\ChatController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +37,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('confirm-user-interest', [InterestController::class, 'confirmuserinterest']);
     Route::post('add-confirm-user-interest', [InterestController::class, 'confirm_user_interest']);
 
+
+    Route::post('chat-send', [ChatController::class, 'sendMessage']);
+    Route::get('chat-messages', [ChatController::class, 'getMessages']);
+    Route::post('chat-update-status', [ChatController::class, 'updateMessageStatus']);
 
     Route::get('user-profile', [AuthController::class, 'userprofile']);
 });

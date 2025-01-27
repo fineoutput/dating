@@ -128,7 +128,7 @@ public function useractivitys(Request $request)
     
     // If no activities are found
     if ($activities->isEmpty()) {
-        return response()->json(['message' => 'No upcoming activities found'], 404);
+        return response()->json(['message' => 'No upcoming activities found'], 200);
     }
     
     $activitiesArray = $activities->map(function ($activity) {
@@ -153,6 +153,50 @@ public function useractivitys(Request $request)
     ]);
 }
 
+
+public function getActivitydetailes(Request $request)
+{
+    // Ensure the user is authenticated
+    $user = Auth::user();
+    
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], 401);
+    }
+    
+    // Validate that 'activity_id' is provided and exists in the Activity table
+    $request->validate([
+        'activity_id' => 'required',
+    ]);
+
+    // Fetch the activity based on the provided activity_id
+    $activity = Activity::where('id', $request->activity_id)
+                        ->where('user_id', $user->id)  // Ensure that the activity belongs to the authenticated user
+                        ->first();
+    
+    if (!$activity) {
+        return response()->json(['message' => 'Activity not found or you do not have permission to view it'], 404);
+    }
+
+    // Format the activity data
+    $activityData = [
+        'id' => $activity->id,
+        'title' => $activity->title,
+        'description' => $activity->description,
+        'location' => $activity->location,
+        'when_time' => $activity->when_time,
+        'start_time' => $activity->start_time,
+        'end_time' => $activity->end_time,
+        'how_many' => $activity->how_many,
+        'interests_id' => $activity->interests_id,  
+        'expense_id' => $activity->expense_id,     
+        'status' => $activity->status,
+    ];
+
+    return response()->json([
+        'message' => 'Activity fetched successfully',
+        'data' => $activityData,
+    ]);
+}
 
     
         public function activitys(Request $request)

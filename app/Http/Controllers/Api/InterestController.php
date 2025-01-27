@@ -79,7 +79,6 @@ class InterestController extends Controller
         $request->validate([
             'activity_id' => 'required|exists:activity_table,id',
         ]);
-
         $existingInterest = OtherInterest::where('user_id', $user->id)
                                         ->where('activity_id', $request->activity_id)
                                         ->first();
@@ -89,7 +88,7 @@ class InterestController extends Controller
                 'message' => 'Interest already added.',
             ], 400);
         }
-        
+
 
         try {
             $otherInterest = OtherInterest::create([
@@ -153,10 +152,10 @@ class InterestController extends Controller
         $user = Auth::user();
 
         $request->validate([
-            'activity_id' => 'required|exists:activity_table,id',
+            'activity_id' => 'required',
         ]);
 
-        $interests = OtherInterest::where('activity_id', $request->activity_id)->where('confirm',0)->get();
+        $interests = OtherInterest::where('activity_id', $request->activity_id)->where('confirm',1)->get();
 
         if ($interests->isEmpty()) {
             return response()->json([
@@ -169,5 +168,42 @@ class InterestController extends Controller
             'data' => $interests,
         ]);
     }
+
+    
+    public function confirm_user_interest(Request $request)
+{
+    // Ensure the user is authenticated
+    if (!Auth::check()) {
+        return response()->json([
+            'message' => 'Unauthorized. Please log in.',
+        ], 401);
+    }
+
+    $user = Auth::user();
+
+    $request->validate([
+        'activity_id' => 'required',
+        'confirm' => 'required|boolean', 
+    ]);
+    $interest = OtherInterest::where('activity_id', $request->activity_id) 
+                                ->first();
+    if (!$interest) {
+        return response()->json([
+            'message' => 'No interest found for this activity.',
+        ], 404);
+    }
+    $interest->confirm = $request->confirm;
+    $interest->save();
+
+    return response()->json([
+        'message' => 'Interest confirmation updated successfully.',
+        'data' => [
+            'activity_id' => $interest->activity_id,
+            'user_id' => $interest->user_id,
+            'confirm' => $interest->confirm,
+        ],
+    ]);
+}
+
 
 }

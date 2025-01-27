@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Mail\OtpMail;
 use App\Models\Interest;
+use App\Models\OtherInterest;
 use App\Models\Vibes;
 use App\Models\Expense;
 use Illuminate\Support\Facades\Mail;
@@ -62,6 +63,111 @@ class InterestController extends Controller
             'status' => $status,
             'data' => $data,
         ], $statusCode);
+    }
+
+
+    public function addinterest(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Unauthorized. Please log in.',
+            ], 401);
+        }
+
+        $user = Auth::user();
+
+        $request->validate([
+            'activity_id' => 'required|exists:activity_table,id',
+        ]);
+
+        $existingInterest = OtherInterest::where('user_id', $user->id)
+                                        ->where('activity_id', $request->activity_id)
+                                        ->first();
+
+        if ($existingInterest) {
+            return response()->json([
+                'message' => 'Interest already added.',
+            ], 400);
+        }
+        
+
+        try {
+            $otherInterest = OtherInterest::create([
+                'user_id' => $user->id,
+                'activity_id' => $request->activity_id,
+                'confirm' => 0,
+            ]);
+
+            return response()->json([
+                'message' => 'Interest added successfully',
+                'data' => [
+                    'user_id' => $user->id,
+                    'activity_id' => $request->activity_id,
+                    'confirm' => $otherInterest->confirm,  
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to add interest. Please try again later.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function getuserinterest(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Unauthorized. Please log in.',
+            ], 401);
+        }
+
+        $user = Auth::user();
+
+        $request->validate([
+            'activity_id' => 'required|exists:activity_table,id',
+        ]);
+
+        $interests = OtherInterest::where('activity_id', $request->activity_id)->where('confirm',0)->get();
+
+        if ($interests->isEmpty()) {
+            return response()->json([
+                'message' => 'No interests found for this activity.',
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'User interests fetched successfully',
+            'data' => $interests,
+        ]);
+    }
+
+    public function confirmuserinterest(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Unauthorized. Please log in.',
+            ], 401);
+        }
+
+        $user = Auth::user();
+
+        $request->validate([
+            'activity_id' => 'required|exists:activity_table,id',
+        ]);
+
+        $interests = OtherInterest::where('activity_id', $request->activity_id)->where('confirm',0)->get();
+
+        if ($interests->isEmpty()) {
+            return response()->json([
+                'message' => 'No interests found for this activity.',
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'User interests fetched successfully',
+            'data' => $interests,
+        ]);
     }
 
 }

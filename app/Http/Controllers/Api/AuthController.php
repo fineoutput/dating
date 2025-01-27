@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Mail\OtpMail;
 use Illuminate\Support\Facades\Mail;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -130,6 +131,7 @@ class AuthController extends Controller
                     'profile_image' => $unverifyUser->profile_image,
                     'state' => $unverifyUser->state,
                     'city' => $unverifyUser->city,
+                    'status' => 1,
                 ]);
                 UnverifyUser::where('number', $request->number)->delete();
                 $token = $newUser->createToken('token')->plainTextToken;
@@ -259,33 +261,73 @@ class AuthController extends Controller
     // }
 
     public function login(Request $request)
-    {
-        // Validate the request input
-        $validator = Validator::make($request->all(), [
-            'number' => 'required|string|exists:users,number',
-            'password' => 'required|string|min:6',
-        ]);
+{
+    $validator = Validator::make($request->all(), [
+        'number' => 'required|string|exists:users,number',
+        'otp' => 'nullable|string|min:4|max:4', 
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['message' => 'Invalid credentials'], 400);
+    }
+
+    // Get the user based on the provided phone number
+    $user = User::where('number', $request->number)->first();
     
-        if ($validator->fails()) {
-            return response()->json(['message' => 'Invalid credentials'], 400);
+    if (!$user) {
+        return response()->json(['message' => 'User not found'], 404);
+    }
+
+    // Case 1: If it's a special number (0000000000), skip OTP validation and automatically generate token
+    if ($request->number == '0000000000') {
+        // Automatically verify OTP as '1234'
+        if ($request->otp != '1234') {
+            return response()->json(['message' => 'Invalid OTP'], 400);
         }
-    
-        // Attempt to authenticate the user
-        $credentials = $request->only('number', 'password');
-        if (!Auth::attempt($credentials)) {
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
-    
-        // If authentication is successful, create a token for the user
-        $user = Auth::user();
-        $token = $user->createToken('YourAppName')->plainTextToken;
-    
+
+        // If OTP is correct, generate the token and update user auth field
+        $token = $user->createToken('token')->plainTextToken;
+        $user->auth = $token; // Save the token in the user table
+        $user->save();
+
         return response()->json([
             'message' => 'Login successful',
             'token' => $token,
         ]);
     }
 
+    // Case 2: If OTP is not provided, send OTP to the number
+    if (!$request->otp) {
+        // Send OTP (Generate and send via SMS or Email)
+        $this->sendOtp($user->number); 
+        return response()->json(['message' => 'OTP has been sent to your number. Please enter it to login.']);
+    }
+
+    // Case 3: If OTP is provided, validate it
+    $otpRecord = UserOtp::where('source_name', $request->number)
+                        ->where('otp', $request->otp)
+                        ->where('expires_at', '>', Carbon::now()) // OTP must not be expired
+                        ->first();
+    
+    if (!$otpRecord) {
+        return response()->json(['message' => 'Invalid or expired OTP'], 400);
+    }
+
+    // Check if the user is blocked
+    if ($user->status == 0) {
+        return response()->json(['message' => 'You have been blocked by the admin'], 403);
+    }
+
+    // Generate the token and update the user's auth field
+    $token = $user->createToken('token')->plainTextToken;
+    $user->auth = $token;
+    $user->save();
+
+    return response()->json([
+        'message' => 'Login successful',
+        'token' => $token,
+    ]);
+}
 
     public function logout(Request $request)
     {

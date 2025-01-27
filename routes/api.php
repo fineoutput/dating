@@ -26,8 +26,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('activity-store', [ActivityController::class, 'activitystore']);
     Route::get('activitys', [ActivityController::class, 'activitys']);
+    Route::get('user-activitys', [ActivityController::class, 'useractivitys']);
     Route::get('find-matching-users-interest', [ActivityController::class, 'findMatchingUsers']);
     Route::get('find-matching-users-activity', [ActivityController::class, 'findMatchingactivity']);
+
+    Route::post('add-interest', [InterestController::class, 'addinterest']);
+    Route::post('get-user-interest', [InterestController::class, 'getuserinterest']);
+    Route::post('confirm-user-interest', [InterestController::class, 'confirmuserinterest']);
+
 
     Route::get('user-profile', [AuthController::class, 'userprofile']);
 });

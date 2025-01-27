@@ -295,4 +295,36 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'Successfully logged out']);
     }
+
+
+    public function userprofile(Request $request)
+    {
+
+        $user = Auth::user();
+
+        $profileImages = json_decode($user->profile_image, true);
+
+        $imageUrls = [];
+        foreach ($profileImages as $image) {
+            $imageUrls[] = asset('profile_images/' . $image);
+        }
+        $userData = [
+            'id' => $user->id,
+            'number' => $user->number,
+            'auth' => $user->auth,
+            'name' => $user->name,
+            'email' => $user->email,
+            'age' => $user->age,
+            'gender' => $user->gender,
+            'looking_for' => $user->looking_for,
+            'interest' => json_decode($user->interest, true), 
+            'state' => $user->state,
+            'city' => $user->city,
+            'status' => $user->status,
+            'profile_images' => $imageUrls, 
+        ];
+        return response()->json($userData);
+    }
+
+
 }

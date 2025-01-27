@@ -19,7 +19,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $data = User::all(); // Fetch all users
+        $data = User::orderBy('id','DESC')->get(); // Fetch all users
         $title = "Users";
         return view('admin.Users.view_users', compact('data', 'title'));
     }

@@ -28,6 +28,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('activitys', [ActivityController::class, 'activitys']);
     Route::get('find-matching-users-interest', [ActivityController::class, 'findMatchingUsers']);
     Route::get('find-matching-users-activity', [ActivityController::class, 'findMatchingactivity']);
+
+    Route::get('user-profile', [AuthController::class, 'userprofile']);
 });
 
 

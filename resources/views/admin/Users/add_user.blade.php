@@ -57,7 +57,7 @@
 
                                     <div class="col-sm-4">
                                         <div class="form-floating">
-                                            <input type="text" class="form-control" value="{{ old('number', $user->number ?? '') }}" id="number" name="number" placeholder="Enter number" required autocomplete="off">
+                                            <input type="number" class="form-control" value="{{ old('number', $user->number ?? '') }}" id="number" name="number" placeholder="Enter number" required autocomplete="off">
                                             <label for="number">Enter Number &nbsp;<span style="color:red;">*</span></label>
                                         </div>
                                         @error('number')
@@ -79,7 +79,7 @@
                                 <div class="form-group row">
                                     <div class="col-sm-4">
                                         <div class="form-floating">
-                                            <input type="text" class="form-control" value="{{ old('age', $user->age ?? '') }}" id="age" name="age" placeholder="Enter age">
+                                            <input type="number" class="form-control" value="{{ old('age', $user->age ?? '') }}" id="age" name="age" placeholder="Enter age">
                                             <label for="age">Age</label>
                                         </div>
                                         @error('age')

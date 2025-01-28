@@ -344,7 +344,7 @@ class AuthController extends Controller
             // Generate token for the existing user
             $token = $existingUser->createToken('auth_token')->plainTextToken;
             
-            // Update the token in the user table
+            // Update the  token in the user table
             $existingUser->auth = $token;
             $existingUser->save();
 

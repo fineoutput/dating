@@ -392,7 +392,19 @@ public function getActivitydetailes(Request $request)
     }
 
     $activitiesWithUserDetails = $matchingActivities->map(function ($activity) {
-        $bgColor = '#' . substr(md5($activity->id), 0, 6);
+        $hash = md5($activity->id);
+        $r = hexdec(substr($hash, 0, 2));
+        $g = hexdec(substr($hash, 2, 2));
+        $b = hexdec(substr($hash, 4, 2));
+        
+        // Lighten the color by mixing with white (255, 255, 255)
+        $lightenFactor = 0.6;  // The factor to control lightness, closer to 1 is lighter
+        $r = round($r + (255 - $r) * $lightenFactor);
+        $g = round($g + (255 - $g) * $lightenFactor);
+        $b = round($b + (255 - $b) * $lightenFactor);
+        
+        // Convert back to hex format
+        $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
     
         $userDetails = User::find($activity->user_id);
     

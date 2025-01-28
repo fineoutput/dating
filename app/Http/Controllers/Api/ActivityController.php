@@ -496,10 +496,36 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
 
         
-        public function vibeactivitycount(){
+        public function vibeactivitycount()
+        {
 
+            if (!Auth::check()) {
+                return response()->json([
+                    'message' => 'Unauthorized. Please log in.',
+                ], 401);
+            }
+
+            $vibes = Vibes::all();
+        
+            $vibeWithActivityCount = [];
+        
+            foreach ($vibes as $vibe) {
+                $activityCount = Activity::where('vibe_id', $vibe->id)->count();
+                $vibeWithActivityCount[] = [
+                    'id' => $vibe->id,
+                    'name' => $vibe->name,
+                    'activity_id' => $vibe->activity_id,
+                    // 'image' => $vibe->image,
+                    'status' => $vibe->status,
+                    'icon' => $vibe->icon,
+                    'activity_count' => $activityCount
+                ];
+            }
+            return response()->json([
+                'message' => 'Vibe activity counts fetched successfully.',
+                'data' => $vibeWithActivityCount
+            ]);
         }
-
 
 
 

@@ -393,17 +393,17 @@ public function getActivitydetailes(Request $request)
 
     $activitiesWithUserDetails = $matchingActivities->map(function ($activity) {
         $hash = md5($activity->id);
-        $r = hexdec(substr($hash, 0, 2));
-        $g = hexdec(substr($hash, 2, 2));
-        $b = hexdec(substr($hash, 4, 2));
-        
-        $lightenFactor = 0.6; 
-        $r = round($r + (255 - $r) * $lightenFactor);
-        $g = round($g + (255 - $g) * $lightenFactor);
-        $b = round($b + (255 - $b) * $lightenFactor);
-        
-        // Convert back to hex format
-        $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
+$r = hexdec(substr($hash, 0, 2));
+$g = hexdec(substr($hash, 2, 2));
+$b = hexdec(substr($hash, 4, 2));
+
+$lightenFactor = 0.5;  // Adjust the lightening factor to 50%
+$r = round($r + (255 - $r) * $lightenFactor);
+$g = round($g + (255 - $g) * $lightenFactor);
+$b = round($b + (255 - $b) * $lightenFactor);
+
+// Convert back to hex format
+$bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
     
         $userDetails = User::find($activity->user_id);
     

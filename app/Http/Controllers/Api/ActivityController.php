@@ -423,6 +423,7 @@ public function getActivitydetailes(Request $request)
             // 'image' => $imageUrl,
             'bg_color' => $activity->bg_color,
             'vibe_name' => $activity->vibe->name ?? '',
+            'vibe_icon' => $activity->vibe->icon ?? '',
             // 'user_id' => $userDetails->id,
             'user_name' => $userDetails->name,
             'user_profile_image' => $profileImageUrl,

@@ -237,7 +237,7 @@ class AuthController extends Controller
                 }
 
                 $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $image->move(public_path('uploads/app/profile_images'), $imageName);
+                $image->move(public_path('uploads/app/profile_images/'), $imageName);
                 $imagePaths[$index] = 'profile_images' . $imageName;
                 $index++;
             }

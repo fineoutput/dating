@@ -398,7 +398,7 @@ public function getActivitydetailes(Request $request)
     
         if ($userDetails) {
             $profileImages = json_decode($userDetails->profile_image, true);
-            $profileImageUrl = isset($profileImages[1]) ? url('uploads/app/' . $profileImages[1]) : null;
+            $profileImageUrl = isset($profileImages[1]) ? url('uploads/app/profile_images/' . $profileImages[1]) : null;
     
             // Merging user details directly in the main array
             $userData = [

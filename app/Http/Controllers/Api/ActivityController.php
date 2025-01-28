@@ -173,9 +173,9 @@ public function useractivitys(Request $request)
             'how_many' => $activity->how_many,
             'vibe_name' => $activity->vibe->name ?? '',
             'vibe_icon' => $activity->vibe->icon ?? '',
-            'name' => $user->name,
-            'profile_image_url' => $profileImageUrl,
-            'time' => \Carbon\Carbon::parse($activity->created_at)->format('d-F H:i'),
+            'user_name' => $user->name,
+            'user_profile_image' => $profileImageUrl,
+            'user_time' => \Carbon\Carbon::parse($activity->created_at)->format('d-F H:i'),
         ];
     }
 

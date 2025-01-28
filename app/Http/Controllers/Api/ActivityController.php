@@ -407,5 +407,60 @@ public function getActivitydetailes(Request $request)
     ]);
 }
 
+public function filteractivity(Request $request)
+{
+    $location = $request->input('location');
+    $when_time = $request->input('when_time');
+    $start_time = $request->input('start_time');
+    $end_time = $request->input('end_time');
+    $expense_id = $request->input('expense_id');
+    $interests_id = $request->input('interests_id');
+
+    // Start building the query on the Activity model
+    $query = Activity::query();
+
+    // Apply filters if parameters are provided
+    $filterApplied = false;
+
+    if ($location) {
+        $query->where('location', 'like', '%' . $location . '%');
+        $filterApplied = true;
+    }
+
+    if ($when_time) {
+        $query->where('when_time', $when_time);
+        $filterApplied = true;
+    }
+
+    if ($start_time) {
+        $query->where('start_time', '>=', $start_time);
+        $filterApplied = true;
+    }
+
+    if ($end_time) {
+        $query->where('end_time', '<=', $end_time);
+        $filterApplied = true;
+    }
+
+    if ($expense_id) {
+        $query->where('expense_id', $expense_id);
+        $filterApplied = true;
+    }
+
+    if ($interests_id) {
+        $query->where('interests_id', $interests_id);
+        $filterApplied = true;
+    }
+
+    // If no filter is applied, you can return a message or empty array
+    if (!$filterApplied) {
+        return response()->json(['message' => 'No filters applied, returning all activities'], 200);
+    }
+
+    // Get the filtered results
+    $activities = $query->get();
+
+    return response()->json($activities);
+}
 
 }

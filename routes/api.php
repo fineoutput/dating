@@ -31,6 +31,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user-activitys', [ActivityController::class, 'useractivitys']);
     Route::get('find-matching-users-interest', [ActivityController::class, 'findMatchingUsers']);
     Route::get('find-matching-users-activity', [ActivityController::class, 'findMatchingactivity']);
+    Route::post('filter-activity', [ActivityController::class, 'filteractivity']);
+
 
     Route::post('add-interest', [InterestController::class, 'addinterest']);
     Route::post('get-user-interest', [InterestController::class, 'getuserinterest']);
@@ -43,7 +45,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('chat-update-status', [ChatController::class, 'updateMessageStatus']);
 
     Route::get('user-profile', [AuthController::class, 'userprofile']);
-});
+});   
+
 
 
 Route::get('interest', [InterestController::class, 'interest']);

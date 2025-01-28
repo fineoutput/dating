@@ -114,7 +114,6 @@ private function parseTimeToDate($time)
     }
 }
 
-
 public function useractivitys(Request $request)
 {
     $user = Auth::user();
@@ -134,31 +133,45 @@ public function useractivitys(Request $request)
     if ($activities->isEmpty()) {
         return response()->json(['message' => 'No upcoming activities found'], 200);
     }
-    
-    $activitiesArray = $activities->map(function ($activity) {
 
-        
-        return [
-            'id' => $activity->id,
-            'title' => $activity->title,
-            'description' => $activity->description,
-            'location' => $activity->location,
-            'when_time' => $activity->when_time,
-            'start_time' => $activity->start_time,
-            'end_time' => $activity->end_time,
-            'how_many' => $activity->how_many,
-            'interests_id' => $activity->interests_id,  
-            // 'vibe_id' => $vibeName,
-            'vibe_name' => $activity->vibe->name ?? '',
-            'expense_id' => $activity->expense_id,     
-            'status' => $activity->status,
-        ];
-    });
+
+    $profileImageUrl = null;
+    if ($user->profile_image) {
+ 
+        $profileImages = json_decode($user->profile_image, true);
+
+        if (!empty($profileImages) && isset($profileImages[1])) {
+            $profileImageUrl = url('uploads/app/profile_images/' . $profileImages[1]);
+        }
+    }
+
+    $activity = $activities->first();
+
+    $hash = md5($activity->id);
+    $r = hexdec(substr($hash, 0, 2));
+    $g = hexdec(substr($hash, 2, 2));
+    $b = hexdec(substr($hash, 4, 2));
+
+    $lightenFactor = 0.5;
+    $r = round($r + (255 - $r) * $lightenFactor);
+    $g = round($g + (255 - $g) * $lightenFactor);
+    $b = round($b + (255 - $b) * $lightenFactor);
+
+    $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
     return response()->json([
         'message' => 'User activities fetched successfully',
         'status' => 200,
-        'data' => $activitiesArray,
+        'data' => [
+            'id' => $activity->id,
+            'title' => $activity->title,
+            'location' => $activity->location,
+            'how_many' => $activity->how_many,
+            'vibe_name' => $activity->vibe->name ?? '',
+            'bg_color' => $bgColor,
+            'name' => $user->name, 
+            'profile_image_url' => $profileImageUrl,
+        ],
     ]);
 }
 

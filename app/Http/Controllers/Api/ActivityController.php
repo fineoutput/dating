@@ -527,6 +527,68 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             ]);
         }
 
+        public function vibeactivitydetails(Request $request)
+        {
+            // Check if the user is authenticated
+            if (!Auth::check()) {
+                return response()->json([
+                    'message' => 'Unauthorized. Please log in.',
+                ], 401);
+            }
+        
+            // If a vibe_id is provided, fetch the specific vibe and its associated activities
+            if ($request->has('vibe_id')) {
+                $vibe = Vibes::find($request->vibe_id);
+        
+                // If the vibe doesn't exist
+                if (!$vibe) {
+                    return response()->json([
+                        'message' => 'Vibe not found.',
+                    ], 404);
+                }
+        
+                // Get the activities associated with the provided vibe_id
+                $activities = Activity::where('vibe_id', $vibe->id)->get();
+        
+                // Prepare the response data for the specific vibe
+                $vibeDetails = [
+                    'id' => $vibe->id,
+                    'name' => $vibe->name,
+                    'activity_id' => $vibe->activity_id,
+                    'status' => $vibe->status,
+                    'icon' => $vibe->icon,
+                    'activities' => $activities
+                ];
+        
+                return response()->json([
+                    'message' => 'Vibe activity details fetched successfully.',
+                    'data' => $vibeDetails
+                ]);
+            }
+        
+            // If no vibe_id is provided, return activity counts for all vibes
+            $vibes = Vibes::all();
+        
+            $vibeWithActivityCount = [];
+        
+            foreach ($vibes as $vibe) {
+                $activityCount = Activity::where('vibe_id', $vibe->id)->count();
+                $vibeWithActivityCount[] = [
+                    'id' => $vibe->id,
+                    'name' => $vibe->name,
+                    'activity_id' => $vibe->activity_id,
+                    'status' => $vibe->status,
+                    'icon' => $vibe->icon,
+                    'activity_count' => $activityCount
+                ];
+            }
+        
+            return response()->json([
+                'message' => 'Vibe activity counts fetched successfully.',
+                'data' => $vibeWithActivityCount
+            ]);
+        }
+
 
 
 }

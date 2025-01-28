@@ -527,6 +527,8 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             ]);
         }
 
+
+
         public function vibeactivitydetails(Request $request)
         {
             // Check if the user is authenticated
@@ -535,21 +537,21 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                     'message' => 'Unauthorized. Please log in.',
                 ], 401);
             }
-        
+
             // If a vibe_id is provided, fetch the specific vibe and its associated activities
             if ($request->has('vibe_id')) {
                 $vibe = Vibes::find($request->vibe_id);
-        
+
                 // If the vibe doesn't exist
                 if (!$vibe) {
                     return response()->json([
                         'message' => 'Vibe not found.',
                     ], 404);
                 }
-        
+
                 // Get the activities associated with the provided vibe_id
                 $activities = Activity::where('vibe_id', $vibe->id)->get();
-        
+
                 // Prepare the response data for the specific vibe
                 $vibeDetails = [
                     'id' => $vibe->id,
@@ -557,32 +559,70 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                     'activity_id' => $vibe->activity_id,
                     'status' => $vibe->status,
                     'icon' => $vibe->icon,
-                    'activities' => $activities
+                    'activities' => $activities->map(function ($activity) {
+                        return [
+                            'id' => $activity->id,
+                            'user_id' => $activity->user_id,
+                            'title' => $activity->title,
+                            'location' => $activity->location,
+                            'amount' => $activity->amount,
+                            'where_to' => $activity->where_to,
+                            'when_time' => $activity->when_time,
+                            'how_many' => $activity->how_many,
+                            'start_time' => $activity->start_time,
+                            'end_time' => $activity->end_time,
+                            'interests_id' => $activity->interests_id,
+                            'vibe_id' => $activity->vibe_id,
+                            'expense_id' => $activity->expense_id,
+                            'other_activity' => $activity->other_activity,
+                            'description' => $activity->description,
+                            'image' => $activity->image,
+                            'status' => $activity->status,
+                        ];
+                    })
                 ];
-        
+
                 return response()->json([
                     'message' => 'Vibe activity details fetched successfully.',
                     'data' => $vibeDetails
                 ]);
             }
-        
+
             // If no vibe_id is provided, return activity counts for all vibes
             $vibes = Vibes::all();
-        
+
             $vibeWithActivityCount = [];
-        
+
             foreach ($vibes as $vibe) {
+                // Generate a unique color for each vibe
+                $hash = md5($vibe->id);
+                $r = hexdec(substr($hash, 0, 2));
+                $g = hexdec(substr($hash, 2, 2));
+                $b = hexdec(substr($hash, 4, 2));
+                
+                $lightenFactor = 0.5;  // Adjust the lightening factor to 50%
+                $r = round($r + (255 - $r) * $lightenFactor);
+                $g = round($g + (255 - $g) * $lightenFactor);
+                $b = round($b + (255 - $b) * $lightenFactor);
+                
+                // Convert back to hex format
+                $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
+
+                // Count activities associated with each vibe
                 $activityCount = Activity::where('vibe_id', $vibe->id)->count();
+                
+                // Add vibe with activity count and background color
                 $vibeWithActivityCount[] = [
                     'id' => $vibe->id,
                     'name' => $vibe->name,
                     'activity_id' => $vibe->activity_id,
                     'status' => $vibe->status,
                     'icon' => $vibe->icon,
+                    'bg_color' => $bgColor, // Background color based on vibe ID
                     'activity_count' => $activityCount
                 ];
             }
-        
+
             return response()->json([
                 'message' => 'Vibe activity counts fetched successfully.',
                 'data' => $vibeWithActivityCount

@@ -375,32 +375,58 @@ public function getActivitydetailes(Request $request)
 
     $interestIds = array_map('trim', $interestIds);
 
-    // Fetch matching activities
     $matchingActivities = Activity::whereIn('interests_id', $interestIds)
-                                    ->where('user_id', '!=', $user->id) 
-                                    ->get();
+                                ->where('user_id', '!=', $user->id) 
+                                ->get();
 
-    if ($matchingActivities->isEmpty()) {
-        return response()->json(['message' => 'No matching activities found'], 404);
+if ($matchingActivities->isEmpty()) {
+    return response()->json(['message' => 'No matching activities found'], 404);
+}
+
+$activitiesWithUserDetails = $matchingActivities->map(function ($activity) {
+
+    $bgColor = '#' . substr(md5($activity->id), 0, 6);
+
+    $userDetails = User::find($activity->user_id);
+
+    if ($userDetails) {
+        $profileImages = json_decode($userDetails->profile_image, true);
+        $profileImageUrl = isset($profileImages[1]) ? url('uploads/app/' . $profileImages[1]) : null;
+        $activity->user_details = [
+            'id' => $userDetails->id,
+            'name' => $userDetails->name,
+            'profile_image' => $profileImageUrl, 
+            'state' => $userDetails->state,
+            'city' => $userDetails->city,
+            'time' => \Carbon\Carbon::parse($userDetails->created_at)->format('d-F H:i'), 
+        ];
     }
 
-    // Prepare activities with user details and random colors
-    $activitiesWithUserDetails = $matchingActivities->map(function ($activity) {
-        // Generate a unique color for each activity based on its id
-        $bgColor = '#' . substr(md5($activity->id), 0, 6);
+    $imageUrl = $activity->image ? url('uploads/app/' . $activity->image) : null;
 
-        // Fetch user details for the activity
-        $userDetails = User::find($activity->user_id);
+    $activity->bg_color = $bgColor;
 
-        // Add user details and color to the activity
-        if ($userDetails) {
-            $activity->user_details = $userDetails;
-        }
-        $activity->bg_color = $bgColor;  // Adding bg_color to the activity
-        
-        return $activity;
-    });
-
+    return [
+        'id' => $activity->id,
+        'user_id' => $activity->user_id,
+        'title' => $activity->title,
+        'location' => $activity->location,
+        'amount' => $activity->amount,
+        'where_to' => $activity->where_to,
+        'when_time' => $activity->when_time,
+        'how_many' => $activity->how_many,
+        'start_time' => $activity->start_time,
+        'end_time' => $activity->end_time,
+        'interests_id' => $activity->interests_id,
+        'expense_id' => $activity->expense_id,
+        'other_activity' => $activity->other_activity,
+        'description' => $activity->description,
+        'image' => $imageUrl,
+        'status' => $activity->status,
+        'bg_color' => $activity->bg_color,
+        'user_details' => $activity->user_details,
+    ];
+});
     return response()->json([
         'message' => 'Matching activities found successfully',
         'data' => $activitiesWithUserDetails,
@@ -459,8 +485,12 @@ public function filteractivity(Request $request)
 
     // Get the filtered results
     $activities = $query->get();
+    $activities->makeHidden(['created_at', 'updated_at', 'deleted_at']);
 
-    return response()->json($activities);
+    
+    
+
+    return response()->json($activities->toArray());
 }
 
 }

@@ -27,8 +27,10 @@ class InterestController extends Controller
     {
         $data = Interest::where('status', 1)->get();
         $message = "Interest fetched successfully"; 
-        $status = "success";
+        $status = 200;
         $statusCode = 200; 
+        $data->makeHidden(['created_at', 'updated_at', 'deleted_at']);
+
 
         return response()->json([
             'message' => $message,
@@ -41,8 +43,11 @@ class InterestController extends Controller
     {
         $data = Vibes::where('status', 1)->get();
         $message = "Vibes fetched successfully"; 
-        $status = "success";
+        $status = 200;
         $statusCode = 200; 
+
+        $data->makeHidden(['created_at', 'updated_at', 'deleted_at']);
+
 
         return response()->json([
             'message' => $message,
@@ -55,8 +60,10 @@ class InterestController extends Controller
     {
         $data = Expense::where('status', 1)->get();
         $message = "Expense fetched successfully"; 
-        $status = "success";
+        $status = 200;
         $statusCode = 200; 
+
+        $data->makeHidden(['created_at', 'updated_at', 'deleted_at']);
 
         return response()->json([
             'message' => $message,

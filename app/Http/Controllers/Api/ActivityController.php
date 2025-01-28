@@ -125,19 +125,22 @@ public function useractivitys(Request $request)
     $currentTime = Carbon::now('Asia/Kolkata');
     $todayDate = Carbon::today('Asia/Kolkata');
     
+    // Get all activities for the user
     $activities = Activity::where('user_id', $user->id)
-        ->whereDate('when_time', $todayDate)
-        ->where('end_time', '>', $currentTime)
+        ->where(function ($query) use ($todayDate, $currentTime) {
+            $query->where('when_time', '>=', $todayDate)
+                  ->where('end_time', '>=', $currentTime);
+        })
         ->get();
-
+    
+    // Check if activities exist
     if ($activities->isEmpty()) {
         return response()->json(['message' => 'No upcoming activities found'], 200);
     }
 
-
+    // Process the profile image URL
     $profileImageUrl = null;
     if ($user->profile_image) {
- 
         $profileImages = json_decode($user->profile_image, true);
 
         if (!empty($profileImages) && isset($profileImages[1])) {
@@ -145,36 +148,50 @@ public function useractivitys(Request $request)
         }
     }
 
-    $activity = $activities->first();
+    // Process each activity directly and add bg_color
+    $activitiesData = [];
+    foreach ($activities as $activity) {
+        // Generate background color based on activity ID
+        $hash = md5($activity->id);
+        $r = hexdec(substr($hash, 0, 2));
+        $g = hexdec(substr($hash, 2, 2));
+        $b = hexdec(substr($hash, 4, 2));
 
-    $hash = md5($activity->id);
-    $r = hexdec(substr($hash, 0, 2));
-    $g = hexdec(substr($hash, 2, 2));
-    $b = hexdec(substr($hash, 4, 2));
+        $lightenFactor = 0.5;
+        $r = round($r + (255 - $r) * $lightenFactor);
+        $g = round($g + (255 - $g) * $lightenFactor);
+        $b = round($b + (255 - $b) * $lightenFactor);
 
-    $lightenFactor = 0.5;
-    $r = round($r + (255 - $r) * $lightenFactor);
-    $g = round($g + (255 - $g) * $lightenFactor);
-    $b = round($b + (255 - $b) * $lightenFactor);
+        $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
-    $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
-
-    return response()->json([
-        'message' => 'User activities fetched successfully',
-        'status' => 200,
-        'data' => [
+        // Add activity data along with user info to the array
+        $activitiesData[] = [
+            'name' => $user->name,
+            'profile_image_url' => $profileImageUrl,
             'id' => $activity->id,
             'title' => $activity->title,
             'location' => $activity->location,
             'how_many' => $activity->how_many,
             'vibe_name' => $activity->vibe->name ?? '',
             'bg_color' => $bgColor,
-            'name' => $user->name, 
-            'profile_image_url' => $profileImageUrl,
-        ],
+            'time' => \Carbon\Carbon::parse($activity->created_at)->format('d-F H:i'),
+        ];
+    }
+
+    // Return the response with all activities included
+    return response()->json([
+        'message' => 'User activities fetched successfully',
+        'status' => 200,
+        'data' => $activitiesData, // Return the activities directly without nesting them inside a separate array
     ]);
 }
 
+// $activities = Activity::where('user_id', $user->id)
+//     ->where(function ($query) use ($todayDate, $currentTime) {
+//         $query->where('when_time', '>=', $todayDate)
+//               ->where('end_time', '>=', $currentTime);
+//     })
+//     ->get();
 
 public function getActivitydetailes(Request $request)
 {

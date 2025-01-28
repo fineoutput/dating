@@ -56,7 +56,7 @@ class UserController extends Controller
         // dd($request->all());
         $request->validate([
             'name' => 'required|string|max:255',
-            'number' => 'required|string|unique:users,number',
+            'number' => 'required|string',
             'email' => 'required|string|email|max:255|unique:users,email,' . $id,
             'age' => 'required|string|max:255',
             'gender' => 'required|string|max:255',

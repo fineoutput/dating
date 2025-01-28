@@ -23,63 +23,76 @@ class ChatController extends Controller
 
     public function sendMessage(Request $request)
     {
-        // Validate the input
         $request->validate([
             'receiver_id' => 'required|exists:users,id',
             'message' => 'required|string|max:255',
         ]);
-
-        // Create the chat message
+    
         $chat = Chat::create([
             'sender_id' => Auth::id(),
             'receiver_id' => $request->receiver_id,
             'message' => $request->message,
             'status' => 'sent',
         ]);
-
+    
+        $chatArray = [
+            'id' => $chat->id,
+            'sender_id' => $chat->sender_id,
+            'receiver_id' => $chat->receiver_id,
+            'message' => $chat->message,
+            'status' => $chat->status,
+        ];
+    
         return response()->json([
             'message' => 'Message sent successfully.',
-            'data' => $chat
+            'data' => $chatArray,
         ], 201);
     }
 
     public function getMessages(Request $request)
-{
-    // Access 'receiver_id' from the headers
-    $receiverId = $request->header('receiver_id');
+    {
 
-    // Manually validate the receiver_id
-    if (!$receiverId) {
+        $receiverId = $request->header('receiver_id');
+
+        if (!$receiverId) {
+            return response()->json([
+                'message' => 'Receiver ID is required.',
+            ], 400);
+        }
+    
+        $receiverExists = User::find($receiverId);
+        if (!$receiverExists) {
+            return response()->json([
+                'message' => 'Receiver not found.',
+            ], 404);
+        }
+    
+        $messages = Chat::where(function ($query) use ($receiverId) {
+                $query->where('sender_id', Auth::id())
+                      ->where('receiver_id', $receiverId);
+            })
+            ->orWhere(function ($query) use ($receiverId) {
+                $query->where('sender_id', $receiverId)
+                      ->where('receiver_id', Auth::id());
+            })
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $messagesArray = $messages->map(function ($message) {
+            return [
+                'id' => $message->id,
+                'sender_id' => $message->sender_id,
+                'receiver_id' => $message->receiver_id,
+                'message' => $message->message,
+                'status' => $message->status,
+            ];
+        });
+    
         return response()->json([
-            'message' => 'Receiver ID is required.',
-        ], 400);
+            'message' => 'Messages fetched successfully.',
+            'data' => $messagesArray,
+        ]);
     }
-
-    // Make sure the receiver_id exists in the users table
-    $receiverExists = User::find($receiverId);
-    if (!$receiverExists) {
-        return response()->json([
-            'message' => 'Receiver not found.',
-        ], 404);
-    }
-
-    // Fetch chat messages between the authenticated user and the receiver
-    $messages = Chat::where(function ($query) use ($receiverId) {
-            $query->where('sender_id', Auth::id())
-                  ->where('receiver_id', $receiverId);
-        })
-        ->orWhere(function ($query) use ($receiverId) {
-            $query->where('sender_id', $receiverId)
-                  ->where('receiver_id', Auth::id());
-        })
-        ->orderBy('created_at', 'asc')
-        ->get();
-
-    return response()->json([
-        'message' => 'Messages fetched successfully.',
-        'data' => $messages
-    ]);
-}
 
     public function updateMessageStatus(Request $request)
     {

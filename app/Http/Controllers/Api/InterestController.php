@@ -148,6 +148,7 @@ class InterestController extends Controller
             return [
                 'id' => $interest->id,
                 'user' => $interest->user->name,
+                'user_id' => $interest->user_id,
                 'activity_id' => $interest->activity_id,
                 'confirm' => $interest->confirm,
             ];
@@ -190,6 +191,7 @@ class InterestController extends Controller
             return [
                 'id' => $interest->id,
                 'user' => $interest->user->name ?? '',
+                'user_id' => $interest->user_id,
                 'activity_id' => $interest->activity_id,
                 'confirm' => $interest->confirm,
             ];
@@ -233,7 +235,8 @@ class InterestController extends Controller
         'message' => 'Interest confirmation updated successfully.',
         'data' => [
             'activity_id' => $interest->activity_id,
-            'user_id' => $interest->user->name,
+            'user' => $interest->user->name ?? '',
+            'user_id' => $interest->user_id,
             'confirm' => $interest->confirm,
         ],
     ]);

@@ -427,8 +427,8 @@ public function getActivitydetailes(Request $request)
             // 'user_id' => $userDetails->id,
             'user_name' => $userDetails->name,
             'user_profile_image' => $profileImageUrl,
-            'user_state' => $userDetails->state,
-            'user_city' => $userDetails->city,
+            // 'user_state' => $userDetails->state,
+            // 'user_city' => $userDetails->city,
             'user_time' => \Carbon\Carbon::parse($userDetails->created_at)->format('d-F H:i'), 
         ];
     });

@@ -166,14 +166,15 @@ public function useractivitys(Request $request)
 
         // Add activity data along with user info to the array
         $activitiesData[] = [
-            'name' => $user->name,
-            'profile_image_url' => $profileImageUrl,
             'id' => $activity->id,
             'title' => $activity->title,
             'location' => $activity->location,
+            'bg_color' => $bgColor,
             'how_many' => $activity->how_many,
             'vibe_name' => $activity->vibe->name ?? '',
-            'bg_color' => $bgColor,
+            'vibe_icon' => $activity->vibe->icon ?? '',
+            'name' => $user->name,
+            'profile_image_url' => $profileImageUrl,
             'time' => \Carbon\Carbon::parse($activity->created_at)->format('d-F H:i'),
         ];
     }

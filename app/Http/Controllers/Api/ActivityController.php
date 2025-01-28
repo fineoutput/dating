@@ -23,81 +23,85 @@ use Illuminate\Support\Facades\Auth;
 class ActivityController extends Controller
 {
     public function activitystore(Request $request)
-{
-    if (!Auth::check()) {
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Unauthorized. Please log in.',
+            ], 401);
+        }
+    
+        $user = Auth::user();
+    
+        // Validation for incoming request
+        $validator = Validator::make($request->all(), [
+            'title' => 'required',
+            'location' => 'required',
+            'how_many' => 'required|integer',
+            'start_time' => 'required|date_format:H:i:s',
+            'end_time' => 'required|date_format:H:i:s',
+            'interests_id' => 'required',
+            'vibe_id' => 'nullable',
+            'expense_id' => 'required',
+            'description' => 'required',
+            'other_activity' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'amount' => 'nullable|numeric',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+    
+        // Parse start_time and end_time, assuming the current date if only time is provided
+        try {
+            $startTime = $this->parseTimeToDate($request->start_time);
+            $endTime = $this->parseTimeToDate($request->end_time);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Invalid time format. Expected H:i:s.',
+                'error' => $e->getMessage(),
+            ], 422);
+        }
+    
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imagePath = $image->move(public_path('images/activities'), $image->getClientOriginalName());
+            $imagePath = asset('images/activities/' . $image->getClientOriginalName());
+        }
+    
+        // Create the activity record
+        $activity = Activity::create([
+            'where_to' => $request->where_to,
+            'title' => $request->title,
+            'location' => $request->location,
+            'when_time' => $request->when_time,
+            'how_many' => $request->how_many,
+            'start_time' => $startTime,
+            'end_time' => $endTime,
+            'vibe_id' => $request->vibe_id,
+            'interests_id' => implode(',', (array)$request->interests_id), 
+            'expense_id' => implode(',', (array)$request->expense_id),
+            'status' => 1,
+            'description' => $request->description,
+            'other_activity' => $request->other_activity,
+            'user_id' => $user->id,
+            'image' => $imagePath,
+            'amount' => $request->amount, 
+        ]);
+
+        $activityData = $activity->toArray();
+        unset($activityData['created_at'], $activityData['updated_at']);
+    
         return response()->json([
-            'message' => 'Unauthorized. Please log in.',
-        ], 401);
+            'message' => 'Activity created successfully',
+            'status' => 200,
+            'data' => $activityData, 
+        ], 200);
     }
-
-    $user = Auth::user();
-
-    // Validation for incoming request
-    $validator = Validator::make($request->all(), [
-        'title' => 'required',
-        'location' => 'required',
-        'how_many' => 'required|integer',
-        'start_time' => 'required|date_format:H:i:s',
-        'end_time' => 'required|date_format:H:i:s',
-        'interests_id' => 'required',
-        'vibe_id' => 'nullable',
-        'expense_id' => 'required',
-        'description' => 'required',
-        'other_activity' => 'nullable|string',
-        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        'amount' => 'nullable|numeric',
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json([
-            'message' => 'Validation failed',
-            'errors' => $validator->errors(),
-        ], 422);
-    }
-
-    // Parse start_time and end_time, assuming the current date if only time is provided
-    try {
-        $startTime = $this->parseTimeToDate($request->start_time);
-        $endTime = $this->parseTimeToDate($request->end_time);
-    } catch (\Exception $e) {
-        return response()->json([
-            'message' => 'Invalid time format. Expected H:i:s.',
-            'error' => $e->getMessage(),
-        ], 422);
-    }
-
-    $imagePath = null;
-    if ($request->hasFile('image')) {
-        $image = $request->file('image');
-        $imagePath = $image->move(public_path('images/activities'), $image->getClientOriginalName());
-        $imagePath = asset('images/activities/' . $image->getClientOriginalName());
-    }
-
-    $activity = Activity::create([
-        'where_to' => $request->where_to,
-        'title' => $request->title,
-        'location' => $request->location,
-        'when_time' => $request->when_time,
-        'how_many' => $request->how_many,
-        'start_time' => $startTime,
-        'end_time' => $endTime,
-        'vibe_id' => $request->vibe_id,
-        'interests_id' => implode(',', (array)$request->interests_id), 
-        'expense_id' => implode(',', (array)$request->expense_id),
-        'status' => 1,
-        'description' => $request->description,
-        'other_activity' => $request->other_activity,
-        'user_id' => $user->id,
-        'image' => $imagePath,
-        'amount' => $request->amount, 
-    ]);
- 
-    return response()->json([
-        'message' => 'Activity created successfully',
-        'status' => 200,
-        'data' => $activity,
-    ], 200);
-}
 
 private function parseTimeToDate($time)
 {
@@ -419,7 +423,7 @@ public function getActivitydetailes(Request $request)
             // 'image' => $imageUrl,
             'bg_color' => $activity->bg_color,
             'vibe_name' => $activity->vibe->name ?? '',
-            'user_id' => $userDetails->id,
+            // 'user_id' => $userDetails->id,
             'user_name' => $userDetails->name,
             'user_profile_image' => $profileImageUrl,
             'user_state' => $userDetails->state,
@@ -481,7 +485,7 @@ public function getActivitydetailes(Request $request)
 
         
         public function vibeactivitycount(){
-            
+
         }
 
 

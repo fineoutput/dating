@@ -101,16 +101,29 @@ class ChatController extends Controller
             'message_id' => 'required',
             'status' => 'required|in:sent,delivered,read',
         ]);
-
-        // Update message status
+    
         $message = Chat::find($request->message_id);
+
+        if (!$message) {
+            return response()->json([
+                'message' => 'Message not found.',
+            ], 404);
+        }
+    
         $message->status = $request->status;
         $message->save();
-
+    
+        $messageData = [
+            'id' => $message->id,
+            'sender_id' => $message->sender_id,
+            'receiver_id' => $message->receiver_id,
+            'message' => $message->message,
+            'status' => $message->status,
+        ];
+    
         return response()->json([
             'message' => 'Message status updated successfully.',
-            'data' => $message
+            'data' => $messageData,
         ]);
     }
-
 }

@@ -414,9 +414,26 @@ public function getActivitydetailes(Request $request)
 
         $interestIds = array_map('trim', $interestIds);
 
+        $currentTime = Carbon::now('Asia/Kolkata');
+        $todayDate = Carbon::today('Asia/Kolkata');
+    
+    // Get all activities for the user
+    // $activities = Activity::where('user_id', $user->id)
+    //     ->where(function ($query) use ($todayDate, $currentTime) {
+    //         $query->where('when_time', '>=', $todayDate)
+    //               ->where('end_time', '>=', $currentTime);
+    //     })
+    //     ->get();
+
         $matchingActivities = Activity::whereIn('interests_id', $interestIds)
-                                    ->where('user_id', '!=', $user->id) 
-                                    ->get();
+        ->where('user_id', '!=', $user->id) 
+        ->whereDate('when_time', '>=', $todayDate) 
+        ->where('end_time', '>=', $currentTime) 
+        ->get();
+
+        // $matchingActivities = Activity::whereIn('interests_id', $interestIds)
+        //                             ->where('user_id', '!=', $user->id)
+        //                             ->get();
 
     if ($matchingActivities->isEmpty()) {
         return response()->json(['message' => 'No matching activities found'], 404);

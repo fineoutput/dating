@@ -168,10 +168,13 @@ class AuthController extends Controller
         'password' => 'nullable|string|min:6',
     ];
 
+    // Adjust validation for "insert" status (new user registration)
     if ($request->status === 'insert') {
-        $validationRules['number'] = 'required|string|unique:users,number'; // Check number in users table
-        $validationRules['email'] = 'nullable|string|email|max:255|unique:users,email'; // Check email in users table
+        // Don't validate unique number in 'users' table during signup. Check the logic below.
+        $validationRules['number'] = 'required|string'; // No unique validation here
+        $validationRules['email'] = 'nullable|string|email|max:255|unique:users,email'; // Validate email uniqueness in users table
     } elseif ($request->status === 'update') {
+        // Validate if number exists for update
         $validationRules['number'] = 'required|string|exists:unverify_user,number'; 
         $validationRules['email'] = 'nullable|string|email|max:255|unique:users,email|unique:unverify_user,email,' . $request->number;
     }
@@ -180,26 +183,24 @@ class AuthController extends Controller
     if ($validator->fails()) {
         $errors = [];
         foreach ($validator->errors()->getMessages() as $field => $messages) {
-            $errors[$field] = $messages[0]; 
+            $errors[$field] = $messages[0]; // Return the first error message for each field
         }
         return response()->json(['errors' => $errors], 400);
     }
 
     // Insert case: Check if user already exists in 'users' table
     if ($request->status === 'insert' && $request->number) {
+        // Check if the phone number or email already exists in the 'users' table
         $existingUser = User::where('number', $request->number)->orWhere('email', $request->email)->first();
 
         if ($existingUser) {
-            // User already exists, generate token
-            $token = $existingUser->createToken('token')->plainTextToken;
-            $existingUser->auth = $token;
-            $existingUser->save();
-
-            return response()->json(['message' => 'User already exists, auth token generated!', 'token' => $token, 'user' => $existingUser], 200);
+            // User already exists, send OTP instead of failing
+            $otp = $this->sendOtp($request->number); // Send OTP to the existing number
+            return response()->json(['message' => 'User already exists, OTP sent!', 'otp' => $otp], 200);
         }
 
         // If the user doesn't exist, send OTP and create an unverified user
-        $otp = $this->sendOtp($request->number);
+        $otp = $this->sendOtp($request->number); // Send OTP
         $user = UnverifyUser::create([
             'number' => $request->number,
         ]);
@@ -285,6 +286,7 @@ class AuthController extends Controller
 }
 
 
+
     private function sendOtp($phone = null, $email = null)
     {
         $otp = rand(1000, 9999); 
@@ -313,59 +315,183 @@ class AuthController extends Controller
     }   
 
     public function verify_auth_otp(Request $request)
-    {
+{
+    // Validate the request
+    $validator = Validator::make($request->all(), [
+        'otp' => 'required|numeric|digits:4', 
+        'type' => 'required|in:email,phone', 
+        'source_name' => 'required',
+    ]);
 
-        $validator = Validator::make($request->all(), [
-            'otp' => 'required|numeric|digits:4', 
-            'type' => 'required|in:email,phone', 
-            'source_name' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            $errors = [];
-            foreach ($validator->errors()->getMessages() as $field => $messages) {
-                $errors[$field] = $messages[0];
-                break; 
-            }
-            return response()->json(['errors' => $errors], 400);
+    if ($validator->fails()) {
+        $errors = [];
+        foreach ($validator->errors()->getMessages() as $field => $messages) {
+            $errors[$field] = $messages[0];
+            break; 
         }
-        $validated = $validator->validated();
-        $otp = $validated['otp'];
-        $type = $validated['type'];
-        $source_name = $validated['source_name'];
+        return response()->json(['errors' => $errors], 400);
+    }
+    
+    $validated = $validator->validated();
+    $otp = $validated['otp'];
+    $type = $validated['type'];
+    $source_name = $validated['source_name'];
 
-        $otpUser = UserOtp::where('type', $type)
+    // Check if the user already exists in the 'users' table based on the type (phone or email)
+    if ($type === 'phone') {
+        $existingUser = User::where('number', $source_name)->first();
+        if ($existingUser) {
+            // Generate token for the existing user
+            $token = $existingUser->createToken('auth_token')->plainTextToken;
+            
+            // Update the token in the user table
+            $existingUser->auth = $token;
+            $existingUser->save();
+
+            return $this->successResponse([
+                'message' => 'Phone number already exists in users table. Auth token generated!',
+                'token' => $token
+            ],  200);
+        }
+    }
+
+    // Check if OTP exists for the provided source (email or phone) in UnverifyUser table
+    $otpUser = UserOtp::where('type', $type)
         ->where('source_name', $source_name)
         ->where('otp', $otp)
         ->first();
-        if (!$otpUser) {
-            return $this->successResponse('Invalid OTP or details!', false,400);
-        }
-        if ($otpUser->expires_at < now()) {
-            return $this->successResponse('OTP has expired. Please request a new OTP.', false, 400);
-        }
-        UserOtp::where('type', $type)
+        
+    if (!$otpUser) {
+        return $this->successResponse('Invalid OTP or details!', false, 400);
+    }
+    
+    // Check if OTP has expired
+    if ($otpUser->expires_at < now()) {
+        return $this->successResponse('OTP has expired. Please request a new OTP.', false, 400);
+    }
+    
+    // Update OTP to 0 (used)
+    UserOtp::where('type', $type)
         ->where('source_name', $source_name)
         ->update(['otp' => 0]);
-        if ($type === 'email') {
-            $unverifyUser = UnverifyUser::where('email', $source_name)->first();
-            if ($unverifyUser) {
-                $unverifyUser->update(['email_verify' => 1]);
-            } else {
-                return $this->successResponse('No user found with the provided email.',false,404);
-            }
+
+    // Handle email verification
+    if ($type === 'email') {
+        $unverifyUser = UnverifyUser::where('email', $source_name)->first();
+        if ($unverifyUser) {
+            $unverifyUser->update(['email_verify' => 1]);
+
+            // If user is now verified, create a user in the 'users' table
+            $user = User::create([
+                'email' => $source_name,
+                'name' => $unverifyUser->name,
+                'password' => $unverifyUser->password, // Make sure the password is hashed before storing
+                // Any other fields you'd like to transfer (e.g., age, gender, etc.)
+            ]);
+            
+            // Generate a token for the new user
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            // Update the user with the token
+            $user->auth = $token;
+            $user->save();
+
+            return $this->successResponse('Email verified successfully!', true, 200, [
+                'token' => $token,
+                'user' => $user
+            ]);
+        } else {
+            return $this->successResponse('No user found with the provided email.', false, 404);
         }
-        if ($type === 'phone') {
-            $unverifyUser = UnverifyUser::where('number', $source_name)->first();
-        
-            if ($unverifyUser) {
-                $unverifyUser->update(['number_verify' => 1]);
-            } else {
-                return $this->successResponse('No user found with the provided phone number.',false,404);
-            }
-        }
-        return $this->successResponse('OTP verified successfully!', true,200);
     }
+
+    // Handle phone verification
+    if ($type === 'phone') {
+        $unverifyUser = UnverifyUser::where('number', $source_name)->first();
+        if ($unverifyUser) {
+            $unverifyUser->update(['number_verify' => 1]);
+
+            // If user is now verified, create a user in the 'users' table
+            $user = User::create([
+                'number' => $source_name,
+                'name' => $unverifyUser->name,
+                'password' => $unverifyUser->password, // Make sure the password is hashed before storing
+                // Any other fields you'd like to transfer (e.g., age, gender, etc.)
+            ]);
+            
+            // Generate a token for the new user
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            // Update the user with the token
+            $user->auth = $token;
+            $user->save();
+
+            return $this->successResponse('Phone number verified successfully!', true, 200, [
+                'token' => $token,
+                'user' => $user
+            ]);
+        } else {
+            return $this->successResponse('No user found with the provided phone number.', false, 404);
+        }
+    }
+
+    return $this->successResponse('OTP verified successfully!', true, 200);
+}
+
+    // public function verify_auth_otp(Request $request)
+    // {
+
+    //     $validator = Validator::make($request->all(), [
+    //         'otp' => 'required|numeric|digits:4', 
+    //         'type' => 'required|in:email,phone', 
+    //         'source_name' => 'required',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         $errors = [];
+    //         foreach ($validator->errors()->getMessages() as $field => $messages) {
+    //             $errors[$field] = $messages[0];
+    //             break; 
+    //         }
+    //         return response()->json(['errors' => $errors], 400);
+    //     }
+    //     $validated = $validator->validated();
+    //     $otp = $validated['otp'];
+    //     $type = $validated['type'];
+    //     $source_name = $validated['source_name'];
+
+    //     $otpUser = UserOtp::where('type', $type)
+    //     ->where('source_name', $source_name)
+    //     ->where('otp', $otp)
+    //     ->first();
+    //     if (!$otpUser) {
+    //         return $this->successResponse('Invalid OTP or details!', false,400);
+    //     }
+    //     if ($otpUser->expires_at < now()) {
+    //         return $this->successResponse('OTP has expired. Please request a new OTP.', false, 400);
+    //     }
+    //     UserOtp::where('type', $type)
+    //     ->where('source_name', $source_name)
+    //     ->update(['otp' => 0]);
+    //     if ($type === 'email') {
+    //         $unverifyUser = UnverifyUser::where('email', $source_name)->first();
+    //         if ($unverifyUser) {
+    //             $unverifyUser->update(['email_verify' => 1]);
+    //         } else {
+    //             return $this->successResponse('No user found with the provided email.',false,404);
+    //         }
+    //     }
+    //     if ($type === 'phone') {
+    //         $unverifyUser = UnverifyUser::where('number', $source_name)->first();
+        
+    //         if ($unverifyUser) {
+    //             $unverifyUser->update(['number_verify' => 1]);
+    //         } else {
+    //             return $this->successResponse('No user found with the provided phone number.',false,404);
+    //         }
+    //     }
+    //     return $this->successResponse('OTP verified successfully!', true,200);
+    // }
 
     // public function login(Request $request)
     // {

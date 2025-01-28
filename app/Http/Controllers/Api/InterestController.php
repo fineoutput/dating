@@ -127,24 +127,35 @@ class InterestController extends Controller
                 'message' => 'Unauthorized. Please log in.',
             ], 401);
         }
-
+    
         $user = Auth::user();
-
+    
         $request->validate([
             'activity_id' => 'required|exists:activity_table,id',
         ]);
-
-        $interests = OtherInterest::where('activity_id', $request->activity_id)->where('confirm',0)->get();
-
+    
+        $interests = OtherInterest::where('activity_id', $request->activity_id)
+                                   ->where('confirm', 0)
+                                   ->get();
+    
         if ($interests->isEmpty()) {
             return response()->json([
                 'message' => 'No interests found for this activity.',
             ], 404);
         }
 
+        $interestsArray = $interests->map(function ($interest) {
+            return [
+                'id' => $interest->id,
+                'user' => $interest->user->name,
+                'activity_id' => $interest->activity_id,
+                'confirm' => $interest->confirm,
+            ];
+        });
+    
         return response()->json([
             'message' => 'User interests fetched successfully',
-            'data' => $interests,
+            'data' => $interestsArray,
         ]);
     }
 
@@ -155,25 +166,41 @@ class InterestController extends Controller
                 'message' => 'Unauthorized. Please log in.',
             ], 401);
         }
-
+    
         $user = Auth::user();
-
+    
         $request->validate([
             'activity_id' => 'required',
         ]);
-
-        $interests = OtherInterest::where('activity_id', $request->activity_id)->where('confirm',1)->get();
-
+    
+        // Fetch the interests with confirm status set to 1
+        $interests = OtherInterest::where('activity_id', $request->activity_id)
+                                   ->where('confirm', 1)
+                                   ->get();
+    
         if ($interests->isEmpty()) {
             return response()->json([
-                'message' => 'No interests found for this activity.',
-            ], 404);
+                'message' => 'No confirmed interests found for this activity.',
+                'data' => [],
+            ], 404); // Status code 404 if no interests found
         }
-
+    
+        // Transform the collection to an array
+        $interestsArray = $interests->map(function ($interest) {
+            return [
+                'id' => $interest->id,
+                'user' => $interest->user->name ?? '',
+                'activity_id' => $interest->activity_id,
+                'confirm' => $interest->confirm,
+            ];
+        });
+    
+        // Return the response with status code 200 if interests found
         return response()->json([
-            'message' => 'User interests fetched successfully',
-            'data' => $interests,
-        ]);
+            'message' => 'Confirmed user interests fetched successfully',
+            'status' => 200,
+            'data' => $interestsArray,
+        ], 200); 
     }
 
     
@@ -206,7 +233,7 @@ class InterestController extends Controller
         'message' => 'Interest confirmation updated successfully.',
         'data' => [
             'activity_id' => $interest->activity_id,
-            'user_id' => $interest->user_id,
+            'user_id' => $interest->user->name,
             'confirm' => $interest->confirm,
         ],
     ]);

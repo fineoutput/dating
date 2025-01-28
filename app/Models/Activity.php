@@ -17,6 +17,7 @@ class Activity extends Model
         'start_time',
         'end_time',
         'interests_id',
+        'vibe_id',
         'expense_id',
         'other_activity',
         'status',
@@ -26,5 +27,11 @@ class Activity extends Model
         'amount',
         'image',
     ];
+
+
+    public function vibe()
+    {
+        return $this->belongsTo(Vibes::class, 'vibe_id');
+    }
     
 }

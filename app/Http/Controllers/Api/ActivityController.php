@@ -397,8 +397,7 @@ public function getActivitydetailes(Request $request)
         $g = hexdec(substr($hash, 2, 2));
         $b = hexdec(substr($hash, 4, 2));
         
-        // Lighten the color by mixing with white (255, 255, 255)
-        $lightenFactor = 0.6;  // The factor to control lightness, closer to 1 is lighter
+        $lightenFactor = 0.6; 
         $r = round($r + (255 - $r) * $lightenFactor);
         $g = round($g + (255 - $g) * $lightenFactor);
         $b = round($b + (255 - $b) * $lightenFactor);

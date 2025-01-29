@@ -37,15 +37,15 @@ class ActivityController extends Controller
             'title' => 'required',
             'location' => 'required',
             'how_many' => 'required|integer',
-            'start_time' => 'required|date_format:H:i:s',
-            'end_time' => 'required|date_format:H:i:s',
-            'interests_id' => 'required',
+            'start_time' => 'required',
+            'end_time' => 'required',
+            'interests_id' => 'nullable',
             'vibe_id' => 'nullable',
             'expense_id' => 'required',
             'description' => 'required',
             'other_activity' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'amount' => 'nullable|numeric',
+            'amount' => 'required|numeric',
         ]);
     
         if ($validator->fails()) {
@@ -56,15 +56,16 @@ class ActivityController extends Controller
         }
     
         // Parse start_time and end_time, assuming the current date if only time is provided
-        try {
-            $startTime = $this->parseTimeToDate($request->start_time);
-            $endTime = $this->parseTimeToDate($request->end_time);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Invalid time format. Expected H:i:s.',
-                'error' => $e->getMessage(),
-            ], 422);
-        }
+        // try {
+           
+        // } catch (\Exception $e) {
+        //     return response()->json([
+        //         'message' => 'Invalid time format. Expected H:i:s.',
+        //         'error' => $e->getMessage(),
+        //     ], 422);
+        // }
+        // $startTime = $this->parseTimeToDate($request->start_time);
+        // $endTime = $this->parseTimeToDate($request->end_time);
     
         $imagePath = null;
         if ($request->hasFile('image')) {
@@ -80,8 +81,8 @@ class ActivityController extends Controller
             'location' => $request->location,
             'when_time' => $request->when_time,
             'how_many' => $request->how_many,
-            'start_time' => $startTime,
-            'end_time' => $endTime,
+            'start_time' => $request->start_time,
+            'end_time' => $request->end_time,
             'vibe_id' => $request->vibe_id,
             'interests_id' => implode(',', (array)$request->interests_id), 
             'expense_id' => implode(',', (array)$request->expense_id),

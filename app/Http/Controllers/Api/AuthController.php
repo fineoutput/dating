@@ -346,7 +346,7 @@ class AuthController extends Controller
                 $existingUser->save();
 
                 return $this->successResponse([
-                    'message' => 'Phone number already exists in users table. Auth token generated!',
+                    'message' => 'Login successful !',
                     'token' => $token
                 ],  200);
             }

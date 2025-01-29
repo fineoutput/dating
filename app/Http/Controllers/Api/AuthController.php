@@ -174,7 +174,7 @@ class AuthController extends Controller
 
     } elseif ($request->status === 'update') {
         $validationRules['number'] = 'required|string|exists:unverify_user,number'; 
-        $validationRules['email'] = 'nullable|string|email|max:255|unique:users,email|unverify_user,email,' . $request->number;
+        $validationRules['email'] = 'nullable|string|email|max:255|unique:users,email,' . $request->number;
     }
 
     $validator = Validator::make($request->all(), $validationRules);
@@ -243,7 +243,7 @@ class AuthController extends Controller
     }
 
     // Final case: Move user from unverified to verified table
-    elseif ($request->profile_images) {
+    elseif ($request->status === 'final') {
         $unverifyUser = UnverifyUser::where('number', $request->number)
             ->where('email_verify', 1)
             ->where('number_verify', 1)

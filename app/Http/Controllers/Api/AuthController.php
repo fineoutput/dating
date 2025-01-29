@@ -168,13 +168,11 @@ class AuthController extends Controller
         'password' => 'nullable|string|min:6',
     ];
 
-    // Adjust validation for "insert" status (new user registration)
     if ($request->status === 'insert') {
-        // Don't validate unique number in 'users' table during signup. Check the logic below.
-        $validationRules['number'] = 'required|string'; // No unique validation here
-        $validationRules['email'] = 'nullable|string|email|max:255|unique:users,email'; // Validate email uniqueness in users table
+        $validationRules['number'] = 'required|string'; 
+        $validationRules['email'] = 'nullable|string|email|max:255|unique:users,email';
+
     } elseif ($request->status === 'update') {
-        // Validate if number exists for update
         $validationRules['number'] = 'required|string|exists:unverify_user,number'; 
         $validationRules['email'] = 'nullable|string|email|max:255|unique:users,email|unique:unverify_user,email,' . $request->number;
     }
@@ -183,24 +181,20 @@ class AuthController extends Controller
     if ($validator->fails()) {
         $errors = [];
         foreach ($validator->errors()->getMessages() as $field => $messages) {
-            $errors[$field] = $messages[0]; // Return the first error message for each field
+            $errors[$field] = $messages[0];
         }
         return response()->json(['errors' => $errors], 400);
     }
 
-    // Insert case: Check if user already exists in 'users' table
     if ($request->status === 'insert' && $request->number) {
-        // Check if the phone number or email already exists in the 'users' table
         $existingUser = User::where('number', $request->number)->orWhere('email', $request->email)->first();
 
         if ($existingUser) {
-            // User already exists, send OTP instead of failing
-            $otp = $this->sendOtp($request->number); // Send OTP to the existing number
+            $otp = $this->sendOtp($request->number); 
             return response()->json(['message' => 'User already exists, OTP sent!', 'otp' => $otp], 200);
         }
 
-        // If the user doesn't exist, send OTP and create an unverified user
-        $otp = $this->sendOtp($request->number); // Send OTP
+        $otp = $this->sendOtp($request->number); 
         $user = UnverifyUser::create([
             'number' => $request->number,
         ]);
@@ -208,7 +202,6 @@ class AuthController extends Controller
         return $this->successResponse('OTP sent successfully!');
     }
 
-    // Update case: Process update for unverified user
     elseif ($request->status === 'update') {
         $user = UnverifyUser::where('number', $request->number)->first();
         if (!$user) {
@@ -420,6 +413,7 @@ class AuthController extends Controller
 
         return $this->successResponse('OTP verified successfully!', true, 200);
     }
+    
 
     // public function verify_auth_otp(Request $request)
     // {

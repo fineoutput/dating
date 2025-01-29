@@ -52,6 +52,7 @@
                       
                         <th data-priority="2">Dating Feature Type</th>
                         <th data-priority="3">Swipes Count</th>
+                        <th data-priority="3">Cupid Count</th>
                         <th data-priority="4">Message Count</th>
                         {{-- <th data-priority="4">Backtrack</th>
                         <th data-priority="4">Access Admirers</th> --}}
@@ -76,6 +77,9 @@
                         </td>
                         <td>
                             {{$data->unlimited_swipes ?? 'N/A'}}
+                        </td>
+                        <td>
+                            {{$data->cupid_count ?? 'N/A'}}
                         </td>
                         <td>
                             {{ $data->swipe_message ?? 'N/A' }}

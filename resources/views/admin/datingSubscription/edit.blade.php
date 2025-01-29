@@ -119,6 +119,17 @@
                                     <div style="color:red">{{ $message }}</div>
                                     @enderror
                                 </div>
+
+                                <div class="col-sm-4">
+                                    <div class="form-check">
+                                        <label class="form-check-label" for="cupid_count">Cupid Count</label>
+                                        <input type="number" class="form-control" id="cupid_count" name="cupid_count" value="{{ old('cupid_count', $interest->cupid_count) }}">
+                                        
+                                    </div>
+                                    @error('cupid_count')
+                                    <div style="color:red">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             {{-- </div>
                         
                             <div class="form-group row"> --}}

@@ -62,6 +62,7 @@ class DatingSubscriptionController extends Controller
     // Handle checkboxes and set defaults if null
     // $free->free_dating_feature = $request->free_dating_feature ?? 0;
     $free->unlimited_swipes = $request->unlimited_swipes ?? 0;
+    $free->cupid_count = $request->cupid_count ?? 0;
     $free->swipe_message = $request->swipe_message ?? 0;
     $free->backtrack = $request->backtrack ?? 0;
     $free->access_admirers = $request->access_admirers ?? 0;
@@ -121,6 +122,7 @@ class DatingSubscriptionController extends Controller
     // $interest->type = $request->type;
     // $interest->free_dating_feature = $request->has('free_dating_feature') ? '1' : '0';
     $interest->unlimited_swipes = $request->unlimited_swipes;
+    $interest->cupid_count = $request->cupid_count;
     $interest->swipe_message = $request->swipe_message;
     $interest->cost = $request->cost;
     $interest->expire_days = $request->expire_days;

@@ -239,7 +239,7 @@ class AuthController extends Controller
         }
 
         $user->update($updateData);
-        return response()->json(['message' => 'User updated successfully!', 'user' => $user], 200);
+        return response()->json(['message' => 'User updated successfully!', 'status' => 200,'user' => $user], 200);
     }
 
     // Final case: Move user from unverified to verified table

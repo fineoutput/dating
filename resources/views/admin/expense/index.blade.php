@@ -40,7 +40,7 @@
                 <div class="col-md-10">
                   <h4 class="mt-0 header-title">View {{$tital}} List</h4>
                 </div>
-                <div class="col-md-2"> <a class="btn btn-info cticket" href="{{route('interests.create')}}" role="button" style="margin-left: 20px;"> Add {{$tital}}</a></div>
+                {{-- <div class="col-md-2"> <a class="btn btn-info cticket" href="{{route('interests.create')}}" role="button" style="margin-left: 20px;"> Add {{$tital}}</a></div> --}}
               </div>
               <hr style="margin-bottom: 50px;background-color: darkgrey;">
               <div class="table-rep-plugin">

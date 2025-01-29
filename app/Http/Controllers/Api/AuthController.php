@@ -152,7 +152,7 @@ class AuthController extends Controller
     public function signup(Request $request)
 {
     $validationRules  = [
-        'number' => 'required|string', 
+        'number' => 'required|numeric', 
         'status' => 'required|in:insert,update,final',         
         'name' => 'nullable|string|max:255',         
         'email' => 'nullable|string|email|max:255|unique:unverify_user', 

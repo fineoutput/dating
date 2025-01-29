@@ -187,7 +187,7 @@ class AuthController extends Controller
     }
 
     if ($request->status === 'insert' && $request->number) {
-        $existingUser = User::where('number', $request->number)->orWhere('email', $request->email)->first();
+        $existingUser = User::where('number', $request->number)->first();
 
         if ($existingUser) {
             $otp = $this->sendOtp($request->number); 

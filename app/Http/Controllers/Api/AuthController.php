@@ -174,7 +174,7 @@ class AuthController extends Controller
 
     } elseif ($request->status === 'update') {
         $validationRules['number'] = 'required|string|exists:unverify_user,number'; 
-        $validationRules['email'] = 'nullable|string|email|max:255|unique:users,email|unique:unverify_user,email,' . $request->number;
+        $validationRules['email'] = 'nullable|string|email|max:255|unique:users,email|unverify_user,email,' . $request->number;
     }
 
     $validator = Validator::make($request->all(), $validationRules);
@@ -243,7 +243,7 @@ class AuthController extends Controller
     }
 
     // Final case: Move user from unverified to verified table
-    elseif ($request->status === 'final') {
+    elseif ($request->profile_images) {
         $unverifyUser = UnverifyUser::where('number', $request->number)
             ->where('email_verify', 1)
             ->where('number_verify', 1)
@@ -391,20 +391,21 @@ class AuthController extends Controller
             if ($unverifyUser) {
                 $unverifyUser->update(['number_verify' => 1]);
 
-                $user = User::create([
-                    'number' => $source_name,
-                    'name' => $unverifyUser->name,
-                    'password' => $unverifyUser->password, 
-                ]);
+                // $user = User::create([
+                //     'number' => $source_name,
+                //     'name' => $unverifyUser->name,
+                //     'password' => $unverifyUser->password, 
+                // ]);
                 
-                $token = $user->createToken('auth_token')->plainTextToken;
+                // $token = $user->createToken('auth_token')->plainTextToken;
+              
 
-                $user->auth = $token;
-                $user->save();
+                // $user->auth = $token;
+                // $user->save();
 
                 return $this->successResponse('Phone number verified successfully!', true, 200, [
-                    'token' => $token,
-                    'user' => $user
+                    // 'token' => $token,
+                    // 'user' => $user
                 ]);
             } else {
                 return $this->successResponse('No user found with the provided phone number.', false, 404);

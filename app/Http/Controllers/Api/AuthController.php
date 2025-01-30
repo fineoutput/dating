@@ -378,9 +378,18 @@ class AuthController extends Controller
                 // $user->auth = $token;
                 // $user->save();
 
-                return $this->successResponse([
-                    'message' => 'Email verified successfully!',
-                    'status' => 206
+                // return $this->successResponse([
+                //     'data' => [
+                //         'message' => 'Email verified successfully!',
+                //         'status' => 206
+                //     ]
+                // ]);
+                return response()->json([
+                    'data' => [
+                        'message' => 'Email verified successfully!',
+                        'status' => 206
+                    ],
+                    // 'status' => true
                 ]);
             } else {
                 return $this->successResponse('No user found with the provided email.', false, 404);
@@ -401,10 +410,18 @@ class AuthController extends Controller
                 // Determine status based on email verification
                 $status = $emailverifyUser === null ? 205 : 206;
                 
-                return $this->successResponse([
-                    'message' => 'Phone number verified successfully!',
-                    'status' => $status,  
-                    'token' => $token,
+                // return $this->successResponse([
+                //     'message' => 'Phone number verified successfully!',
+                //     'status' => $status,  
+                //     'token' => $token,
+                // ]);
+                return response()->json([
+                    'data' => [
+                        'message' => 'Phone number verified successfully!',
+                        'status' => $status,  
+                        'token' => $token,
+                    ],
+                    'status' => true
                 ]);
             } else {
                 return $this->successResponse('No user found with the provided phone number.', false, 404);

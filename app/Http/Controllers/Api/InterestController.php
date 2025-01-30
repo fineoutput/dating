@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Mail\OtpMail;
+use App\Models\Activity;
 use App\Models\Interest;
 use App\Models\OtherInterest;
 use App\Models\Vibes;
@@ -120,45 +121,98 @@ class InterestController extends Controller
         }
     }
 
-    public function getuserinterest(Request $request)
-    {
-        if (!Auth::check()) {
-            return response()->json([
-                'message' => 'Unauthorized. Please log in.',
-            ], 401);
-        }
+    // public function getuserinterest(Request $request)
+    // {
+    //     if (!Auth::check()) {
+    //         return response()->json([
+    //             'message' => 'Unauthorized. Please log in.',
+    //         ], 401);
+    //     }
     
-        $user = Auth::user();
+    //     $user = Auth::user();
     
-        $request->validate([
-            'activity_id' => 'required|exists:activity_table,id',
-        ]);
+    //     $request->validate([
+    //         'activity_id' => 'required|exists:activity_table,id',
+    //     ]);
     
-        $interests = OtherInterest::where('activity_id', $request->activity_id)
-                                   ->where('confirm', 0)
-                                   ->get();
+    //     $interests = OtherInterest::where('activity_id', $request->activity_id)
+    //                                ->where('confirm', 0)
+    //                                ->get();
     
-        if ($interests->isEmpty()) {
-            return response()->json([
-                'message' => 'No interests found for this activity.',
-            ], 404);
-        }
+    //     if ($interests->isEmpty()) {
+    //         return response()->json([
+    //             'message' => 'No interests found for this activity.',
+    //         ], 404);
+    //     }
 
-        $interestsArray = $interests->map(function ($interest) {
-            return [
-                'id' => $interest->id,
-                'user' => $interest->user->name,
-                'user_id' => $interest->user_id,
-                'activity_id' => $interest->activity_id,
-                'confirm' => $interest->confirm,
-            ];
-        });
+    //     $interestsArray = $interests->map(function ($interest) {
+    //         return [
+    //             'id' => $interest->id,
+    //             'user' => $interest->user->name ?? '',
+    //             'user_id' => $interest->user_id,
+    //             'activity_id' => $interest->activity_id,
+    //             'confirm' => $interest->confirm,
+    //         ];
+    //     });
     
+    //     return response()->json([
+    //         'message' => 'User interests fetched successfully',
+    //         'data' => $interestsArray,
+    //     ]);
+    // }
+
+    public function getuserinterest(Request $request)
+{
+    if (!Auth::check()) {
         return response()->json([
-            'message' => 'User interests fetched successfully',
-            'data' => $interestsArray,
-        ]);
+            'message' => 'Unauthorized. Please log in.',
+        ], 401);
     }
+
+    $user = Auth::user();
+
+    // Validate the input data for activity_id
+    $request->validate([
+        'activity_id' => 'required|exists:activity_table,id',
+    ]);
+
+    // Get the interests where confirm is 0 for the given activity
+    $interests = OtherInterest::where('activity_id', $request->activity_id)
+                               ->where('confirm', 0)
+                               ->get();
+
+    if ($interests->isEmpty()) {
+        return response()->json([
+            'message' => 'No interests found for this activity.',
+        ], 404);
+    }
+
+    // Map interests and include the count of interests for each user
+    $interestsArray = $interests->map(function ($interest) {
+        $userInterestsCount = OtherInterest::where('user_id', $interest->user_id)
+        ->where('confirm', 0)->count(); 
+        $userInterestsconfirmCount = OtherInterest::where('user_id', $interest->user_id)
+        ->where('confirm', 1)->count(); 
+        $userInterestsactivityCount = Activity::where('user_id', $interest->user_id)
+        ->count(); 
+
+        return [
+            'id' => $interest->id,
+            'user' => $interest->user->name ?? '',
+            'user_id' => $interest->user_id,
+            'activity_id' => $interest->activity_id,
+            'confirm' => $interest->confirm,
+            'user_interests_unconfirmed_count' => $userInterestsCount,
+            'user_interests_confirm_count' => $userInterestsconfirmCount,
+            'activity_count' => $userInterestsactivityCount,
+        ];
+    });
+
+    return response()->json([
+        'message' => 'User interests fetched successfully',
+        'data' => $interestsArray,
+    ]);
+}
 
     public function confirmuserinterest(Request $request)
     {

@@ -290,7 +290,7 @@ class AuthController extends Controller
         }
         $data = [
             'otp' => $otp,
-            'expires_at' => now()->addMinutes(10), // Set expiry time for OTP (e.g., 10 minutes)
+            'expires_at' => now()->addMinutes(10), 
             'source_name' => $sourceName,
             'type' => $phone ? 'phone' : 'email',
         ];

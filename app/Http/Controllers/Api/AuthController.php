@@ -367,20 +367,18 @@ class AuthController extends Controller
             if ($unverifyUser) {
                 $unverifyUser->update(['email_verify' => 1]);
 
-                $user = User::create([
-                    'email' => $source_name,
-                    'name' => $unverifyUser->name,
-                    'password' => $unverifyUser->password,
-                ]);
+                // $user = User::create([
+                //     'email' => $source_name,
+                //     'name' => $unverifyUser->name,
+                //     'password' => $unverifyUser->password,
+                // ]);
                 
-                $token = $user->createToken('auth_token')->plainTextToken;
-                $user->auth = $token;
-                $user->save();
+                // $token = $user->createToken('auth_token')->plainTextToken;
+                // $user->auth = $token;
+                // $user->save();
 
-                return $this->successResponse('Email verified successfully!', true, 200, [
-                    'token' => $token,
-                    'user' => $user
-                ]);
+                return $this->successResponse('Email verified successfully!', true, 200
+            );
             } else {
                 return $this->successResponse('No user found with the provided email.', false, 404);
             }

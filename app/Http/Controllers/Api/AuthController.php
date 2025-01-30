@@ -252,6 +252,7 @@ class AuthController extends Controller
         if ($unverifyUser) {
             $newUser = User::create([
                 'number' => $unverifyUser->number,     
+                'auth' => $unverifyUser->auth,     
                 'email' => $unverifyUser->email,
                 'name' => $unverifyUser->name,
                 'age' => $unverifyUser->age,
@@ -266,11 +267,11 @@ class AuthController extends Controller
 
             UnverifyUser::where('number', $request->number)->delete();
 
-            $token = $newUser->createToken('token')->plainTextToken;
-            $newUser->auth = $token;
-            $newUser->save();
+            // $token = $newUser->createToken('token')->plainTextToken;
+            // $newUser->auth = $token;
+            // $newUser->save();
 
-            return response()->json(['message' => 'User verified and moved to users table successfully!','status' => 200, 'token' => $token], 200);
+            return response()->json(['message' => 'User verified and moved to users table successfully!','status' => 200,], 200);
         } else {
             return response()->json(['message' => 'User not found or email or phone not verified.'], 404);
         }

@@ -377,8 +377,10 @@ class AuthController extends Controller
                 // $user->auth = $token;
                 // $user->save();
 
-                return $this->successResponse('Email verified successfully!', true, 200
-            );
+                return $this->successResponse([
+                    'message' => 'Email verified successfully!',
+                    'status' => 206
+                ]);
             } else {
                 return $this->successResponse('No user found with the provided email.', false, 404);
             }
@@ -386,24 +388,22 @@ class AuthController extends Controller
 
         if ($type === 'phone') {
             $unverifyUser = UnverifyUser::where('number', $source_name)->first();
+            $emailverifyUser = UnverifyUser::where('number', $source_name)->where('email_verify', 1)->first();
+            
+            $token = $unverifyUser->createToken('auth_token')->plainTextToken;
+            $unverifyUser->auth = $token;
+            $unverifyUser->save();
+        
             if ($unverifyUser) {
                 $unverifyUser->update(['number_verify' => 1]);
-
-                // $user = User::create([
-                //     'number' => $source_name,
-                //     'name' => $unverifyUser->name,
-                //     'password' => $unverifyUser->password, 
-                // ]);
                 
-                // $token = $user->createToken('auth_token')->plainTextToken;
-              
-
-                // $user->auth = $token;
-                // $user->save();
-
-                return $this->successResponse('Phone number verified successfully!', true, 200, [
-                    // 'token' => $token,
-                    // 'user' => $user
+                // Determine status based on email verification
+                $status = $emailverifyUser === null ? 205 : 206;
+                
+                return $this->successResponse([
+                    'message' => 'Phone number verified successfully!',
+                    'status' => $status,  
+                    'token' => $token,
                 ]);
             } else {
                 return $this->successResponse('No user found with the provided phone number.', false, 404);

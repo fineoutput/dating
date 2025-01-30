@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class UnverifyUser extends Model
 {
-    use HasFactory;
+    use HasApiTokens, HasFactory, Notifiable;
 
     // Specify the table name if it does not follow Laravel's naming convention
     protected $table = 'unverify_user';
@@ -15,6 +17,7 @@ class UnverifyUser extends Model
     // Define the fillable fields for mass assignment
     protected $fillable = [
         'number', 
+        'auth', 
         'number_verify', 
         'name', 
         'email', 

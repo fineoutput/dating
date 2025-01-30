@@ -341,7 +341,7 @@ class AuthController extends Controller
                 return $this->successResponse([
                     'message' => 'Login successful !',
                     'token' => $token,
-                    'status' => 200,
+                    'status' => true,
                 ],  200);
             }
         }

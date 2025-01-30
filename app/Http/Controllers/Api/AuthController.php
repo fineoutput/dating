@@ -191,7 +191,7 @@ class AuthController extends Controller
 
         if ($existingUser) {
             $otp = $this->sendOtp($request->number); 
-            return response()->json(['message' => 'User already exists, OTP sent!','status' => 200], 200);
+            return response()->json(['message' => 'User already exists, OTP sent!','status' => true], 200);
         }
 
         $otp = $this->sendOtp($request->number); 
@@ -382,7 +382,7 @@ class AuthController extends Controller
                 //     'data' => [
                 //         'message' => 'Email verified successfully!',
                 //         'status' => 206
-                //     ]
+                //     ]  
                 // ]);
                 return response()->json([
                     'data' => [

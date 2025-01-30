@@ -178,6 +178,7 @@ public function useractivitys(Request $request)
             'user_name' => $user->name,
             'user_profile_image' => $profileImageUrl,
             'user_time' => \Carbon\Carbon::parse($activity->created_at)->format('d-F H:i'),
+            'status' => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
         ];
     }
 
@@ -469,6 +470,7 @@ $activityInterestWithProfileImage = $activityInterestWithProfileImage->filter(fu
 
         $matchingActivities = Activity::whereIn('interests_id', $interestIds)
         ->where('user_id', '!=', $user->id) 
+        ->where('status',2) 
         ->whereDate('when_time', '>=', $todayDate) 
         ->where('end_time', '>=', $currentTime) 
         ->get();
@@ -600,7 +602,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             $vibeWithActivityCount = [];
         
             foreach ($vibes as $vibe) {
-                $activityCount = Activity::where('vibe_id', $vibe->id)->count();
+                $activityCount = Activity::where('vibe_id', $vibe->id)->where('status',2)->count();
                 $vibeWithActivityCount[] = [
                     'id' => $vibe->id,
                     'name' => $vibe->name,
@@ -640,7 +642,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                 }
 
                 // Get the activities associated with the provided vibe_id
-                $activities = Activity::where('vibe_id', $vibe->id)->get();
+                $activities = Activity::where('vibe_id', $vibe->id)->where('status',2)->get();
 
                 // Prepare the response data for the specific vibe
                 $vibeDetails = [
@@ -699,7 +701,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                 $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
                 // Count activities associated with each vibe
-                $activityCount = Activity::where('vibe_id', $vibe->id)->count();
+                $activityCount = Activity::where('vibe_id', $vibe->id)->where('status',2)->count();
                 
                 // Add vibe with activity count and background color
                 $vibeWithActivityCount[] = [

@@ -49,17 +49,16 @@
                     <thead>
                       <tr>
                         <th>#</th>
-                        <th data-priority="1">Name</th>
-                        <th data-priority="2">Number </th>
-                        <th data-priority="3">Email </th>
-                        <th data-priority="4">Age</th>
-                        <th data-priority="5">Gender</th>
-                        <th data-priority="6">Looking For</th>
-                        <th data-priority="7">Interest</th>
-                        <th data-priority="8">State</th>
-                        <th data-priority="9">City</th>
+                        <th data-priority="1">Title</th>
+                        <th data-priority="2">location </th>
+                        <th data-priority="3">amount </th>
+                        <th data-priority="4">Time</th>
+                        <th data-priority="5">Squad</th>
+                        <th data-priority="6">Start Time</th>
+                        <th data-priority="7">End Time</th>
+                        <th data-priority="8">Vibe</th>
+                        <th data-priority="9">description</th>
                         <th data-priority="10">Status</th>
-                        <th data-priority="10">Date</th>
                         <th data-priority="11">Action</th>
                       </tr>
                     </thead>
@@ -67,36 +66,36 @@
                       @foreach($data as $data)
                       <tr>
                         <th>{{$a = $loop->index+1}}</th>
-                        <td>{{ $data->name}}</td>
-                        <td>{{ $data->number }}</td>
-                        <td>{{ $data->email }}</td>
-                        <td>{{ $data->age}}</td>
-                        <td>{{ $data->gender}}</td>
-                        <td>{{ $data->looking_for}}</td>
-                        <td>{{ $data->interest}}</td>
-                        <td>{{ $data->state}}</td>
-                        <td>{{ $data->city}}</td>
+                        <td>{{ $data->title}}</td>
+                        <td>{{ $data->location }}</td>
+                        <td>{{ $data->amount }}</td>
+                        <td>{{ $data->when_time}}</td>
+                        <td>{{ $data->how_many}}</td>
+                        <td>{{ $data->start_time}}</td>
+                        <td>{{ $data->end_time}}</td>
+                        <td>{{ $data->vibe->vibe_id ?? ''}}</td>
+                        <td>{{ $data->description}}</td>
                         @if($data->status == 1)
-                        <td>
-                          <p class="label pull-right status-active">Active</p>
-                        </td>
-                        @else
                         <td>
                           <p class="label pull-right status-inactive">InActive</p>
                         </td>
+                        @else
+                        <td>
+                          <p class="label pull-right status-active ">Active</p>
+                        </td>
                         @endif
-                        <td>{{ formatDateTime($data->created_at) }}</td>
+                       
                         <td>
                           <div class="btn-group" id="btns<?php echo $a ?>">
 
 
-                            @if ($data->status == 0)
-                            <a href="{{route('userststatus',['active',base64_encode($data->id)])}}" data-toggle="tooltip" data-placement="top" title="Active"><i class="fas fa-check success-icon"></i></a>
+                            @if ($data->status == 1)
+                            <a href="{{route('activitystatus',['2',base64_encode($data->id)])}}" data-toggle="tooltip" data-placement="top" title="Active"><i class="fas fa-check success-icon"></i></a>
                             @else
-                            <a href="{{route('userststatus',['inactive',base64_encode($data->id)])}}" data-toggle="tooltip" data-placement="top" title="Inactive"><i class="fas fa-times danger-icon"></i></a>
+                            <a href="{{route('activitystatus',['1',base64_encode($data->id)])}}" data-toggle="tooltip" data-placement="top" title="Inactive"><i class="fas fa-times danger-icon"></i></a>
                             @endif
-                            <a href="javascript:();" class="dCnf" mydata="<?php echo $a ?>" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fas fa-trash danger-icon"></i></a>
-                            <a href="{{ route('users.createOrEdit', ['id' => $data->id]) }}" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fas fa-edit info-icon"></i></a>
+                            {{-- <a href="javascript:();" class="dCnf" mydata="<?php echo $a ?>" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fas fa-trash danger-icon"></i></a>
+                            <a href="{{ route('users.createOrEdit', ['id' => $data->id]) }}" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fas fa-edit info-icon"></i></a> --}}
 
                           </div>
                           <div style="display:none" id="cnfbox<?php echo $a ?>">

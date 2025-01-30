@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\ContactUsController;
 use App\Http\Controllers\Admin\CrmController;
 use App\Http\Controllers\Admin\DatingSubscriptionController;
 use App\Http\Controllers\Admin\NotificationController;
+use App\Http\Controllers\Admin\ActivityApprovedController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Auth\adminlogincontroller;
 use App\Http\Controllers\Admin\InterestController;
@@ -99,6 +100,9 @@ Route::post('/user/{id}/create-coin', [UserController::class, 'createCoin'])->na
 
 Route::get('/vibes', [VibeController::class, 'index'])->name('vibe.index');
 Route::get('/expense', [ExpenseController::class, 'index'])->name('expense.index');
+Route::get('/panding-activity', [ActivityApprovedController::class, 'pandingactivity'])->name('pandingactivity');
+Route::get('/approved-activity', [ActivityApprovedController::class, 'approvedactivity'])->name('approvedactivity');
+Route::get('/activity/status/{action}/{id}', [ActivityApprovedController::class, 'updateStatus'])->name('activitystatus');
 
 
 Route::get('coin-category', [CategoryController::class, 'index'])->name('coinCategoryindex');

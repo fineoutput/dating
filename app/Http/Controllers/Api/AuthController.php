@@ -347,10 +347,10 @@ class AuthController extends Controller
                 return response()->json([
                     'data' => [
                         'message' => 'Login successful !',
-                    'token' => $token,
-                    'status' => true,
+                        'token' => $token,
+                        'status' => 200,
                     ],
-                    // 'status' => true
+                    'status' => true
                 ]);
 
             }
@@ -399,7 +399,7 @@ class AuthController extends Controller
                         'message' => 'Email verified successfully!',
                         'status' => 206
                     ],
-                    // 'status' => true
+                    'status' => true
                 ]);
             } else {
                 return $this->successResponse('No user found with the provided email.', false, 404);

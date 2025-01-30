@@ -14,6 +14,7 @@ use App\Mail\OtpMail;
 use App\Models\Interest;
 use App\Models\Vibes;
 use App\Models\Activity;
+use App\Models\OtherInterest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
@@ -209,6 +210,42 @@ public function getActivitydetailes(Request $request)
     ]);
 
     $activity = Activity::where('id', $request->activity_id)->first();
+
+
+
+    $activityInterest = OtherInterest::where('activity_id', $request->activity_id)
+    ->where('confirm', 1)
+    ->with('user') // Eager load the 'user' relationship
+    ->get();
+
+// Map through the results and add the user profile image
+$activityInterestWithProfileImage = $activityInterest->map(function($interest) {
+    if ($interest->user && $interest->user->profile_image) {
+        // Decode the JSON string stored in the profile_image field
+        $profileImages = json_decode($interest->user->profile_image, true);
+        
+        // Get the first image or you can select the desired one based on your logic
+        $imageUrl = isset($profileImages[1]) ? asset('storage/' . $profileImages[1]) : null;
+        
+        // Return only the image URL
+        return $imageUrl;
+    }
+    // If no user or profile image exists, return null
+    return null;
+});
+
+// Filter out any null results (where there is no profile image)
+$activityInterestWithProfileImage = $activityInterestWithProfileImage->filter(function($value) {
+    return $value !== null;
+});
+
+// Prepare the response data with the count
+// $responseData = [
+//     // Get the values without keys
+// ];
+
+// return response()->json($responseData);
+
     
     if (!$activity) {
         return response()->json(['message' => 'Activity not found or you do not have permission to view it'], 404);
@@ -223,10 +260,14 @@ public function getActivitydetailes(Request $request)
         'start_time' => $activity->start_time,
         'end_time' => $activity->end_time,
         'how_many' => $activity->how_many,
-        'interests_id' => $activity->interests_id,  
+        'interests_id' => $activity->interests_id,
         'vibe_name' => $activity->vibe->name ?? '',  
-        'expense_id' => $activity->expense_id,     
+        'expense_id' => $activity->expense_id,
         'status' => $activity->status,
+        'attendees' => [ 
+            'attendees_count' => $activityInterestWithProfileImage->count(),
+            'attendees_images' => $activityInterestWithProfileImage->values()
+        ]
     ];
 
     return response()->json([

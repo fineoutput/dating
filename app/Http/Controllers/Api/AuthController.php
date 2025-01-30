@@ -251,7 +251,7 @@ class AuthController extends Controller
 
         if ($unverifyUser) {
             $newUser = User::create([
-                'number' => $unverifyUser->number,
+                'number' => $unverifyUser->number,     
                 'email' => $unverifyUser->email,
                 'name' => $unverifyUser->name,
                 'age' => $unverifyUser->age,

@@ -202,9 +202,9 @@ class InterestController extends Controller
             'user_id' => $interest->user_id,
             'activity_id' => $interest->activity_id,
             'confirm' => $interest->confirm,
-            'user_interests_unconfirmed_count' => $userInterestsCount,
-            'user_interests_confirm_count' => $userInterestsconfirmCount,
-            'activity_count' => $userInterestsactivityCount,
+            'ghosted' => $userInterestsCount,
+            'attended' => $userInterestsconfirmCount,
+            'created' => $userInterestsactivityCount,
         ];
     });
 
@@ -242,16 +242,25 @@ class InterestController extends Controller
     
         // Transform the collection to an array
         $interestsArray = $interests->map(function ($interest) {
+            $userInterestsCount = OtherInterest::where('user_id', $interest->user_id)
+        ->where('confirm', 0)->count(); 
+        $userInterestsconfirmCount = OtherInterest::where('user_id', $interest->user_id)
+        ->where('confirm', 1)->count(); 
+        $userInterestsactivityCount = Activity::where('user_id', $interest->user_id)
+        ->count(); 
+
             return [
                 'id' => $interest->id,
                 'user' => $interest->user->name ?? '',
                 'user_id' => $interest->user_id,
                 'activity_id' => $interest->activity_id,
                 'confirm' => $interest->confirm,
+                'ghosted' => $userInterestsCount,
+                'attended' => $userInterestsconfirmCount,
+                'created' => $userInterestsactivityCount,
             ];
         });
-    
-        // Return the response with status code 200 if interests found
+
         return response()->json([
             'message' => 'Confirmed user interests fetched successfully',
             'status' => 200,
@@ -262,7 +271,7 @@ class InterestController extends Controller
     
     public function confirm_user_interest(Request $request)
 {
-    // Ensure the user is authenticated
+
     if (!Auth::check()) {
         return response()->json([
             'message' => 'Unauthorized. Please log in.',

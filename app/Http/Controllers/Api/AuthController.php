@@ -338,11 +338,21 @@ class AuthController extends Controller
                 $existingUser->auth = $token;
                 $existingUser->save();
 
-                return $this->successResponse([
-                    'message' => 'Login successful !',
+                // return $this->successResponse([
+                //     'message' => 'Login successful !',
+                //     'token' => $token,
+                //     'status' => true,
+                // ],  200);
+
+                return response()->json([
+                    'data' => [
+                        'message' => 'Login successful !',
                     'token' => $token,
                     'status' => true,
-                ],  200);
+                    ],
+                    // 'status' => true
+                ]);
+
             }
         }
 

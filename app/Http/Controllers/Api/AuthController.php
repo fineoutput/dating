@@ -271,7 +271,7 @@ class AuthController extends Controller
             $newUser->auth = $token;
             $newUser->save();
 
-            return response()->json(['message' => 'User verified and moved to users table successfully!', 'token' => $token], 200);
+            return response()->json(['message' => 'User verified and moved to users table successfully!','status' => 200, 'token' => $token], 200);
         } else {
             return response()->json(['message' => 'User not found or email or phone not verified.'], 404);
         }
@@ -340,7 +340,8 @@ class AuthController extends Controller
 
                 return $this->successResponse([
                     'message' => 'Login successful !',
-                    'token' => $token
+                    'token' => $token,
+                    'status' => 200,
                 ],  200);
             }
         }

@@ -281,7 +281,6 @@ class InterestController extends Controller
             'activity_id' => 'required',
         ]);
     
-        // Fetch the interests with confirm status set to 1
         $interests = OtherInterest::where('activity_id', $request->activity_id)
                                    ->where('confirm', 1)
                                    ->get();
@@ -290,10 +289,9 @@ class InterestController extends Controller
             return response()->json([
                 'message' => 'No confirmed interests found for this activity.',
                 'data' => [],
-            ], 404); // Status code 404 if no interests found
+            ], 404); 
         }
-    
-        // Transform the collection to an array
+
         $interestsArray = $interests->map(function ($interest) {
             $userInterestsCount = OtherInterest::where('user_id', $interest->user_id)
         ->where('confirm', 0)->count(); 
@@ -322,7 +320,7 @@ class InterestController extends Controller
     }
 
     
-    
+
     public function confirm_user_interest(Request $request)
     {
         if (!Auth::check()) {

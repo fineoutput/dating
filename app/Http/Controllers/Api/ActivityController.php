@@ -309,7 +309,8 @@ $activityInterestWithProfileImage = $activityInterestWithProfileImage->filter(fu
                 return [
                     'id' => $interest->id,
                     'name' => $interest->name,
-                    'icon' => $interest->icon,
+                    // 'icon' => $interest->icon,
+                    'icon' => asset('uploads/app/int_images/' . $interest->icon),
                     'status' => $interest->status,
                     'desc' => $interest->desc,
                     'bg_color' => $bgColor, 

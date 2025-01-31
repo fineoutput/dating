@@ -25,20 +25,25 @@ class InterestController extends Controller
 {
 
     public function interest()
-    {
-        $data = Interest::where('status', 1)->get();
-        $message = "Interest fetched successfully"; 
-        $status = 200;
-        $statusCode = 200; 
-        $data->makeHidden(['created_at', 'updated_at', 'deleted_at']);
+{
+    $data = Interest::where('status', 1)->get();
 
+    // Include icon URL for each interest item (assuming each interest has an 'icon' field)
+    $data->each(function ($item) {
+        $item->icon_url = asset('uploads/app/int_images/' . $item->icon);
+    });
 
-        return response()->json([
-            'message' => $message,
-            'status' => $status,
-            'data' => $data,
-        ], $statusCode);
-    }
+    $message = "Interest fetched successfully";
+    $statusCode = 200; // Status code is used here, no need to repeat it elsewhere.
+
+    // Hide unnecessary fields
+    $data->makeHidden(['created_at', 'updated_at', 'deleted_at']);
+
+    return response()->json([
+        'message' => $message,
+        'data' => $data,
+    ], $statusCode);
+}
 
     public function vibes()
     {

@@ -214,7 +214,7 @@ class AuthController extends Controller
         }
 
         $updateData = array_filter($request->only([
-            'name', 'email', 'age', 'gender', 'looking_for', 
+            'name', 'longitude', 'latitude', 'email', 'age', 'gender', 'looking_for', 
             'interest', 'profile_image', 'state', 'city', 'password'
         ]));
 
@@ -262,6 +262,8 @@ class AuthController extends Controller
                 'profile_image' => $unverifyUser->profile_image,
                 'state' => $unverifyUser->state,
                 'city' => $unverifyUser->city,
+                'latitude' => $unverifyUser->latitude,
+                'longitude' => $unverifyUser->longitude,
                 'status' => 1,
             ]);
 

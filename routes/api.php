@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\InterestController;
 use App\Http\Controllers\Api\ActivityController;
+use App\Http\Controllers\Api\DatingController;
 use App\Http\Controllers\Api\ChatController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -29,7 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('activitys', [ActivityController::class, 'activitys']);
     Route::post('get-activity-detaile', [ActivityController::class, 'getActivitydetailes']);
     Route::get('user-activitys', [ActivityController::class, 'useractivitys']);
-    Route::get('find-matching-users-interest', [ActivityController::class, 'findMatchingUsers']);
+  
     Route::get('find-matching-users-activity', [ActivityController::class, 'findMatchingactivity']);
     Route::get('vibe-activity-count', [ActivityController::class, 'vibeactivitycount']);
     Route::post('vibe-activity-details', [ActivityController::class, 'vibeactivitydetails']);
@@ -46,6 +47,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('chat-update-status', [ChatController::class, 'updateMessageStatus']);
 
     Route::get('user-profile', [AuthController::class, 'userprofile']);
+
+
+    Route::get('find-matching-users-interest', [DatingController::class, 'findMatchingUsers']);
 });   
 
 

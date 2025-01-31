@@ -30,6 +30,8 @@ class UnverifyUser extends Model
         'state', 
         'city', 
         'status', 
+        'latitude', 
+        'longitude', 
         'password'
     ];
 

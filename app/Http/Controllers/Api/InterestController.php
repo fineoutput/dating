@@ -101,8 +101,8 @@ class InterestController extends Controller
                 'message' => 'Interest already added.',
             ], 400);
         }
-
-
+    
+    
         try {
             $otherInterest = OtherInterest::create([
                 'user_id' => $user->id,

@@ -30,6 +30,8 @@ class User extends Authenticatable
         'state',
         'city',
         'status',
+        'latitude', 
+        'longitude', 
         'password',
     ];
 

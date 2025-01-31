@@ -176,17 +176,14 @@ class InterestController extends Controller
     
         $user = Auth::user();
     
-        // Validate the input data for activity_id
         $request->validate([
             'activity_id' => 'required|exists:activity_table,id',
         ]);
-    
-        // Get the interests where confirm is 0 for the given activity
+
         $interests = OtherInterest::where('activity_id', $request->activity_id)
                                    ->where('confirm', 0)
                                    ->get();
     
-        // Get the interests where confirm is 1 for the given activity
         $confirm = OtherInterest::where('activity_id', $request->activity_id)
                                  ->where('confirm', 1)
                                  ->get();
@@ -197,7 +194,6 @@ class InterestController extends Controller
             ], 404);
         }
     
-        // Map interests and include the count of interests for each user
         $interestsArray = $interests->map(function ($interest) {
             $userInterestsCount = OtherInterest::where('user_id', $interest->user_id)
                                                ->where('confirm', 0)->count(); 
@@ -205,11 +201,15 @@ class InterestController extends Controller
                                                       ->where('confirm', 1)->count(); 
             $userInterestsactivityCount = Activity::where('user_id', $interest->user_id)
                                                   ->count(); 
+
+            $profileImages = json_decode($interest->user->profile_image ?? '[]', true);
+            $profileImageUrl = !empty($profileImages) ? asset('uploads/app/profile_images/' . $profileImages[1] ?? '') : '';
     
             return [
                 'id' => $interest->id,
                 'user' => $interest->user->name ?? '',
                 'user_id' => $interest->user_id,
+                'user_profile' => $profileImageUrl,
                 'activity_id' => $interest->activity_id,
                 'confirm' => $interest->confirm,
                 'ghosted' => $userInterestsCount,
@@ -218,7 +218,6 @@ class InterestController extends Controller
             ];
         });
     
-        // Map confirmed interests similarly
         $confirmArray = $confirm->map(function ($interest) {
             $userInterestsCount = OtherInterest::where('user_id', $interest->user_id)
                                                ->where('confirm', 0)->count(); 
@@ -227,10 +226,15 @@ class InterestController extends Controller
             $userInterestsactivityCount = Activity::where('user_id', $interest->user_id)
                                                   ->count(); 
     
+
+            $profileImages = json_decode($interest->user->profile_image ?? '[]', true);
+            $profileImageUrl = !empty($profileImages) ? asset('uploads/app/profile_images/' . $profileImages[1] ?? '') : '';
+    
             return [
                 'id' => $interest->id,
                 'user' => $interest->user->name ?? '',
                 'user_id' => $interest->user_id,
+                'user_profile' => $profileImageUrl,  
                 'activity_id' => $interest->activity_id,
                 'confirm' => $interest->confirm,
                 'ghosted' => $userInterestsCount,

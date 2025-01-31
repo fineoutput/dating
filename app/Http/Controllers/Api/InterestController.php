@@ -354,7 +354,7 @@ class InterestController extends Controller
 
         if ($confirmedCount >= $howMany) {
             return response()->json([
-                'message' => 'The maximum number of confirmed interests for this activity has been reached.',
+                'message' => 'Maximum confirmations reached for this activity.',
             ], 400);
         }
 

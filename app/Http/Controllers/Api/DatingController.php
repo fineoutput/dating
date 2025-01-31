@@ -300,6 +300,7 @@ public function cupidmatch(Request $request)
         ]);
 
         $cupid->save();
+        $cupid->makeHidden(['created_at', 'updated_at']);
 
         return response()->json([
             'message' => 'Cupid match saved successfully!',
@@ -344,6 +345,8 @@ public function cupidmatch(Request $request)
                     $cupid->decline = $request->decline;
                 }
                 $cupid->save();
+
+                $cupid->makeHidden(['created_at', 'updated_at', 'deleted_at']);
 
                 return response()->json([
                     'message' => 'Cupid match updated successfully!',

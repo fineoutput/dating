@@ -322,41 +322,71 @@ class InterestController extends Controller
     }
 
     
+    // public function confirm_user_interest(Request $request)
     public function confirm_user_interest(Request $request)
-{
-
-    if (!Auth::check()) {
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Unauthorized. Please log in.',
+            ], 401);
+        }
+    
+        $user = Auth::user();
+    
+        $request->validate([
+            'activity_id' => 'required|exists:activity_table,id',
+            'user_id' => 'required',
+            'confirm' => 'required|boolean', 
+        ]);
+    
+        // Get the Activity record to check the how_many field
+        $activity = Activity::find($request->activity_id);
+    
+        if (!$activity) {
+            return response()->json([
+                'message' => 'Activity not found.',
+            ], 404);
+        }
+    
+        $howMany = $activity->how_many;
+    
+        // Get the count of already confirmed users for this activity
+        $confirmedCount = OtherInterest::where('activity_id', $request->activity_id)
+                                       ->where('confirm', 1)
+                                       ->count();
+    
+        // If the number of confirmed users already equals or exceeds how_many, prevent further confirmations
+        if ($confirmedCount >= $howMany) {
+            return response()->json([
+                'message' => 'The maximum number of confirmed interests for this activity has been reached.',
+            ], 400);
+        }
+    
+        // Get the first matching interest record
+        $interest = OtherInterest::where('activity_id', $request->activity_id)
+                                 ->where('user_id', $request->user_id) // Ensure the logged-in user is updating their own interest
+                                 ->first();
+    
+        if (!$interest) {
+            return response()->json([
+                'message' => 'No interest found for this activity.',
+            ], 404);
+        }
+    
+        // Update the confirm field
+        $interest->confirm = $request->confirm;
+        $interest->save();
+    
         return response()->json([
-            'message' => 'Unauthorized. Please log in.',
-        ], 401);
+            'message' => 'Interest confirmation updated successfully.',
+            'data' => [
+                'activity_id' => $interest->activity_id,
+                'user' => $interest->user->name ?? '',
+                'user_id' => $interest->user_id,
+                'confirm' => $interest->confirm,
+            ],
+        ]);
     }
-
-    $user = Auth::user();
-
-    $request->validate([
-        'activity_id' => 'required',
-        'confirm' => 'required|boolean', 
-    ]);
-    $interest = OtherInterest::where('activity_id', $request->activity_id) 
-                                ->first();
-    if (!$interest) {
-        return response()->json([
-            'message' => 'No interest found for this activity.',
-        ], 404);
-    }
-    $interest->confirm = $request->confirm;
-    $interest->save();
-
-    return response()->json([
-        'message' => 'Interest confirmation updated successfully.',
-        'data' => [
-            'activity_id' => $interest->activity_id,
-            'user' => $interest->user->name ?? '',
-            'user_id' => $interest->user_id,
-            'confirm' => $interest->confirm,
-        ],
-    ]);
-}
 
 
 }

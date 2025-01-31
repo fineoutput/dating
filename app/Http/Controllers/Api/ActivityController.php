@@ -128,7 +128,7 @@ public function useractivitys(Request $request)
     $todayDate = Carbon::today('Asia/Kolkata');
     
     // Get all activities for the user
-    $activities = Activity::where('user_id', $user->id)
+    $activities = Activity::where('user_id', $user->id)->where('status',2) 
         ->where(function ($query) use ($todayDate, $currentTime) {
             $query->where('when_time', '>=', $todayDate)
                   ->where('end_time', '>=', $currentTime);

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Mail\OtpMail;
 use App\Models\Interest;
+use App\Models\Cupid;
 use App\Models\Vibes;
 use App\Models\Activity;
 use App\Models\OtherInterest;
@@ -46,7 +47,7 @@ class DatingController extends Controller
     
         $interestIds = array_map('trim', $interestIds);
     
-        $userLatitude = $user->latitude;  // Assuming the user model has latitude and longitude
+        $userLatitude = $user->latitude;  
         $userLongitude = $user->longitude;
     
         $matchingUsers = User::where(function ($query) use ($interestIds) {
@@ -62,7 +63,7 @@ class DatingController extends Controller
         }
     
         $usersWithInterests = [];
-        $totalMatchingUsers = 0; // Variable to keep track of the total count
+        $totalMatchingUsers = 0; 
     
         foreach ($matchingUsers as $matchingUser) {
             $userInterestsField = $matchingUser->interest;
@@ -77,7 +78,6 @@ class DatingController extends Controller
                 $userInterestsIds = array_map('trim', $userInterestsIds);
                 $userInterests = Interest::whereIn('id', $userInterestsIds)->get();
     
-                // Calculate the matching interests
                 $matchingInterestCount = 0;
                 foreach ($userInterests as $interest) {
                     if (in_array($interest->id, $interestIds)) {
@@ -85,10 +85,8 @@ class DatingController extends Controller
                     }
                 }
     
-                // Total interests the authenticated user has
                 $totalInterests = count($interestIds);
-    
-                // Calculate match percentage
+
                 $matchingPercentage = ($totalInterests > 0) ? ($matchingInterestCount / $totalInterests) * 100 : 0;
     
                 $profileImages = json_decode($matchingUser->profile_image, true);
@@ -98,13 +96,11 @@ class DatingController extends Controller
                     $profileImageUrl = asset('uploads/app/profile_images/' . $profileImages[1]);
                 }
     
-                // Calculate the distance between the authenticated user and the matched user
                 $matchedUserLatitude = $matchingUser->latitude;
                 $matchedUserLongitude = $matchingUser->longitude;
     
                 $distance = $this->calculateDistance($userLatitude, $userLongitude, $matchedUserLatitude, $matchedUserLongitude);
-    
-                // Add each matching user to the result array
+
                 $usersWithInterests[] = [
                     'user' => [
                         'id' => $matchingUser->id,
@@ -120,8 +116,6 @@ class DatingController extends Controller
                         'longitude' => $matchedUserLongitude,
                     ],
                 ];
-    
-                // Increment the total matching users count
                 $totalMatchingUsers++;
             }
         }
@@ -129,7 +123,7 @@ class DatingController extends Controller
         return response()->json([
             'message' => 'Matching users found successfully',
             'status' => 200,
-            'total_count' => $totalMatchingUsers,  // Include the total count in the response
+            'total_count' => $totalMatchingUsers, 
             'data' => $usersWithInterests,
         ]);
     }
@@ -271,5 +265,99 @@ class DatingController extends Controller
 //     ]);
 // }
 
+
+public function cupidmatch(Request $request)
+{
+    // Check if the user is authenticated
+    if (!Auth::check()) {
+        return response()->json([
+            'message' => 'User not authenticated',
+            'status' => 401
+        ], 401);
+    }
+
+    $validated = $request->validate([
+        'user_id_1' => 'required|exists:users,id', 
+        'user_id_2' => 'required|exists:users,id',
+        'accept' => 'nullable|boolean',
+        'decline' => 'nullable|boolean',
+        'message' => 'nullable|string|max:500',
+        'identity' => 'nullable|string|max:255',
+    ]);
+
+    $maker_id = Auth::id();
+
+    try {
+
+        $cupid = new Cupid([
+            'user_id_1' => $request->user_id_1,
+            'user_id_2' => $request->user_id_2,
+            'maker_id' => $maker_id,
+            'accept' => $request->accept, null,
+            'decline' => $request->decline, null,
+            'message' => $request->message, null,
+            'identity' => $request->identity,
+        ]);
+
+        $cupid->save();
+
+        return response()->json([
+            'message' => 'Cupid match saved successfully!',
+            'status' => 200,
+            'data' => $cupid
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Error saving cupid match.',
+            'error' => $e->getMessage(),
+            'status' => 500
+        ], 500);
+    }
+}
+
+
+    public function updateCupidMatch(Request $request)
+        {
+            
+            if (!Auth::check()) {
+                return response()->json([
+                    'message' => 'User not authenticated',
+                    'status' => 401
+                ], 401);
+            }
+
+            $validated = $request->validate([
+                'cupid_id' => 'required|exists:cupid_match,id',  
+                'accept' => 'nullable|boolean',  
+                'decline' => 'nullable|boolean', 
+            ]);
+
+            try {
+                $cupid = Cupid::find($request->cupid_id);
+
+                if ($request->has('accept')) {
+                    $cupid->accept = $request->accept;
+                }
+
+                if ($request->has('decline')) {
+                    $cupid->decline = $request->decline;
+                }
+                $cupid->save();
+
+                return response()->json([
+                    'message' => 'Cupid match updated successfully!',
+                    'status' => 200,
+                    'data' => $cupid
+                ], 200);
+
+            } catch (\Exception $e) {
+                return response()->json([
+                    'message' => 'Error updating cupid match.',
+                    'error' => $e->getMessage(),
+                    'status' => 500
+                ], 500);
+            }
+        }
 
 }

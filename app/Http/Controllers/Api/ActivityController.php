@@ -38,8 +38,9 @@ class ActivityController extends Controller
             'title' => 'required',
             'location' => 'required',
             'how_many' => 'required|integer',
-            'start_time' => 'required',
+            'start_time' => 'nullable',
             'end_time' => 'required',
+            'when_time' => 'required',
             'interests_id' => 'nullable',
             'vibe_id' => 'nullable',
             'expense_id' => 'required',
@@ -484,7 +485,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
         {
             $location = $request->input('location');
             $when_time = $request->input('when_time');
-            $start_time = $request->input('start_time');
+            // $start_time = $request->input('start_time');
             $end_time = $request->input('end_time');
             $expense_id = $request->input('expense_id');
             $interests_id = $request->input('interests_id');
@@ -500,10 +501,10 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                 $query->where('when_time', $when_time);
                 $filterApplied = true;
             }
-            if ($start_time) {
-                $query->where('start_time', '>=', $start_time);
-                $filterApplied = true;
-            }
+            // if ($start_time) {
+            //     $query->where('start_time', '>=', $start_time);
+            //     $filterApplied = true;
+            // }
             if ($end_time) {
                 $query->where('end_time', '<=', $end_time);
                 $filterApplied = true;

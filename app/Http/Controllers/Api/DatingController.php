@@ -24,7 +24,6 @@ use Illuminate\Support\Facades\Auth;
 class DatingController extends Controller
 {
 
-
     public function findMatchingUsers(Request $request)
     {
         $user = Auth::user();
@@ -63,6 +62,7 @@ class DatingController extends Controller
         }
     
         $usersWithInterests = [];
+        $totalMatchingUsers = 0; // Variable to keep track of the total count
     
         foreach ($matchingUsers as $matchingUser) {
             $userInterestsField = $matchingUser->interest;
@@ -103,11 +103,11 @@ class DatingController extends Controller
                 $matchedUserLongitude = $matchingUser->longitude;
     
                 $distance = $this->calculateDistance($userLatitude, $userLongitude, $matchedUserLatitude, $matchedUserLongitude);
-
+    
+                // Add each matching user to the result array
                 $usersWithInterests[] = [
                     'user' => [
                         'id' => $matchingUser->id,
-                        // 'number' => $matchingUser->number,
                         'name' => $matchingUser->name,
                         'age' => $matchingUser->age,
                         'gender' => $matchingUser->gender,
@@ -115,17 +115,21 @@ class DatingController extends Controller
                         'profile_image' => $profileImageUrl,
                         'status' => $matchingUser->status,
                         'match_percentage' => $matchingPercentage,
-                        'distance' => $distance .' km', 
+                        'distance' => $distance . ' km', 
                         'latitude' => $matchedUserLatitude,
                         'longitude' => $matchedUserLongitude,
                     ],
                 ];
+    
+                // Increment the total matching users count
+                $totalMatchingUsers++;
             }
         }
     
         return response()->json([
             'message' => 'Matching users found successfully',
             'status' => 200,
+            'total_count' => $totalMatchingUsers,  // Include the total count in the response
             'data' => $usersWithInterests,
         ]);
     }

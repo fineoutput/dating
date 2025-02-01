@@ -302,13 +302,13 @@ class ActivityController extends Controller
                 'interests_id' => 'nullable',
                 // 'interests_id.*' => 'integer',
                 'vibe_id' => 'nullable',
-                'expense_id' => 'nullable',  // Keep this as array for multiple values
+                'expense_id' => 'nullable',  
                 'description' => 'nullable',
                 'other_activity' => 'nullable|string',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
                 'amount' => 'nullable|numeric',
-                'activity_id' => 'nullable|exists:activity_temp_table,id', // for update
-                'update_status' => 'nullable|in:update,final', // to handle status
+                'activity_id' => 'nullable|exists:activity_temp_table,id', 
+                'update_status' => 'nullable|in:update,final', 
             ]);
         } else {
             // When subscription is not 0, there is no limit to activities or interests.
@@ -319,15 +319,15 @@ class ActivityController extends Controller
                 'start_time' => 'nullable',
                 'end_time' => 'nullable',
                 'when_time' => 'nullable',
-                'interests_id' => 'nullable',  // No limit for subscription > 0
+                'interests_id' => 'nullable',
                 'vibe_id' => 'nullable',
-                'expense_id' => 'nullable',  // Keep this as array for multiple values
+                'expense_id' => 'nullable',  
                 'description' => 'nullable',
                 'other_activity' => 'nullable|string',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
                 'amount' => 'nullable|numeric',
-                'activity_id' => 'nullable|exists:activity_temp_table,id', // for update
-                'update_status' => 'nullable|in:update,final', // to handle status
+                'activity_id' => 'nullable|exists:activity_temp_table,id', 
+                'update_status' => 'nullable|in:update,final', 
             ]);
         }
     
@@ -498,7 +498,7 @@ public function useractivitys(Request $request)
             });
         })
         ->get();
-        return $activities;
+        // return $activities;
     
     // Check if activities exist
     if ($activities->isEmpty()) {

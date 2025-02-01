@@ -32,6 +32,7 @@ class User extends Authenticatable
         'status',
         'latitude', 
         'longitude', 
+        'subscription', 
         'password',
     ];
 

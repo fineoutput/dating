@@ -15,6 +15,7 @@ use App\Models\Expense;
 use App\Models\Interest;
 use App\Models\Vibes;
 use App\Models\Activity;
+use App\Models\ActivityTemp;
 use App\Models\OtherInterest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
@@ -24,6 +25,89 @@ use Illuminate\Support\Facades\Auth;
 
 class ActivityController extends Controller
 {
+    // public function activitystore(Request $request)
+    // {
+    //     if (!Auth::check()) {
+    //         return response()->json([
+    //             'message' => 'Unauthorized. Please log in.',
+    //         ], 401);
+    //     }
+    
+    //     $user = Auth::user();
+    
+    //     // Validation for incoming request
+    //     $validator = Validator::make($request->all(), [
+    //         'title' => 'required',
+    //         'location' => 'required',
+    //         'how_many' => 'required|integer',
+    //         'start_time' => 'nullable',
+    //         'end_time' => 'required',
+    //         'when_time' => 'required',
+    //         'interests_id' => 'nullable',
+    //         'vibe_id' => 'nullable',
+    //         'expense_id' => 'required',
+    //         'description' => 'required',
+    //         'other_activity' => 'nullable|string',
+    //         'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+    //         'amount' => 'required|numeric',
+    //     ]);
+    
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'message' => 'Validation failed',
+    //             'errors' => $validator->errors(),
+    //         ], 422);
+    //     }
+    
+    //     // Parse start_time and end_time, assuming the current date if only time is provided
+    //     // try {
+           
+    //     // } catch (\Exception $e) {
+    //     //     return response()->json([
+    //     //         'message' => 'Invalid time format. Expected H:i:s.',
+    //     //         'error' => $e->getMessage(),
+    //     //     ], 422);
+    //     // }
+    //     // $startTime = $this->parseTimeToDate($request->start_time);
+    //     // $endTime = $this->parseTimeToDate($request->end_time);
+    
+    //     $imagePath = null;
+    //     if ($request->hasFile('image')) {
+    //         $image = $request->file('image');
+    //         $imagePath = $image->move(public_path('images/activities'), $image->getClientOriginalName());
+    //         $imagePath = asset('images/activities/' . $image->getClientOriginalName());
+    //     }
+    
+    //     // Create the activity record
+    //     $activity = ActivityTemp::create([
+    //         'where_to' => $request->where_to,
+    //         'title' => $request->title,
+    //         'location' => $request->location,
+    //         'when_time' => $request->when_time,
+    //         'how_many' => $request->how_many,
+    //         'start_time' => $request->start_time,
+    //         'end_time' => $request->end_time,
+    //         'vibe_id' => $request->vibe_id,
+    //         'interests_id' => implode(',', (array)$request->interests_id), 
+    //         'expense_id' => implode(',', (array)$request->expense_id),
+    //         'status' => 1,
+    //         'description' => $request->description,
+    //         'other_activity' => $request->other_activity,
+    //         'user_id' => $user->id,
+    //         'image' => $imagePath,
+    //         'amount' => $request->amount, 
+    //     ]);
+
+    //     $activityData = $activity->toArray();
+    //     unset($activityData['created_at'], $activityData['updated_at']);
+    
+    //     return response()->json([
+    //         'message' => 'Activity created successfully',
+    //         'status' => 200,
+    //         'data' => $activityData, 
+    //     ], 200);
+    // }
+
     public function activitystore(Request $request)
     {
         if (!Auth::check()) {
@@ -36,19 +120,21 @@ class ActivityController extends Controller
     
         // Validation for incoming request
         $validator = Validator::make($request->all(), [
-            'title' => 'required',
-            'location' => 'required',
-            'how_many' => 'required|integer',
+            'title' => 'nullable',
+            'location' => 'nullable',
+            'how_many' => 'nullable|integer',
             'start_time' => 'nullable',
-            'end_time' => 'required',
-            'when_time' => 'required',
-            'interests_id' => 'nullable',
+            'end_time' => 'nullable',
+            'when_time' => 'nullable',
+            'interests_id' => 'nullable', // It should be an array for multiple values
             'vibe_id' => 'nullable',
-            'expense_id' => 'required',
-            'description' => 'required',
+            'expense_id' => 'nullable', // It should be an array for multiple values
+            'description' => 'nullable',
             'other_activity' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'amount' => 'required|numeric',
+            'amount' => 'nullable|numeric',
+            'activity_id' => 'nullable|exists:activity_temp_table,id', // for update
+            'update_status' => 'nullable|in:update,final', // to handle status
         ]);
     
         if ($validator->fails()) {
@@ -58,18 +144,89 @@ class ActivityController extends Controller
             ], 422);
         }
     
-        // Parse start_time and end_time, assuming the current date if only time is provided
-        // try {
-           
-        // } catch (\Exception $e) {
-        //     return response()->json([
-        //         'message' => 'Invalid time format. Expected H:i:s.',
-        //         'error' => $e->getMessage(),
-        //     ], 422);
-        // }
-        // $startTime = $this->parseTimeToDate($request->start_time);
-        // $endTime = $this->parseTimeToDate($request->end_time);
+        // If activity_id exists, we are updating the activity
+        if ($request->has('activity_id') && $request->update_status == 'update') {
+            // Find the activity in ActivityTemp to update
+            $activityTemp = ActivityTemp::find($request->activity_id);
     
+            if (!$activityTemp) {
+                return response()->json(['message' => 'Activity not found'], 404);
+            }
+    
+            // Update activity details
+            $activityTemp->user_id = $user->id;  // Always update user_id
+            $activityTemp->where_to = $request->where_to ?? $activityTemp->where_to;
+            $activityTemp->when_time = $request->when_time ?? $activityTemp->when_time;
+            $activityTemp->how_many = $request->how_many ?? $activityTemp->how_many;
+            $activityTemp->start_time = $request->start_time ?? $activityTemp->start_time;
+            $activityTemp->end_time = $request->end_time ?? $activityTemp->end_time;
+            $activityTemp->interests_id = isset($request->interests_id) ? implode(',', (array)$request->interests_id): $activityTemp->interests_id;  
+            $activityTemp->vibe_id = $request->vibe_id ?? $activityTemp->vibe_id;
+            $activityTemp->expense_id = isset($request->expense_id) ? implode(',', (array)$request->expense_id) : $activityTemp->expense_id;  // Handling multiple expense_id
+            $activityTemp->other_activity = $request->other_activity ?? $activityTemp->other_activity;
+            $activityTemp->status = 1;  // Keep status as 1 unless changed in final status
+            $activityTemp->title = $request->title ?? $activityTemp->title;
+            $activityTemp->description = $request->description ?? $activityTemp->description;
+            $activityTemp->location = $request->location ?? $activityTemp->location;
+    
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $imagePath = $image->move(public_path('images/activities'), $image->getClientOriginalName());
+                $activityTemp->image = asset('images/activities/' . $image->getClientOriginalName());
+            }
+    
+            $activityTemp->amount = $request->amount ?? $activityTemp->amount;
+    
+            // Save updated data to ActivityTemp
+            $activityTemp->save();
+    
+            return response()->json([
+                'message' => 'Activity updated in ActivityTemp',
+                'status' => 200,
+                'data' => $activityTemp,
+            ], 200);
+        }
+    
+        // If update_status is final, move data to Activity table
+        if ($request->has('update_status') && $request->update_status == 'final') {
+            // Find the activity in ActivityTemp to finalize
+            $activityTemp = ActivityTemp::find($request->activity_id);
+    
+            if (!$activityTemp) {
+                return response()->json(['message' => 'Activity not found'], 404);
+            }
+    
+            // Create the final activity in the Activity table
+            $activity = Activity::create([
+                'user_id' => $activityTemp->user_id,
+                'where_to' => $activityTemp->where_to,
+                'when_time' => $activityTemp->when_time,
+                'how_many' => $activityTemp->how_many,
+                'start_time' => $activityTemp->start_time,
+                'end_time' => $activityTemp->end_time,
+                'interests_id' => $activityTemp->interests_id,
+                'vibe_id' => $activityTemp->vibe_id,
+                'expense_id' => $activityTemp->expense_id,
+                'status' => $activityTemp->status,
+                'title' => $activityTemp->title,
+                'description' => $activityTemp->description,
+                'location' => $activityTemp->location,
+                'other_activity' => $activityTemp->other_activity,
+                'image' => $activityTemp->image,
+                'amount' => $activityTemp->amount,
+            ]);
+    
+            // Optionally, delete the temporary activity after finalizing
+            $activityTemp->delete();
+    
+            return response()->json([
+                'message' => 'Activity moved to Activity table successfully',
+                'status' => 200,
+                'data' => $activity,
+            ], 200);
+        }
+    
+        // If activity_id does not exist and it's not an update or final status, create a new activity in ActivityTemp
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
@@ -77,8 +234,9 @@ class ActivityController extends Controller
             $imagePath = asset('images/activities/' . $image->getClientOriginalName());
         }
     
-        // Create the activity record
-        $activity = Activity::create([
+        // Create a new activity in ActivityTemp
+        $activityTemp = ActivityTemp::create([
+            'user_id' => $user->id,
             'where_to' => $request->where_to,
             'title' => $request->title,
             'location' => $request->location,
@@ -86,26 +244,27 @@ class ActivityController extends Controller
             'how_many' => $request->how_many,
             'start_time' => $request->start_time,
             'end_time' => $request->end_time,
+            'interests_id' => isset($request->interests_id) ? implode(',', $request->interests_id) : null, // Handling multiple interests_id
             'vibe_id' => $request->vibe_id,
-            'interests_id' => implode(',', (array)$request->interests_id), 
-            'expense_id' => implode(',', (array)$request->expense_id),
+            'expense_id' => isset($request->expense_id) ? implode(',', $request->expense_id) : null, // Handling multiple expense_id
             'status' => 1,
             'description' => $request->description,
             'other_activity' => $request->other_activity,
-            'user_id' => $user->id,
             'image' => $imagePath,
-            'amount' => $request->amount, 
+            'amount' => $request->amount,
         ]);
-
-        $activityData = $activity->toArray();
+    
+        $activityData = $activityTemp->toArray();
         unset($activityData['created_at'], $activityData['updated_at']);
     
         return response()->json([
-            'message' => 'Activity created successfully',
+            'message' => 'Activity created successfully in ActivityTemp',
             'status' => 200,
-            'data' => $activityData, 
+            'data' => $activityData,
         ], 200);
     }
+    
+    
 
 private function parseTimeToDate($time)
 {

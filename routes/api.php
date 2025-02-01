@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\InterestController;
 use App\Http\Controllers\Api\ActivityController;
 use App\Http\Controllers\Api\DatingController;
 use App\Http\Controllers\Api\ChatController;
+use App\Http\Controllers\Api\SubscriptionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -53,6 +54,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/cupidmatch', [DatingController::class, 'cupidmatch']);
     Route::post('/update-cupid-match', [DatingController::class, 'updateCupidMatch']);
+
+    Route::post('/subscription-list', [SubscriptionController::class, 'subscriptionlist']);
 
 });   
 

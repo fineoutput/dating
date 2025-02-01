@@ -594,13 +594,18 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->tokens->each(function ($token) {
-            $token->delete();
-        });
-
-        return response()->json(['message' => 'Successfully logged out']);
+        $user = auth()->user();
+    
+        if ($user) {
+            $user->auth = null; 
+            $user->save();
+    
+            return response()->json(['message' => 'Successfully logged out']);
+        }
+    
+        return response()->json(['message' => 'No authenticated user found'], 401);
     }
-
+    
 
     public function userprofile(Request $request)
     {

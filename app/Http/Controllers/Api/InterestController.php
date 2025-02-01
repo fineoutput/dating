@@ -112,6 +112,7 @@ class InterestController extends Controller
 
             return response()->json([
                 'message' => 'Interest added successfully',
+                'status' => 200,
                 'data' => [
                     'user_id' => $user->id,
                     'activity_id' => $request->activity_id,

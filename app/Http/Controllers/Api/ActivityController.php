@@ -494,7 +494,7 @@ public function useractivitys(Request $request)
                 $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
                 
                 // Compare the combined end_time with the current time
-                $subQuery->where('end_time', '>=', $endTime);
+                $subQuery->where('end_time', '>=', $endTime);   
             });
         })
         ->get();

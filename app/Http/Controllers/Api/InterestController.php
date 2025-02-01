@@ -29,12 +29,12 @@ class InterestController extends Controller
     $data = Interest::where('status', 1)->get();
 
     // Include icon URL for each interest item (assuming each interest has an 'icon' field)
-    $data->each(function ($item) {
-        $item->icon_url = asset('uploads/app/int_images/' . $item->icon);
-    });
+    // $data->each(function ($item) {
+    //     $item->icon_url = asset('uploads/app/int_images/' . $item->icon);
+    // });
 
     $message = "Interest fetched successfully";
-    $statusCode = 200; // Status code is used here, no need to repeat it elsewhere.
+    $statusCode = 200; 
 
     // Hide unnecessary fields
     $data->makeHidden(['created_at', 'updated_at', 'deleted_at']);

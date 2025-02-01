@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Mail\OtpMail;
+use App\Models\Expense;
 use App\Models\Interest;
 use App\Models\Vibes;
 use App\Models\Activity;
@@ -212,6 +213,22 @@ public function getActivitydetailes(Request $request)
 
     $activity = Activity::where('id', $request->activity_id)->first();
 
+    // Handle the case where expense_id is stored as a JSON string
+    $expenseIds = json_decode($activity->expense_id, true); // Decodes the string to an array
+    $firstExpenseName = null;
+
+    if (is_array($expenseIds) && count($expenseIds) > 0) {
+        // Retrieve the first expense ID from the array
+        $firstExpenseId = $expenseIds[0];
+
+        // Fetch the corresponding expense name from the database (assuming you have an Expense model)
+        $firstExpense = Expense::where('id', $firstExpenseId)->first();
+
+        if ($firstExpense) {
+            $firstExpenseName = $firstExpense->name;
+        }
+    }
+
     $activityInterest = OtherInterest::where('activity_id', $request->activity_id)
         ->where('confirm', 1)
         ->with('user') // Eager load the 'user' relationship
@@ -248,45 +265,18 @@ public function getActivitydetailes(Request $request)
         return response()->json(['message' => 'Activity not found or you do not have permission to view it'], 404);
     }
 
-    // Get the profile image for the activity creator (user who created the activity)
-    $defaultImageUrl = asset('uploads/app/profile_images/default_profile_image.jpg');
-    $activityInterestWithProfileImage = $activityInterest->map(function($interest) use ($defaultImageUrl) {
-        if ($interest->user) {
-            // Check if profile_image is not empty
-            if (!empty($interest->user->profile_image)) {
-                // Decode the JSON string stored in the profile_image field
-                $profileImages = json_decode($interest->user->profile_image, true);
-                
-                if (is_array($profileImages) && isset($profileImages['1'])) {
-                    // Get the first image or use a default if the image doesn't exist
-                    $imagePath = public_path('uploads/app/profile_images/' . $profileImages['1']);
-                    if (file_exists($imagePath)) {
-                        $imageUrl = asset('uploads/app/profile_images/' . $profileImages['1']);
-                        return [
-                            'user_id' => $interest->user->id,
-                            'profile_image' => $imageUrl,
-                        ];
-                    }
+    $profileImages = json_decode($activity->user->profile_image, true);
+                $profileImageUrl = null;
+    
+                if (!empty($profileImages) && isset($profileImages[1])) {
+                    $profileImageUrl = asset('uploads/app/' . $profileImages[1]);
                 }
-            }
-            // If no valid profile image exists, return the default image
-            return [
-                'user_id' => $interest->user->id,
-                'profile_image' => $defaultImageUrl,
-            ];
-        }
-        // If no user exists, return the default image
-        return [
-            'user_id' => null,
-            'profile_image' => $defaultImageUrl,
-        ];
-    });
-
+                
     $time = strtotime($activity->when_time);
     $activityData = [
         'id' => $activity->id,
         'user_name' => $activity->user->name ?? '',
-        'profile_image' =>  $activityCreatorProfileImage ?? $defaultImageUrl, 
+        'profile_image' => $profileImageUrl,
         'title' => $activity->title,
         'description' => $activity->description,
         'location' => $activity->location,
@@ -295,6 +285,7 @@ public function getActivitydetailes(Request $request)
         'vibe_name' => $activity->vibe->name ?? '',  
         'vibe_icon' => $activity->vibe->icon ?? '',  
         'expense_id' => $activity->expense_id,
+        'first_expense_name' => $firstExpenseName, 
         'status' => $activity->status,
         'attendees' => [ 
             'attendees_count' => $activityInterestWithProfileImage->count(),

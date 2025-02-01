@@ -44,7 +44,7 @@ class InterestController extends Controller
        
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'icon' => 'nullable',
             'desc' => 'nullable|string',
         ]);
 
@@ -59,7 +59,7 @@ class InterestController extends Controller
         // Create the new interest
         $interest = Interest::create([
             'name' => $validated['name'],
-            'icon' => $imageName,
+            'icon' => $request->icon,
             'desc' => $validated['desc'],
         ]);
 
@@ -93,28 +93,29 @@ class InterestController extends Controller
         // Validate incoming request
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'icon' => 'nullable',
             'desc' => 'nullable|string',
         ]);
 
         $interest = Interest::findOrFail($id);
 
         // Handle the icon upload if it exists and unlink the old one if necessary
-        if ($request->hasFile('icon')) {
-            $image = $request->file('icon');
+        // if ($request->hasFile('icon')) {
+        //     $image = $request->file('icon');
     
-            $oldImagePath = public_path('uploads/app/int_images/' . $interest->icon);
-            if ($interest->icon && file_exists($oldImagePath)) {
-                unlink($oldImagePath);
-            }
-            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('uploads/app/int_images'), $imageName);
-            $interest->icon = $imageName;
-        }
+        //     $oldImagePath = public_path('uploads/app/int_images/' . $interest->icon);
+        //     if ($interest->icon && file_exists($oldImagePath)) {
+        //         unlink($oldImagePath);
+        //     }
+        //     $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+        //     $image->move(public_path('uploads/app/int_images'), $imageName);
+        //     $interest->icon = $imageName;
+        // }
 
         // Update the interest details
         $interest->name = $validated['name'];
         $interest->desc = $validated['desc'];
+        $interest->icon = $request->icon;
         $interest->save();
 
         return redirect()->route('interests.index')->with('success', 'Data updated successfully!');

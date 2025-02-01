@@ -61,9 +61,9 @@
                       @foreach($data as $data)
                       <tr>
                         <th>{{$a = $loop->index+1}}</th>
-                        <td>{{ $data->name}}</td>
+                        <td>{{ $data->name ?? ''}}</td>
                         <td>
-                        <img src="{{ asset('uploads/app/int_images/' . $data->icon) }}" alt=" Interests Image" width="100px">
+                          {{ $data->icon ?? ''}}
                         </td>
                         <td>{{ $data->desc}}</td>
                         @if($data->status == 1)

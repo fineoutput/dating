@@ -73,10 +73,10 @@
                                 <div class="form-group row">
                                     <div class="col-sm-12">
                                         <label class="form-label" for="icon">Icon</label>
-                                        <input class="form-control" type="file" id="icon" name="icon">
-                                        @isset($interest)
+                                        <input class="form-control" type="text" id="icon" name="icon">
+                                        {{-- @isset($interest)
                                             <img src="{{ asset('uploads/app/int_images/' . $interest->icon) }}" width="100px" alt="Current Icon">
-                                        @endisset
+                                        @endisset --}}
                                     </div>
                                 </div>
                                 <div class="form-group">

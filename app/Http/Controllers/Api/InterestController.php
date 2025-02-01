@@ -100,7 +100,7 @@ class InterestController extends Controller
             return response()->json([
                 'message' => 'Interest already added.',
                 'status' => 200,
-            ], 400);
+            ], 200);
         }
     
     

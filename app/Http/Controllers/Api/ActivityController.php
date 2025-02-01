@@ -168,7 +168,6 @@ public function useractivitys(Request $request)
 
         $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
-        // Add activity data along with user info to the array
         $activitiesData[] = [
             'id' => $activity->id,
             'title' => $activity->title,

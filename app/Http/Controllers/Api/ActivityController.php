@@ -364,10 +364,19 @@ class ActivityController extends Controller
             $activityTemp->location = $request->location ?? $activityTemp->location;
     
             if ($request->hasFile('image')) {
+                // Get the image file
                 $image = $request->file('image');
-                $imagePath = $image->move(public_path('images/activities'), $image->getClientOriginalName());
-                $activityTemp->image = asset('images/activities/' . $image->getClientOriginalName());
+                
+                // Create a unique name for the image to avoid overwriting
+                $imageName = time() . '.' . $image->getClientOriginalExtension();
+                
+                // Move the image to the desired location in the public directory
+                $image->move(public_path('images/activities'), $imageName);
+                
+                // Store only the filename in the database
+                $activityTemp->image = 'images/activities/' . $imageName;
             }
+            
     
             $activityTemp->amount = $request->amount ?? $activityTemp->amount;
     

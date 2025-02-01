@@ -33,5 +33,9 @@ class Activity extends Model
     {
         return $this->belongsTo(Vibes::class, 'vibe_id');
     }
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
     
 }

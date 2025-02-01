@@ -200,7 +200,6 @@ public function useractivitys(Request $request)
 
 public function getActivitydetailes(Request $request)
 {
-
     $user = Auth::user();
     
     if (!$user) {
@@ -213,57 +212,88 @@ public function getActivitydetailes(Request $request)
 
     $activity = Activity::where('id', $request->activity_id)->first();
 
-
-
     $activityInterest = OtherInterest::where('activity_id', $request->activity_id)
-    ->where('confirm', 1)
-    ->with('user') // Eager load the 'user' relationship
-    ->get();
+        ->where('confirm', 1)
+        ->with('user') // Eager load the 'user' relationship
+        ->get();
 
-// Map through the results and add the user profile image
-$activityInterestWithProfileImage = $activityInterest->map(function($interest) {
-    if ($interest->user && $interest->user->profile_image) {
-        // Decode the JSON string stored in the profile_image field
-        $profileImages = json_decode($interest->user->profile_image, true);
-        
-        // Get the first image or you can select the desired one based on your logic
-        $imageUrl = isset($profileImages[1]) ? asset('storage/' . $profileImages[1]) : null;
-        
-        // Return only the image URL
-        return $imageUrl;
-    }
-    // If no user or profile image exists, return null
-    return null;
-});
+    // Map through the results and add the user profile image
+    $activityInterestWithProfileImage = $activityInterest->map(function($interest) {
+        if ($interest->user && $interest->user->profile_image) {
+            // Decode the JSON string stored in the profile_image field
+            $profileImages = json_decode($interest->user->profile_image, true);
+            
+            // Access images with correct keys
+            $imagePath = isset($profileImages['1']) ? public_path('uploads/app/profile_images/' . $profileImages['1']) : null;
 
-// Filter out any null results (where there is no profile image)
-$activityInterestWithProfileImage = $activityInterestWithProfileImage->filter(function($value) {
-    return $value !== null;
-});
+            // If the image exists, return the URL
+            if ($imagePath && file_exists($imagePath)) {
+                $imageUrl = asset('uploads/app/profile_images/' . $profileImages['1']);
+                return [
+                    'user_id' => $interest->user->id,
+                    'profile_image' => $imageUrl,
+                ];
+            }
+        }
+        // If no user or profile image exists, return null
+        return null;
+    });
 
-// Prepare the response data with the count
-// $responseData = [
-//     // Get the values without keys
-// ];
+    // Filter out any null results (where there is no profile image)
+    $activityInterestWithProfileImage = $activityInterestWithProfileImage->filter(function($value) {
+        return $value !== null;
+    });
 
-// return response()->json($responseData);
-
-    
     if (!$activity) {
         return response()->json(['message' => 'Activity not found or you do not have permission to view it'], 404);
     }
 
+    // Get the profile image for the activity creator (user who created the activity)
+    $defaultImageUrl = asset('uploads/app/profile_images/default_profile_image.jpg');
+    $activityInterestWithProfileImage = $activityInterest->map(function($interest) use ($defaultImageUrl) {
+        if ($interest->user) {
+            // Check if profile_image is not empty
+            if (!empty($interest->user->profile_image)) {
+                // Decode the JSON string stored in the profile_image field
+                $profileImages = json_decode($interest->user->profile_image, true);
+                
+                if (is_array($profileImages) && isset($profileImages['1'])) {
+                    // Get the first image or use a default if the image doesn't exist
+                    $imagePath = public_path('uploads/app/profile_images/' . $profileImages['1']);
+                    if (file_exists($imagePath)) {
+                        $imageUrl = asset('uploads/app/profile_images/' . $profileImages['1']);
+                        return [
+                            'user_id' => $interest->user->id,
+                            'profile_image' => $imageUrl,
+                        ];
+                    }
+                }
+            }
+            // If no valid profile image exists, return the default image
+            return [
+                'user_id' => $interest->user->id,
+                'profile_image' => $defaultImageUrl,
+            ];
+        }
+        // If no user exists, return the default image
+        return [
+            'user_id' => null,
+            'profile_image' => $defaultImageUrl,
+        ];
+    });
+
+    $time = strtotime($activity->when_time);
     $activityData = [
         'id' => $activity->id,
+        'user_name' => $activity->user->name ?? '',
+        'profile_image' =>  $activityCreatorProfileImage ?? $defaultImageUrl, 
         'title' => $activity->title,
         'description' => $activity->description,
         'location' => $activity->location,
-        'when_time' => $activity->when_time,
-        'start_time' => $activity->start_time,
-        'end_time' => $activity->end_time,
+        'when_time' => date('h.i a', $time),
         'how_many' => $activity->how_many,
-        'interests_id' => $activity->interests_id,
         'vibe_name' => $activity->vibe->name ?? '',  
+        'vibe_icon' => $activity->vibe->icon ?? '',  
         'expense_id' => $activity->expense_id,
         'status' => $activity->status,
         'attendees' => [ 
@@ -278,7 +308,6 @@ $activityInterestWithProfileImage = $activityInterestWithProfileImage->filter(fu
         'data' => $activityData,
     ]);
 }
-
     
         public function activitys(Request $request)
         {

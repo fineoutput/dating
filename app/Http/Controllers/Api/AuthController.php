@@ -189,10 +189,13 @@ class AuthController extends Controller
     if ($request->status === 'insert' && $request->number) {
         $existingUser = User::where('number', $request->number)->first();
 
-        if($existingUser->status == 0){
-            return response()->json(['message' => 'You have been blocked by Admin, You cannot log in yet', 'status' => false], 200);
-        }
+        
         if ($existingUser) {
+            
+            if($existingUser->status == 0){
+                return response()->json(['message' => 'You have been blocked by Admin, You cannot log in yet', 'status' => false], 200);
+            }
+
             $otp = $this->sendOtp($request->number); 
             return response()->json(['message' => 'User already exists, OTP sent!','status' => true], 200);
         }

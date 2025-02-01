@@ -574,6 +574,7 @@ public function getActivitydetailes(Request $request)
     ]);
 
     $activity = Activity::where('id', $request->activity_id)->first();
+    $interestcount =OtherInterest::where('activity_id', $request->activity_id)->count();
 
     // Handle the case where expense_id is stored as a JSON string
     $expenseIds = json_decode($activity->expense_id, true); // Decodes the string to an array
@@ -639,6 +640,7 @@ $activityInterestWithProfileImage = $activityInterestWithProfileImage->filter(fu
         'location' => $activity->location,
         'when_time' => date('h.i a', $time),
         'how_many' => $activity->how_many,
+        'interestCount' => $interestcount,
         'vibe_name' => $activity->vibe->name ?? '',  
         'vibe_icon' => $activity->vibe->icon ?? '',  
         // 'expense_id' => $activity->expense_id,

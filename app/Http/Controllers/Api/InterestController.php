@@ -262,6 +262,7 @@ class InterestController extends Controller
 
     return response()->json([
         'message' => 'User interests fetched successfully',
+        'status' => 200,
         'data' => [
             'interests' => $interestsArray,
             'confirmed' => $confirmArray

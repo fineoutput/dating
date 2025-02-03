@@ -375,7 +375,7 @@ class ActivityController extends Controller
     
             // Save updated data to ActivityTemp
             $activityTemp->save();
-    
+            $activityTemp->makeHidden(['created_at', 'updated_at', 'deleted_at']);
             return response()->json([
                 'message' => 'Activity updated in ActivityTemp',
                 'status' => 200,
@@ -414,6 +414,7 @@ class ActivityController extends Controller
     
             // Optionally, delete the temporary activity after finalizing
             $activityTemp->delete();
+            $activity->makeHidden(['created_at', 'updated_at', 'deleted_at']);
     
             return response()->json([
                 'message' => 'Activity moved to Activity table successfully',

@@ -281,7 +281,11 @@ class AuthController extends Controller
             $newUser->auth = $token;
             $newUser->save();
 
-            return response()->json(['message' => 'User verified and moved to users table successfully!','status' => 200,], 200);
+            return response()->json([
+                'message' => 'User Register successfully!',
+                'status' => 200,
+                'token' => $token,  // Include the token in the response
+            ], 200);
         } else {
             return response()->json(['message' => 'User not found or email or phone not verified.'], 404);
         }

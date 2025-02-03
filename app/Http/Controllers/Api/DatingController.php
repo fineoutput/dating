@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Mail\OtpMail;
 use App\Models\Interest;
+use App\Models\Chat;
 use App\Models\Cupid;
 use App\Models\Vibes;
 use App\Models\Activity;
@@ -101,6 +102,11 @@ class DatingController extends Controller
     
                 $distance = $this->calculateDistance($userLatitude, $userLongitude, $matchedUserLatitude, $matchedUserLongitude);
 
+                $message = Chat::where('sender_id', Auth::id())
+                ->where('receiver_id', $matchingUser->id)
+                ->latest()
+                ->first();
+
                 $usersWithInterests[] = [
                     'user' => [
                         'id' => $matchingUser->id,
@@ -110,10 +116,10 @@ class DatingController extends Controller
                         'looking_for' => $matchingUser->looking_for,
                         'profile_image' => $profileImageUrl,
                         'status' => $matchingUser->status,
-                        'match_percentage' => $matchingPercentage,
+                        'match_percentage' => number_format($matchingPercentage, 2),
                         'distance' => $distance . ' km', 
-                        'latitude' => $matchedUserLatitude,
-                        'longitude' => $matchedUserLongitude,
+                        'message' => $message ? $message->message : null, 
+                        'message_status' => $message ? $message->status : null, 
                     ],
                 ];
                 $totalMatchingUsers++;

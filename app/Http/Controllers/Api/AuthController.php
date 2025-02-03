@@ -238,7 +238,7 @@ class AuthController extends Controller
 
                 $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
                 $image->move(public_path('uploads/app/profile_images/'), $imageName);
-                $imagePaths[$index] = 'profile_images' . $imageName;
+                $imagePaths[$index] =  $imageName;
                 $index++;
             }
             $updateData['profile_image'] = json_encode($imagePaths);
@@ -258,7 +258,7 @@ class AuthController extends Controller
         if ($unverifyUser) {
             $newUser = User::create([
                 'number' => $unverifyUser->number,     
-                'auth' => $unverifyUser->auth,     
+                // 'auth' => $unverifyUser->auth,     
                 'email' => $unverifyUser->email,
                 'name' => $unverifyUser->name,
                 'age' => $unverifyUser->age,
@@ -275,9 +275,9 @@ class AuthController extends Controller
 
             UnverifyUser::where('number', $request->number)->delete();
 
-            // $token = $newUser->createToken('token')->plainTextToken;
-            // $newUser->auth = $token;
-            // $newUser->save();
+            $token = $newUser->createToken('token')->plainTextToken;
+            $newUser->auth = $token;
+            $newUser->save();
 
             return response()->json(['message' => 'User verified and moved to users table successfully!','status' => 200,], 200);
         } else {
@@ -614,12 +614,16 @@ class AuthController extends Controller
     {
 
         $user = Auth::user();
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], 401);
+    }
+        // return $user;
 
         $profileImages = json_decode($user->profile_image, true);
 
         $imageUrls = [];
         foreach ($profileImages as $image) {
-            $imageUrls[] = asset('profile_images/' . $image);
+            $imageUrls[] = asset('uploads/app/profile_images/' . $image);
         }
         $userData = [
             'id' => $user->id,

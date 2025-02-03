@@ -410,7 +410,7 @@ class ActivityController extends Controller
                 'other_activity' => $activityTemp->other_activity,
                 'image' => $activityTemp->image,
                 'amount' => $activityTemp->amount,
-            ]);
+            ]); 
     
             // Optionally, delete the temporary activity after finalizing
             $activityTemp->delete();
@@ -608,7 +608,7 @@ $activityInterestWithProfileImage = $activityInterest->map(function($interest) {
         $profileImages = json_decode($interest->user->profile_image, true);
         
         // Get the first image or you can select the desired one based on your logic
-        $imageUrl = isset($profileImages[1]) ? asset('storage/' . $profileImages[1]) : null;
+        $imageUrl = isset($profileImages[1]) ? asset('uploads/app/profile_images/' . $profileImages[1]) : null;
         
         // Return only the image URL
         return $imageUrl;
@@ -630,7 +630,7 @@ $activityInterestWithProfileImage = $activityInterestWithProfileImage->filter(fu
                 $profileImageUrl = null;
     
                 if (!empty($profileImages) && isset($profileImages[1])) {
-                    $profileImageUrl = asset('uploads/app/' . $profileImages[1]);
+                    $profileImageUrl = asset('uploads/app/profile_images/' . $profileImages[1]);
                 }
                 
     $time = strtotime($activity->when_time);

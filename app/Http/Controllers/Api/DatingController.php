@@ -107,7 +107,7 @@ class DatingController extends Controller
                 ->latest()
                 ->first();
 
-                $usersWithInterests = [
+                $usersWithInterests[] = [
                     // 'user' => [
                         'id' => $matchingUser->id,
                         'name' => $matchingUser->name,

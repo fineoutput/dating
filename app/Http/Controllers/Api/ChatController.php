@@ -54,6 +54,7 @@ class ChatController extends Controller
         return response()->json([
             'message' => 'Message sent successfully.',
             'data' => $chatArray,
+            'status' => 200,
         ], 201);
     }
 
@@ -102,6 +103,7 @@ class ChatController extends Controller
         return response()->json([
             'message' => 'Messages fetched successfully.',
             'data' => $messagesArray,
+            'status' => 200,
         ]);
     }
 
@@ -136,6 +138,7 @@ class ChatController extends Controller
         return response()->json([
             'message' => 'Message status updated successfully.',
             'data' => $messageData,
+            'status' => 200,
         ]);
     }
 }

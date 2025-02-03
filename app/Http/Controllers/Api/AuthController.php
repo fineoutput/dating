@@ -642,7 +642,7 @@ class AuthController extends Controller
     $interestIds = array_map('trim', $interestIds);
 
     // Fetch the interests from the Interest model
-    $interests = Interest::whereIn('id', $interestIds)->get(['id', 'name', 'icon']);
+    $interests = Interest::whereIn('id', $interestIds)->get(['name', 'icon']);
     
     // Log the interest IDs and fetched interests for debugging
     \Log::info("Interest IDs: ", $interestIds);

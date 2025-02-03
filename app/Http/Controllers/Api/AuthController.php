@@ -613,12 +613,17 @@ class AuthController extends Controller
     
 
    
-    public function userprofile(Request $request)
+ 
+public function userprofile(Request $request)
 {
     $user = Auth::user();
     
     if (!$user) {
-        return response()->json(['message' => 'User not authenticated'], 401);
+        // If user is not authenticated, return with 401 status and message
+        return response()->json([
+            'status' => false,
+            'message' => 'User not authenticated',
+        ], 401);
     }
     
     // Get the interest field from the user model
@@ -629,7 +634,10 @@ class AuthController extends Controller
 
     // Check if the decoded data is an array
     if (!is_array($interestFieldDecoded)) {
-        return response()->json(['message' => 'Invalid interest data'], 400);
+        return response()->json([
+            'status' => false,
+            'message' => 'Invalid interest data',
+        ], 400);
     }
 
     // Flatten the array and split each item by commas to get individual IDs
@@ -670,7 +678,12 @@ class AuthController extends Controller
         'profile_images' => $imageUrls,
     ];
     
-    return response()->json($userData);
+    // Return the response with status and message
+    return response()->json([
+        'status' => 200,
+        'message' => 'User profile fetched successfully',
+        'data' => $userData,
+    ], 200);
 }
 
 }

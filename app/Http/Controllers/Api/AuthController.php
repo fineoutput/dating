@@ -185,7 +185,7 @@ class AuthController extends Controller
         foreach ($validator->errors()->getMessages() as $field => $messages) {
             $errors[$field] = $messages[0];
         }
-        return response()->json(['errors' => $errors,'status' => 201], 400);
+        return response()->json(['errors' => $errors,'status' => 201], 201);
     }
 
     if ($request->status === 'insert' && $request->number) {

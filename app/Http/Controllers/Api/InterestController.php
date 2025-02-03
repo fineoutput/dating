@@ -60,7 +60,7 @@ class InterestController extends Controller
             'message' => $message,
             'status' => $status,
             'data' => $data,
-        ], $statusCode);
+        ]);
     }
 
     public function expense()
@@ -76,7 +76,7 @@ class InterestController extends Controller
             'message' => $message,
             'status' => $status,
             'data' => $data,
-        ], $statusCode);
+        ]);
     }
 
 
@@ -85,7 +85,7 @@ class InterestController extends Controller
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Unauthorized. Please log in.',
-            ], 401);
+            ]);
         }
 
         $user = Auth::user();
@@ -101,7 +101,7 @@ class InterestController extends Controller
             return response()->json([
                 'message' => 'Interest already added.',
                 'status' => 200,
-            ], 200);
+            ]);
         }
     
     
@@ -174,7 +174,8 @@ class InterestController extends Controller
     if (!Auth::check()) {
         return response()->json([
             'message' => 'Unauthorized. Please log in.',
-        ], 401);
+            'status' => 201,
+        ]);
     }
 
     $user = Auth::user();
@@ -189,7 +190,8 @@ class InterestController extends Controller
     if (!$activity) {
         return response()->json([
             'message' => 'Activity not found.',
-        ], 404);
+            'status' => 200,
+        ]);
     }
 
     $howMany = $activity->how_many;
@@ -208,7 +210,7 @@ class InterestController extends Controller
     if ($interests->isEmpty() && $confirm->isEmpty()) {
         return response()->json([
             'message' => 'No interests found for this activity.',
-        ], 404);
+        ]);
     }
 
     // Map the pending interests and include the count of interests for each user
@@ -276,7 +278,8 @@ class InterestController extends Controller
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Unauthorized. Please log in.',
-            ], 401);
+                'status' => 200,
+            ]);
         }
     
         $user = Auth::user();
@@ -293,7 +296,8 @@ class InterestController extends Controller
             return response()->json([
                 'message' => 'No confirmed interests found for this activity.',
                 'data' => [],
-            ], 404); 
+                'status' => 200,
+            ]); 
         }
 
         $interestsArray = $interests->map(function ($interest) {
@@ -330,7 +334,8 @@ class InterestController extends Controller
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Unauthorized. Please log in.',
-            ], 401);
+                'status' => 201,
+            ]);
         }
     
         $user = Auth::user();
@@ -346,7 +351,8 @@ class InterestController extends Controller
         if (!$activity) {
             return response()->json([
                 'message' => 'Activity not found.',
-            ], 404);
+                'status' => 200,
+            ]);
         }
     
         $howMany = $activity->how_many;
@@ -360,7 +366,7 @@ class InterestController extends Controller
             return response()->json([
                 'message' => 'Maximum confirmations reached for this activity.',
                 'status' => 201,
-            ], 400);
+            ]);
         }
 
         $interest = OtherInterest::where('activity_id', $request->activity_id)
@@ -370,7 +376,8 @@ class InterestController extends Controller
         if (!$interest) {
             return response()->json([
                 'message' => 'No interest found for this activity.',
-            ], 404);
+                'status' => 201,
+            ]);
         }
 
         $interest->confirm = $request->confirm;

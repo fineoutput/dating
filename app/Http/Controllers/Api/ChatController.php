@@ -55,7 +55,7 @@ class ChatController extends Controller
             'message' => 'Message sent successfully.',
             'data' => $chatArray,
             'status' => 200,
-        ], 201);
+        ]);
     }
 
 
@@ -66,14 +66,14 @@ class ChatController extends Controller
         if (!$receiverId) {
             return response()->json([
                 'message' => 'Receiver ID is required.',
-            ], 400);
+            ]);
         }
 
         $receiverExists = User::find($receiverId);
         if (!$receiverExists) {
             return response()->json([
                 'message' => 'Receiver not found.',
-            ], 404);
+            ]);
         }
 
         // Fetch messages between the authenticated user and the receiver
@@ -120,7 +120,8 @@ class ChatController extends Controller
         if (!$message) {
             return response()->json([
                 'message' => 'Message not found.',
-            ], 404);
+                'status' => 200,
+            ]);
         }
 
         $message->status = $request->status;

@@ -611,6 +611,7 @@ class AuthController extends Controller
     }
     
 
+   
     public function userprofile(Request $request)
 {
     $user = Auth::user();
@@ -619,27 +620,34 @@ class AuthController extends Controller
         return response()->json(['message' => 'User not authenticated'], 401);
     }
     
-    // Decode the 'interest' field from the user and get the interest IDs
-    $interestIds = explode(',', $user->interest); // Split the comma-separated string into an array of IDs
+    // Get the interest field from the user model
+    $interestField = $user->interest;
     
-    // Log the interest IDs to check if it's correctly split
-    \Log::info("Interest IDs: ", $interestIds);  // This will log the IDs
-    
-    // Fetch the interests from the Interest model
-    $interests = Interest::whereIn('id', $interestIds)
-        ->get(['id', 'name', 'icon']);
-    
-    // Sort the interests based on the provided interestIds order
-    $interests = $interests->sortBy(function ($interest) use ($interestIds) {
-        return array_search($interest->id, $interestIds);  // Sort by the index in the $interestIds array
-    });
-    
-    // Reset the array keys to ensure the result is correctly indexed
-    $interests = $interests->values();  // This resets the keys to be 0,1,2...
+    // Decode the interest field
+    $interestFieldDecoded = json_decode($interestField, true);
 
-    // Log the fetched interests to verify the sorted order
-    \Log::info("Sorted Interests: ", $interests->toArray());  // This will log the sorted interests
+    // Check if the decoded data is an array
+    if (!is_array($interestFieldDecoded)) {
+        return response()->json(['message' => 'Invalid interest data'], 400);
+    }
+
+    // Flatten the array and split each item by commas to get individual IDs
+    $interestIds = [];
+    foreach ($interestFieldDecoded as $item) {
+        // For each item, split by commas and merge the result
+        $interestIds = array_merge($interestIds, explode(',', $item));
+    }
+
+    // Trim any extra spaces around the IDs
+    $interestIds = array_map('trim', $interestIds);
+
+    // Fetch the interests from the Interest model
+    $interests = Interest::whereIn('id', $interestIds)->get(['id', 'name', 'icon']);
     
+    // Log the interest IDs and fetched interests for debugging
+    \Log::info("Interest IDs: ", $interestIds);
+    \Log::info("Fetched Interests: ", $interests->toArray());
+
     // Prepare the profile images URLs
     $profileImages = json_decode($user->profile_image, true);
     $imageUrls = [];
@@ -656,15 +664,12 @@ class AuthController extends Controller
         'age' => $user->age,
         'gender' => $user->gender,
         'looking_for' => $user->looking_for,
-        'interest' => $interests,  // This should now contain the interests in the correct order
+        'interest' => $interests,  
         'status' => $user->status,
         'profile_images' => $imageUrls,
     ];
     
     return response()->json($userData);
 }
-
-
-    
 
 }

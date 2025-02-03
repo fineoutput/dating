@@ -108,7 +108,7 @@ class DatingController extends Controller
                 ->first();
 
                 $usersWithInterests[] = [
-                    'user' => [
+                    // 'user' => [
                         'id' => $matchingUser->id,
                         'name' => $matchingUser->name,
                         'age' => $matchingUser->age,
@@ -120,7 +120,7 @@ class DatingController extends Controller
                         'distance' => $distance . ' km', 
                         'message' => $message ? $message->message : null, 
                         'message_status' => $message ? $message->status : null, 
-                    ],
+                    // ],
                 ];
                 $totalMatchingUsers++;
             }

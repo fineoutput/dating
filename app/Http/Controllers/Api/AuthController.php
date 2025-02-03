@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UnverifyUser;
 use App\Models\UserOtp;
+use App\Models\Interest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -437,7 +438,7 @@ class AuthController extends Controller
                     'data' => [
                         'message' => 'Phone number verified successfully!',
                         'status' => $status,  
-                        'token' => $token,
+                        // 'token' => $token,
                     ],
                     'status' => true
                 ]);
@@ -611,37 +612,59 @@ class AuthController extends Controller
     
 
     public function userprofile(Request $request)
-    {
-
-        $user = Auth::user();
+{
+    $user = Auth::user();
+    
     if (!$user) {
         return response()->json(['message' => 'User not authenticated'], 401);
     }
-        // return $user;
+    
+    // Decode the 'interest' field from the user and get the interest IDs
+    $interestIds = explode(',', $user->interest); // Split the comma-separated string into an array of IDs
+    
+    // Log the interest IDs to check if it's correctly split
+    \Log::info("Interest IDs: ", $interestIds);  // This will log the IDs
+    
+    // Fetch the interests from the Interest model
+    $interests = Interest::whereIn('id', $interestIds)
+        ->get(['id', 'name', 'icon']);
+    
+    // Sort the interests based on the provided interestIds order
+    $interests = $interests->sortBy(function ($interest) use ($interestIds) {
+        return array_search($interest->id, $interestIds);  // Sort by the index in the $interestIds array
+    });
+    
+    // Reset the array keys to ensure the result is correctly indexed
+    $interests = $interests->values();  // This resets the keys to be 0,1,2...
 
-        $profileImages = json_decode($user->profile_image, true);
-
-        $imageUrls = [];
-        foreach ($profileImages as $image) {
-            $imageUrls[] = asset('uploads/app/profile_images/' . $image);
-        }
-        $userData = [
-            'id' => $user->id,
-            'number' => $user->number,
-            'auth' => $user->auth,
-            'name' => $user->name,
-            'email' => $user->email,
-            'age' => $user->age,
-            'gender' => $user->gender,
-            'looking_for' => $user->looking_for,
-            'interest' => json_decode($user->interest, true), 
-            'state' => $user->state,
-            'city' => $user->city,
-            'status' => $user->status,
-            'profile_images' => $imageUrls, 
-        ];
-        return response()->json($userData);
+    // Log the fetched interests to verify the sorted order
+    \Log::info("Sorted Interests: ", $interests->toArray());  // This will log the sorted interests
+    
+    // Prepare the profile images URLs
+    $profileImages = json_decode($user->profile_image, true);
+    $imageUrls = [];
+    foreach ($profileImages as $image) {
+        $imageUrls[] = asset('uploads/app/profile_images/' . $image);
     }
+    
+    // Prepare the user data
+    $userData = [
+        'id' => $user->id,
+        'number' => $user->number,
+        'name' => $user->name,
+        'email' => $user->email,
+        'age' => $user->age,
+        'gender' => $user->gender,
+        'looking_for' => $user->looking_for,
+        'interest' => $interests,  // This should now contain the interests in the correct order
+        'status' => $user->status,
+        'profile_images' => $imageUrls,
+    ];
+    
+    return response()->json($userData);
+}
 
+
+    
 
 }

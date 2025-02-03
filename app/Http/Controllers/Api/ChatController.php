@@ -109,36 +109,41 @@ class ChatController extends Controller
 
 
     public function updateMessageStatus(Request $request)
-    {
-        // Validate the input
-        $request->validate([
-            'message_id' => 'required',
-            'status' => 'required|in:sent,delivered,read',
-        ]);
-    
-        $message = Chat::find($request->message_id);
+{
+    // Validate the input
+    $request->validate([
+        'message_id' => 'required',
+        'status' => 'required|in:sent,delivered,read',
+    ]);
 
-        if (!$message) {
-            return response()->json([
-                'message' => 'Message not found.',
-            ], 404);
-        }
-    
-        $message->status = $request->status;
-        $message->save();
-    
-        $messageData = [
-            'id' => $message->id,
-            'sender_id' => $message->sender_id,
-            'receiver_id' => $message->receiver_id,
-            'message' => $message->message,
-            'status' => $message->status,
-        ];
-    
+    // Find the message by its ID
+    $message = Chat::find($request->message_id);
+
+    if (!$message) {
         return response()->json([
-            'message' => 'Message status updated successfully.',
-            'data' => $messageData,
-            'status' => 200,
-        ]);
+            'message' => 'Message not found.',
+        ], 404);
     }
+
+    // Update the message status
+    $message->status = $request->status;
+    $message->save();
+
+    // Prepare the message data with the "time ago" feature
+    $messageData = [
+        'id' => $message->id,
+        'sender_id' => $message->sender_id,
+        'receiver_id' => $message->receiver_id,
+        'message' => $message->message,
+        'status' => $message->status,
+        'sent_time' => Carbon::parse($message->created_at)->diffForHumans(), // Add the "time ago" feature
+    ];
+
+    return response()->json([
+        'message' => 'Message status updated successfully.',
+        'data' => $messageData,
+        'status' => 200,
+    ]);
+}
+
 }

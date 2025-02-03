@@ -56,7 +56,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/update-cupid-match', [DatingController::class, 'updateCupidMatch']);
 
     Route::post('/subscription-list', [SubscriptionController::class, 'subscriptionlist']);
-
+    // Route::post('slide-like', [YourController::class, 'handleSlideLike']);  
 });   
 
 

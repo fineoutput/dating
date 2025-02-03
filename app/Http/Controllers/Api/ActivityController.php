@@ -336,6 +336,7 @@ class ActivityController extends Controller
             return response()->json([
                 'message' => 'Validation failed',
                 'errors' => $validator->errors(),
+                'status' => 201,
             ], 422);
         }
     
@@ -344,7 +345,7 @@ class ActivityController extends Controller
             $activityTemp = ActivityTemp::find($request->activity_id);
     
             if (!$activityTemp) {
-                return response()->json(['message' => 'Activity not found'], 404);
+                return response()->json(['message' => 'Activity not found','status'=>201], 404);
             }
     
             // Update activity details
@@ -389,7 +390,7 @@ class ActivityController extends Controller
             $activityTemp = ActivityTemp::find($request->activity_id);
     
             if (!$activityTemp) {
-                return response()->json(['message' => 'Activity not found'], 404);
+                return response()->json(['message' => 'Activity not found','status' => 200,], 404);
             }
     
             // Create the final activity in the Activity table
@@ -768,7 +769,7 @@ $activityInterestWithProfileImage = $activityInterestWithProfileImage->filter(fu
         $interestFieldDecoded = json_decode($interestField, true);
 
         if (!is_array($interestFieldDecoded)) {
-            return response()->json(['message' => 'Invalid interest data'], 400);
+            return response()->json(['message' => 'Invalid interest data','status'=>201], 400);
         }
 
         $interestIds = [];
@@ -806,7 +807,7 @@ $matchingActivities = Activity::whereIn('interests_id', $interestIds)
         //                             ->get();
 
     if ($matchingActivities->isEmpty()) {
-        return response()->json(['message' => 'No matching activities found'], 404);
+        return response()->json(['message' => 'No matching activities found','status'=>200], 404);
     }
 
     $activitiesWithUserDetails = $matchingActivities->map(function ($activity) {

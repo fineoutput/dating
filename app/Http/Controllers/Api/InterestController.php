@@ -42,6 +42,7 @@ class InterestController extends Controller
     return response()->json([
         'message' => $message,
         'data' => $data,
+        'status' => $statusCode,
     ], $statusCode);
 }
 
@@ -358,6 +359,7 @@ class InterestController extends Controller
         if ($confirmedCount >= $howMany) {
             return response()->json([
                 'message' => 'Maximum confirmations reached for this activity.',
+                'status' => 201,
             ], 400);
         }
 

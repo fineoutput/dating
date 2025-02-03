@@ -185,7 +185,7 @@ class AuthController extends Controller
         foreach ($validator->errors()->getMessages() as $field => $messages) {
             $errors[$field] = $messages[0];
         }
-        return response()->json(['errors' => $errors], 400);
+        return response()->json(['errors' => $errors,'status' => 201], 400);
     }
 
     if ($request->status === 'insert' && $request->number) {
@@ -195,11 +195,11 @@ class AuthController extends Controller
         if ($existingUser) {
             
             if($existingUser->status == 0){
-                return response()->json(['message' => 'You have been blocked by Admin, You cannot log in yet', 'status' => false], 200);
+                return response()->json(['message' => 'You have been blocked by Admin, You cannot log in yet', 'status' => 200], 200);
             }
 
             $otp = $this->sendOtp($request->number); 
-            return response()->json(['message' => 'User already exists, OTP sent!','status' => true], 200);
+            return response()->json(['message' => 'User already exists, OTP sent!','status' => 200], 200);
         }
 
         $otp = $this->sendOtp($request->number); 
@@ -207,7 +207,10 @@ class AuthController extends Controller
             'number' => $request->number,
         ]);
         
-        return $this->successResponse('OTP sent successfully!');
+        return response()->json([
+            'message' => 'OTP sent successfully!',
+            'status' => 200,
+        ], 200);
     }
 
     elseif ($request->status === 'update') {
@@ -287,7 +290,10 @@ class AuthController extends Controller
                 'token' => $token,  // Include the token in the response
             ], 200);
         } else {
-            return response()->json(['message' => 'User not found or email or phone not verified.'], 404);
+            return response()->json([
+                'message' => 'User not found or email or phone not verified.',
+                'status' => 201,
+            ], 404);
         }
     }
 }
@@ -376,11 +382,20 @@ class AuthController extends Controller
             ->first();
             
         if (!$otpUser) {
-            return $this->successResponse('Invalid OTP or details!', false, 400);
+            return response()->json([
+                'message' => 'Invalid OTP or details!',
+                'success' => 200
+            ], 400);
+            
         }
         
         if ($otpUser->expires_at < now()) {
-            return $this->successResponse('OTP has expired. Please request a new OTP.', false, 400);
+            return response()->json([
+                'message' => 'OTP has expired. Please request a new OTP!',
+                'success' => 200
+            ]);
+            
+            // return $this->successResponse('.', false, 400);
         }
         
         UserOtp::where('type', $type)
@@ -549,7 +564,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['message' => 'Invalid credentials'], 400);
+            return response()->json(['message' => 'Invalid credentials','status'=>201], 400);
         }
 
         $user = User::where('number', $request->number)->first();
@@ -609,7 +624,7 @@ class AuthController extends Controller
             $user->auth = null; 
             $user->save();
     
-            return response()->json(['message' => 'Successfully logged out']);
+            return response()->json(['message' => 'Successfully logged out','status'=>200]);
         }
     
         return response()->json(['message' => 'No authenticated user found'], 401);

@@ -20,12 +20,15 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('signup', [AuthController::class, 'signup']);
+// Route::post('signup', [AuthController::class, 'signup']);
 Route::post('verify_auth_otp', [AuthController::class, 'verify_auth_otp']);
-Route::post('login', [AuthController::class, 'login']);
+Route::post('login', [AuthController::class, 'signup']);
+
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
 
 
-Route::middleware('auth:sanctum')->group(function () {
+
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('activity-store', [ActivityController::class, 'activitystore']);
     Route::get('activitys', [ActivityController::class, 'activitys']);

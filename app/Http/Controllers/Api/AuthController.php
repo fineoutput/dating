@@ -431,6 +431,7 @@ class AuthController extends Controller
                         'message' => 'Email verified successfully!',
                         'status' => 206
                     ],
+                    // 'status' => true
                 ]);
             } else {
                 return $this->successResponse('No user found with the provided email.', false, 404);

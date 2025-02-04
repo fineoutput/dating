@@ -700,7 +700,7 @@ public function userprofile(Request $request)
     
     // Prepare the user data
     $userData = [
-        'id' => $user->id,
+        // 'id' => $user->id,
         'number' => $user->number,
         'name' => $user->name,
         'email' => $user->email,

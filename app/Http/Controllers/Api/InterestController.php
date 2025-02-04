@@ -82,19 +82,21 @@ class InterestController extends Controller
 
     public function addinterest(Request $request)
     {
-        if (!Auth::check()) {
+        if (!Auth::check()) {  
             return response()->json([
                 'message' => 'Unauthorized. Please log in.',
             ]);
         }
 
         $user = Auth::user();
+        $activity_id = Activity::where('rendom',$request->rendom)->first();
+        // return $activity_id;
 
         $request->validate([
-            'activity_id' => 'required|exists:activity_table,id',
+            'rendom' => 'required|exists:activity_table',
         ]);
         $existingInterest = OtherInterest::where('user_id', $user->id)
-                                        ->where('activity_id', $request->activity_id)
+                                        ->where('activity_id', $activity_id->id)
                                         ->first();
 
         if ($existingInterest) {
@@ -109,7 +111,7 @@ class InterestController extends Controller
         try {
             $otherInterest = OtherInterest::create([
                 'user_id' => $user->id,
-                'activity_id' => $request->activity_id,
+                'activity_id' => $activity_id->id,
                 'confirm' => 0,
             ]);
 
@@ -117,8 +119,8 @@ class InterestController extends Controller
                 'message' => 'Interest added successfully',
                 'status' => 200,
                 'data' => [
-                    'user_id' => $user->id,
-                    'activity_id' => $request->activity_id,
+                    'user_rendom' => $user->rendom,
+                    'activity_rendom' => $request->rendom,
                     'confirm' => $otherInterest->confirm,  
                 ],
             ]);
@@ -182,11 +184,13 @@ class InterestController extends Controller
     $user = Auth::user();
 
     $request->validate([
-        'activity_id' => 'required|exists:activity_table,id',
+        'rendom' => 'required|exists:activity_table',
     ]);
 
     // Get the Activity record to check the how_many field
-    $activity = Activity::find($request->activity_id);
+    // $activity = Activity::find($request->activity_id);
+    $activity = Activity::where('rendom',$request->rendom)->first();
+    // return $activity_id;
 
     if (!$activity) {
         return response()->json([
@@ -198,12 +202,12 @@ class InterestController extends Controller
     $howMany = $activity->how_many;
 
     // Get the interests where confirm is 0 for the given activity
-    $interests = OtherInterest::where('activity_id', $request->activity_id)
+    $interests = OtherInterest::where('activity_id', $activity->id)
                                ->where('confirm', 0)
                                ->get();
 
     // Get the interests where confirm is 1 for the given activity
-    $confirm = OtherInterest::where('activity_id', $request->activity_id)
+    $confirm = OtherInterest::where('activity_id', $activity->id)
                              ->where('confirm', 1)
                              ->take($howMany) // Limit the number of confirmed interests based on how_many
                              ->get();
@@ -226,12 +230,15 @@ class InterestController extends Controller
         $profileImages = json_decode($interest->user->profile_image ?? '[]', true);
         $profileImageUrl = !empty($profileImages) ? asset('uploads/app/profile_images/' . $profileImages[1] ?? '') : '';
 
+        $activity_rendom = Activity::where('id',$interest->activity_id)->first();
+        $user_rendom = User::where('id',$interest->user_id)->first();
+
         return [
             // 'id' => $interest->id,
             'user' => $interest->user->name ?? '',
-            'user_id' => $interest->user_id,
+            'user_rendom' => $user_rendom->rendom,
             'user_profile' => $profileImageUrl,
-            'activity_id' => $interest->activity_id,
+            'activity_rendom' => $activity_rendom->rendom,
             'confirm' => $interest->confirm,
             'ghosted' => $userInterestsCount,
             'attended' => $userInterestsconfirmCount,
@@ -251,12 +258,14 @@ class InterestController extends Controller
         $profileImages = json_decode($interest->user->profile_image ?? '[]', true);
         $profileImageUrl = !empty($profileImages) ? asset('uploads/app/profile_images/' . $profileImages[1] ?? '') : '';
 
+        $activity_rendom = Activity::where('id',$interest->activity_id)->first();
+        $user_rendom = User::where('id',$interest->user_id)->first();
         return [
             // 'id' => $interest->id,
             'user' => $interest->user->name ?? '',
-            'user_id' => $interest->user_id,
+            'user_rendom' => $user_rendom->rendom,
             'user_profile' => $profileImageUrl,
-            'activity_id' => $interest->activity_id,
+            'activity_rendom' => $activity_rendom->rendom,
             'confirm' => $interest->confirm,
             'ghosted' => $userInterestsCount,
             'attended' => $userInterestsconfirmCount,
@@ -286,10 +295,12 @@ class InterestController extends Controller
         $user = Auth::user();
     
         $request->validate([
-            'activity_id' => 'required',
+            'rendom' => 'required',
         ]);
+
+        $activity_rendom = Activity::where('rendom',$request->rendom)->first();
     
-        $interests = OtherInterest::where('activity_id', $request->activity_id)
+        $interests = OtherInterest::where('activity_id', $activity_rendom->id)
                                    ->where('confirm', 1)
                                    ->get();
     
@@ -309,11 +320,13 @@ class InterestController extends Controller
         $userInterestsactivityCount = Activity::where('user_id', $interest->user_id)
         ->count(); 
 
+        $activity_rendoms = Activity::where('id',$interest->activity_id)->first();
+            $user_rendom = User::where('id',$interest->user_id)->first();
             return [
                 // 'id' => $interest->id,
                 'user' => $interest->user->name ?? '',
-                'user_id' => $interest->user_id,
-                'activity_id' => $interest->activity_id,
+                'user_rendom' => $user_rendom->rendom,
+                'activity_rendom' => $activity_rendoms->rendom,
                 'confirm' => $interest->confirm,
                 'ghosted' => $userInterestsCount,
                 'attended' => $userInterestsconfirmCount,
@@ -342,12 +355,13 @@ class InterestController extends Controller
         $user = Auth::user();
     
         $request->validate([
-            'activity_id' => 'required|exists:activity_table,id',
-            'user_id' => 'required',
+            'activity_rendom' => 'required',
+            'user_rendom' => 'required',
             'confirm' => 'required|boolean', 
         ]);
     
-        $activity = Activity::find($request->activity_id);
+        $activity = Activity::where('rendom',$request->activity_rendom)->first();
+        $user_rendom = User::where('rendom',$request->user_rendom)->first();
     
         if (!$activity) {
             return response()->json([
@@ -358,7 +372,7 @@ class InterestController extends Controller
     
         $howMany = $activity->how_many;
 
-        $confirmedCount = OtherInterest::where('activity_id', $request->activity_id)
+        $confirmedCount = OtherInterest::where('activity_id', $activity->id)
                                        ->where('confirm', 1)
                                        ->count();
     
@@ -370,8 +384,8 @@ class InterestController extends Controller
             ]);
         }
 
-        $interest = OtherInterest::where('activity_id', $request->activity_id)
-                                 ->where('user_id', $request->user_id) 
+        $interest = OtherInterest::where('activity_id', $activity->id)
+                                 ->where('user_id', $user_rendom->id) 
                                  ->first();
     
         if (!$interest) {
@@ -384,12 +398,15 @@ class InterestController extends Controller
         $interest->confirm = $request->confirm;
         $interest->save();
     
+        $activity_data = Activity::where('id',$interest->activity_id)->first();
+        $user_rendom_data = User::where('id',$interest->user_id)->first();
+
         return response()->json([
             'message' => 'Interest confirmation updated successfully.',
             'data' => [
-                'activity_id' => $interest->activity_id,
+                'activity_rendom' => $activity_data->rendom,
                 'user' => $interest->user->name ?? '',
-                'user_id' => $interest->user_id,
+                'user_rendom' => $user_rendom_data->rendom,
                 'confirm' => $interest->confirm,
             ],
         ]);

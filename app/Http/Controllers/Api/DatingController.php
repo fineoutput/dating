@@ -109,7 +109,7 @@ class DatingController extends Controller
 
                 $usersWithInterests[] = [
                     // 'user' => [
-                        'id' => $matchingUser->id,
+                        // 'id' => $matchingUser->id,
                         'name' => $matchingUser->name,
                         'age' => $matchingUser->age,
                         'gender' => $matchingUser->gender,
@@ -306,7 +306,7 @@ public function cupidmatch(Request $request)
         ]);
 
         $cupid->save();
-        $cupid->makeHidden(['created_at', 'updated_at']);
+        $cupid->makeHidden(['created_at', 'updated_at', 'id']);
 
         return response()->json([
             'message' => 'Cupid match saved successfully!',
@@ -352,7 +352,7 @@ public function cupidmatch(Request $request)
                 }
                 $cupid->save();
 
-                $cupid->makeHidden(['created_at', 'updated_at', 'deleted_at']);
+                $cupid->makeHidden(['created_at', 'updated_at', 'deleted_at','id']);
 
                 return response()->json([
                     'message' => 'Cupid match updated successfully!',

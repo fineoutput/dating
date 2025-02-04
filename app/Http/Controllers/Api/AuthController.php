@@ -295,7 +295,7 @@ class AuthController extends Controller
                 'message' => 'User not found or email or phone not verified.',
                 'data' => [],
                 'status' => 201,
-            ], 201);
+            ], 404);
         }
     }
 }

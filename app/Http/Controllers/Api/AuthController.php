@@ -463,7 +463,6 @@ class AuthController extends Controller
                         'status' => $status,  
                         // 'token' => $token,
                     ],
-                    'status' => true
                 ]);
             } else {
                 return $this->successResponse('No user found with the provided phone number.', false, 404);

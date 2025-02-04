@@ -42,7 +42,7 @@ class ChatController extends Controller
     
         // Prepare the response data
         $chatArray = [
-            'id' => $chat->id,
+            // 'id' => $chat->id,
             'sender_id' => $chat->sender_id,
             'receiver_id' => $chat->receiver_id,
             'message' => $chat->message,

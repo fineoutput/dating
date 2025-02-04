@@ -255,7 +255,11 @@ class AuthController extends Controller
         }
 
         $user->update($updateData);
-        return response()->json(['message' => 'User updated successfully!', 'status' => 200,'user' => $user], 200);
+        return response()->json([
+            'message' => 'User updated successfully!', 
+            'status' => 200,
+            'data' => $user
+        ], 200);
     }
 
     // Final case: Move user from unverified to verified table
@@ -298,7 +302,7 @@ class AuthController extends Controller
         } else {
             return response()->json([
                 'message' => 'User not found or email or phone not verified.',
-                'data' => [],
+                // 'data' => [],
                 'status' => 201,
             ], 404);
         }

@@ -906,7 +906,11 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                 $filterApplied = true;
             }
             if (!$filterApplied) {
-                return response()->json(['message' => 'No filters applied, returning all activities'], 200);
+                return response()->json([
+                    'message' => 'No filters applied, returning all activities',
+                    'status' =>  200,
+                    'data' =>  [],
+                ], 200);
             }
             $activities = $query->get();
             $activities->makeHidden(['created_at', 'updated_at', 'deleted_at']);

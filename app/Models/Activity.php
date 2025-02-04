@@ -26,6 +26,7 @@ class Activity extends Model
         'location',
         'amount',
         'image',
+        'rendom',
     ];
 
 

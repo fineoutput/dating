@@ -394,6 +394,7 @@ class ActivityController extends Controller
             }
     
             // Create the final activity in the Activity table
+            $randomNumber = rand(100000, 999999);
             $activity = Activity::create([
                 'user_id' => $activityTemp->user_id,
                 'where_to' => $activityTemp->where_to,
@@ -411,6 +412,7 @@ class ActivityController extends Controller
                 'other_activity' => $activityTemp->other_activity,
                 'image' => $activityTemp->image,
                 'amount' => $activityTemp->amount,
+                'rendom' => $randomNumber,
             ]); 
     
             // Optionally, delete the temporary activity after finalizing

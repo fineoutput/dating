@@ -47,10 +47,9 @@ class ChatController extends Controller
             'receiver_id' => $chat->receiver_id,
             'message' => $chat->message,
             'status' => $chat->status,
-            'sent_time' => $timeAgo,  // Add the formatted time here
+            'sent_time' => $timeAgo,  
         ];
     
-        // Return the response with the chat details and sent time
         return response()->json([
             'message' => 'Message sent successfully.',
             'data' => $chatArray,

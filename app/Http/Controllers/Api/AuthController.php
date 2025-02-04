@@ -269,6 +269,8 @@ class AuthController extends Controller
             ->where('number_verify', 1)
             ->first();
 
+            $randomNumber = rand(100000, 999999);
+
         if ($unverifyUser) {
             $newUser = User::create([
                 'number' => $unverifyUser->number,     
@@ -284,6 +286,7 @@ class AuthController extends Controller
                 'city' => $unverifyUser->city,
                 'latitude' => $unverifyUser->latitude,
                 'longitude' => $unverifyUser->longitude,
+                'rendom' => $randomNumber,
                 'status' => 1,
             ]);
 

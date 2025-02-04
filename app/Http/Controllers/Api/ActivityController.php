@@ -453,7 +453,7 @@ class ActivityController extends Controller
         ]);
     
         $activityData = $activityTemp->toArray();
-        unset($activityData['created_at'], $activityData['updated_at'], $activityData['id']);
+        unset($activityData['created_at'], $activityData['updated_at']);
     
         return response()->json([
             'message' => 'Activity created successfully in ActivityTemp',

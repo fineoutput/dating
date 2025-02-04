@@ -120,6 +120,7 @@ class ChatController extends Controller
         if (!$message) {
             return response()->json([
                 'message' => 'Message not found.',
+                'data' => [],
                 'status' => 200,
             ]);
         }

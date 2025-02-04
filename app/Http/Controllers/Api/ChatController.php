@@ -25,26 +25,29 @@ class ChatController extends Controller
     public function sendMessage(Request $request)
     {
         $request->validate([
-            'receiver_id' => 'required|exists:users,id',
+            'receiver_rendom' => 'required',
             'message' => 'required|string|max:255',
         ]);
     
-        // Create the chat record
+        
+        $receiver_rendom = User::where('rendom',$request->receiver_rendom)->first();
+
         $chat = Chat::create([
             'sender_id' => Auth::id(),
-            'receiver_id' => $request->receiver_id,
+            'receiver_id' => $receiver_rendom->id,
             'message' => $request->message,
             'status' => 'sent',
         ]);
     
         // Format the created_at time into a human-readable format
         $timeAgo = Carbon::parse($chat->created_at)->diffForHumans();
-    
+        $rendom_1 = User::where('id',$chat->sender_id)->first();
+        $rendom_2 = User::where('id',$chat->receiver_id)->first();
         // Prepare the response data
         $chatArray = [
             // 'id' => $chat->id,
-            'sender_id' => $chat->sender_id,
-            'receiver_id' => $chat->receiver_id,
+            'sender_rendom' => $rendom_1->rendom,
+            'receiver_rendom' => $rendom_2->rendom,
             'message' => $chat->message,
             'status' => $chat->status,
             'sent_time' => $timeAgo,  
@@ -60,7 +63,7 @@ class ChatController extends Controller
 
    public function getMessages(Request $request)
     {
-        $receiverId = $request->header('receiver_id');
+        $receiverId = $request->header('receiver_rendom');
 
         if (!$receiverId) {
             return response()->json([
@@ -68,7 +71,10 @@ class ChatController extends Controller
             ]);
         }
 
-        $receiverExists = User::find($receiverId);
+        $receiverExists = User::where('rendom',$receiverId)->first();
+
+        $receve_id = $receiverExists->id;
+
         if (!$receiverExists) {
             return response()->json([
                 'message' => 'Receiver not found.',
@@ -76,23 +82,25 @@ class ChatController extends Controller
         }
 
         // Fetch messages between the authenticated user and the receiver
-        $messages = Chat::where(function ($query) use ($receiverId) {
+        $messages = Chat::where(function ($query) use ($receve_id) {
                 $query->where('sender_id', Auth::id())
-                    ->where('receiver_id', $receiverId);
+                    ->where('receiver_id', $receve_id);
             })
-            ->orWhere(function ($query) use ($receiverId) {
-                $query->where('sender_id', $receiverId)
+            ->orWhere(function ($query) use ($receve_id) {
+                $query->where('sender_id', $receve_id)
                     ->where('receiver_id', Auth::id());
             })
             ->orderBy('created_at', 'asc')
             ->get();
 
-        // Format the messages and add the "time ago" feature
+            
         $messagesArray = $messages->map(function ($message) {
+            $rendom_1 = User::where('id',$message->sender_id)->first();
+            $rendom_2 = User::where('id',$message->receiver_id)->first();
             return [
                 'id' => $message->id,
-                'sender_id' => $message->sender_id,
-                'receiver_id' => $message->receiver_id,
+                'sender_rendom' => $rendom_1->rendom,
+                'receiver_rendom' => $rendom_2->rendom,
                 'message' => $message->message,
                 'status' => $message->status,
                 'sent_time' => Carbon::parse($message->created_at)->diffForHumans(), // Add "time ago" feature
@@ -127,10 +135,13 @@ class ChatController extends Controller
         $message->status = $request->status;
         $message->save();
 
+        $rendom_1 = User::where('id',$message->sender_id)->first();
+        $rendom_2 = User::where('id',$message->receiver_id)->first();
+
         $messageData = [
             'id' => $message->id,
-            'sender_id' => $message->sender_id,
-            'receiver_id' => $message->receiver_id,
+            'sender_rendom' => $rendom_1->rendom,
+            'receiver_rendom' => $rendom_2->rendom,
             'message' => $message->message,
             'status' => $message->status,
             'sent_time' => Carbon::parse($message->created_at)->diffForHumans(), 

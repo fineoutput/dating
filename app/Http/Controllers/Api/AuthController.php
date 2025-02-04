@@ -289,6 +289,7 @@ class AuthController extends Controller
                 'message' => 'User Register successfully!',
                 'status' => 200,
                 'token' => $token,  // Include the token in the response
+                'data' => [],  // Include the token in the response
             ], 200);
         } else {
             return response()->json([

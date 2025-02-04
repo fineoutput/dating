@@ -199,7 +199,11 @@ class AuthController extends Controller
             }
 
             $otp = $this->sendOtp($request->number); 
-            return response()->json(['message' => 'User already exists, OTP sent!','status' => 200], 200);
+            return response()->json([
+                'message' => 'User already exists, OTP sent!',
+                'data' => [],
+                'status' => 200
+            ], 200);
         }
 
         $otp = $this->sendOtp($request->number); 
@@ -627,7 +631,11 @@ class AuthController extends Controller
             $user->auth = null; 
             $user->save();
     
-            return response()->json(['message' => 'Successfully logged out','status'=>200]);
+            return response()->json([
+                'message' => 'Successfully logged out',
+                'data' => [],
+                'status'=>200
+            ]);
         }
     
         return response()->json(['message' => 'No authenticated user found'], 401);

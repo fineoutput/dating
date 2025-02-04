@@ -100,6 +100,7 @@ class InterestController extends Controller
         if ($existingInterest) {
             return response()->json([
                 'message' => 'Interest already added.',
+                'data' => [],
                 'status' => 200,
             ]);
         }

@@ -942,6 +942,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             }
             return response()->json([
                 'message' => 'Vibe activity counts fetched successfully.',
+                'status' => 200,
                 'data' => $vibeWithActivityCount
             ]);
         }
@@ -965,6 +966,8 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                 if (!$vibe) {
                     return response()->json([
                         'message' => 'Vibe not found.',
+                        'status' => 201,
+                        'data' => [],
                     ], 404);
                 }
 
@@ -1003,6 +1006,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
                 return response()->json([
                     'message' => 'Vibe activity details fetched successfully.',
+                    'status' => 200,
                     'data' => $vibeDetails
                 ]);
             }
@@ -1044,6 +1048,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
             return response()->json([
                 'message' => 'Vibe activity counts fetched successfully.',
+                'status' => 200,
                 'data' => $vibeWithActivityCount
             ]);
         }

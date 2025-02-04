@@ -915,7 +915,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                 ], 200);
             }
             $activities = $query->get();
-            $activities->makeHidden(['created_at', 'updated_at', 'deleted_at', 'id']);
+            $activities->makeHidden(['created_at', 'updated_at', 'deleted_at','id','user_id']);
             return response()->json([
                 'message' => 'Activities retrieved successfully',
                 'status' => 200,

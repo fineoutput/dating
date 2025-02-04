@@ -110,11 +110,12 @@ class DatingController extends Controller
                 $usersWithInterests[] = [
                     // 'user' => [
                         // 'id' => $matchingUser->id,
-                        'name' => $matchingUser->name,
+                        'user' => $matchingUser->name,
+                        'user_rendom' => $matchingUser->rendom,
                         'age' => $matchingUser->age,
                         'gender' => $matchingUser->gender,
                         'looking_for' => $matchingUser->looking_for,
-                        'profile_image' => $profileImageUrl,
+                        'user_profile' => $profileImageUrl,
                         'status' => $matchingUser->status,
                         'match_percentage' => number_format($matchingPercentage, 2),
                         'distance' => $distance . ' km', 
@@ -283,8 +284,8 @@ public function cupidmatch(Request $request)
     }
 
     $validated = $request->validate([
-        'user_id_1' => 'required|exists:users,id', 
-        'user_id_2' => 'required|exists:users,id',
+        'user_1_rendom' => 'required',
+        'user_2_rendom' => 'required',
         'accept' => 'nullable|boolean',
         'decline' => 'nullable|boolean',
         'message' => 'nullable|string|max:500',
@@ -295,24 +296,47 @@ public function cupidmatch(Request $request)
 
     try {
 
+        // Find the users by their random ids
+        $rendom_1 = User::where('rendom', $request->user_1_rendom)->first();
+        $rendom_2 = User::where('rendom', $request->user_2_rendom)->first();
+
+        $randomNumber = rand(100000, 999999);
         $cupid = new Cupid([
-            'user_id_1' => $request->user_id_1,
-            'user_id_2' => $request->user_id_2,
+            'user_id_1' => $rendom_1->id,
+            'user_id_2' => $rendom_2->id,
             'maker_id' => $maker_id,
-            'accept' => $request->accept, null,
-            'decline' => $request->decline, null,
-            'message' => $request->message, null,
-            'identity' => $request->identity,
+            'accept' => $request->accept ?? null,
+            'decline' => $request->decline ?? null,
+            'message' => $request->message ?? null,
+            'identity' => $request->identity ?? null,
+            'rendom' => $randomNumber,
         ]);
 
+        // Save the Cupid match
         $cupid->save();
-        $cupid->makeHidden(['created_at', 'updated_at', 'id']);
 
-        return response()->json([
+
+        $maker_rendom = User::where('id',$cupid->maker_id)->first();
+
+
+        // Prepare a new array for the response without sensitive information
+        $response = [
             'message' => 'Cupid match saved successfully!',
             'status' => 200,
-            'data' => $cupid
-        ], 200);
+            'data' => [
+                'user_1_rendom' => $rendom_1->rendom,
+                'user_2_rendom' => $rendom_2->rendom,
+                'accept' => $cupid->accept,
+                'decline' => $cupid->decline,
+                'message' => $cupid->message,
+                'identity' => $cupid->identity,
+                'maker_rendom' => $maker_rendom->rendom,
+                'rendom' => $cupid->rendom,
+                // You can add any other necessary fields you want to return in the response
+            ]
+        ];
+
+        return response()->json($response, 200);
 
     } catch (\Exception $e) {
         return response()->json([
@@ -324,49 +348,67 @@ public function cupidmatch(Request $request)
 }
 
 
-    public function updateCupidMatch(Request $request)
-        {
-            
-            if (!Auth::check()) {
-                return response()->json([
-                    'message' => 'User not authenticated',
-                    'status' => 401
-                ], 401);
+public function updateCupidMatch(Request $request)
+{
+    if (!Auth::check()) {
+        return response()->json([
+            'message' => 'User not authenticated',
+            'status' => 401
+        ], 401);
+    }
+
+    $validated = $request->validate([
+        'rendom' => 'required',  
+        'accept' => 'nullable|boolean',  
+        'decline' => 'nullable|boolean', 
+    ]);
+
+    try {
+
+        $cupid = Cupid::where('rendom', $request->rendom)->first();
+
+        // If cupid match is found, update it
+        if ($cupid) {
+            if ($request->has('accept')) {
+                $cupid->accept = $request->accept;
             }
 
-            $validated = $request->validate([
-                'cupid_id' => 'required|exists:cupid_match,id',  
-                'accept' => 'nullable|boolean',  
-                'decline' => 'nullable|boolean', 
-            ]);
-
-            try {
-                $cupid = Cupid::find($request->cupid_id);
-
-                if ($request->has('accept')) {
-                    $cupid->accept = $request->accept;
-                }
-
-                if ($request->has('decline')) {
-                    $cupid->decline = $request->decline;
-                }
-                $cupid->save();
-
-                $cupid->makeHidden(['created_at', 'updated_at', 'deleted_at','id']);
-
-                return response()->json([
-                    'message' => 'Cupid match updated successfully!',
-                    'status' => 200,
-                    'data' => $cupid
-                ], 200);
-
-            } catch (\Exception $e) {
-                return response()->json([
-                    'message' => 'Error updating cupid match.',
-                    'error' => $e->getMessage(),
-                    'status' => 500
-                ], 500);
+            if ($request->has('decline')) {
+                $cupid->decline = $request->decline;
             }
+            $cupid->save();
+
+            $maker_rendom = User::where('id',$cupid->maker_id)->first();
+
+            $response = [
+                'message' => 'Cupid match updated successfully!',
+                'status' => 200,
+                'data' => [
+                    'accept' => $cupid->accept,
+                    'decline' => $cupid->decline,
+                    'message' => $cupid->message,
+                    'rendom' => $cupid->rendom,
+                    'identity' => $cupid->identity,
+                    'maker_rendom' => $maker_rendom->rendom,
+                    // Optionally, add any other fields you want to include here
+                ]
+            ];
+
+            return response()->json($response, 200);
+        } else {
+            return response()->json([
+                'message' => 'Cupid match not found.',
+                'status' => 404
+            ], 404);
         }
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Error updating cupid match.',
+            'error' => $e->getMessage(),
+            'status' => 500
+        ], 500);
+    }
+}
 
 }

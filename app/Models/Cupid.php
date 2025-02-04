@@ -17,6 +17,7 @@ class Cupid extends Model
         'accept',
         'decline',
         'message',
+        'rendom',
         'identity',
     ];
 

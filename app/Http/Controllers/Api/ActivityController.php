@@ -394,7 +394,7 @@ class ActivityController extends Controller
             }
     
             // Create the final activity in the Activity table
-            $randomNumber = rand(100000, 999999);
+            // $randomNumber = rand(100000, 999999);
             $activity = Activity::create([
                 'user_id' => $activityTemp->user_id,
                 'where_to' => $activityTemp->where_to,
@@ -412,7 +412,7 @@ class ActivityController extends Controller
                 'other_activity' => $activityTemp->other_activity,
                 'image' => $activityTemp->image,
                 'amount' => $activityTemp->amount,
-                'rendom' => $randomNumber,
+                'rendom' => $activityTemp->random,
             ]); 
     
             // Optionally, delete the temporary activity after finalizing
@@ -435,8 +435,10 @@ class ActivityController extends Controller
         }
     
         // Create a new activity in ActivityTemp
+        $randomNumber = rand(100000, 999999);
         $activityTemp = ActivityTemp::create([
             'user_id' => $user->id,
+            'rendom' => $randomNumber,
             'where_to' => $request->where_to,
             'title' => $request->title,
             'location' => $request->location,
@@ -455,7 +457,7 @@ class ActivityController extends Controller
         ]);
     
         $activityData = $activityTemp->toArray();
-        unset($activityData['created_at'], $activityData['updated_at'],$activityData['id']);
+        unset($activityData['created_at'], $activityData['updated_at'],$activityData['id'],$activityData['user_id']);
     
         return response()->json([
             'message' => 'Activity created successfully in ActivityTemp',

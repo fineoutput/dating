@@ -947,7 +947,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             foreach ($vibes as $vibe) {
                 $activityCount = Activity::where('vibe_id', $vibe->id)->where('status',2)->count();
                 $vibeWithActivityCount[] = [
-                    // 'id' => $vibe->id,
+                    'id' => $vibe->id,
                     'name' => $vibe->name,
                     'activity_id' => $vibe->activity_id,
                     // 'image' => $vibe->image,
@@ -1057,6 +1057,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
         
         // Add vibe with activity count and background color
         $vibeWithActivityCount[] = [
+            'id' => $vibe->id,
             'name' => $vibe->name,
             'status' => $vibe->status,
             'icon' => $vibe->icon,

@@ -455,7 +455,7 @@ class ActivityController extends Controller
         ]);
     
         $activityData = $activityTemp->toArray();
-        unset($activityData['created_at'], $activityData['updated_at']);
+        unset($activityData['created_at'], $activityData['updated_at'],$activityData['id']);
     
         return response()->json([
             'message' => 'Activity created successfully in ActivityTemp',
@@ -638,7 +638,7 @@ $activityInterestWithProfileImage = $activityInterestWithProfileImage->filter(fu
                 
     $time = strtotime($activity->when_time);
     $activityData = [
-        'id' => $activity->id,
+        // 'id' => $activity->id,
         'user_name' => $activity->user->name ?? '',
         'profile_image' => $profileImageUrl,
         'title' => $activity->title,
@@ -693,7 +693,7 @@ $activityInterestWithProfileImage = $activityInterestWithProfileImage->filter(fu
                 $bgColor = '#' . substr(md5($interest->id), 0, 6); 
 
                 return [
-                    'id' => $interest->id,
+                    // 'id' => $interest->id,
                     'name' => $interest->name,
                     // 'icon' => $interest->icon,
                     'icon' => asset('uploads/app/int_images/' . $interest->icon),
@@ -848,7 +848,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
         $activity->bg_color = $bgColor;
 
         return [
-            'id' => $activity->id,
+            // 'id' => $activity->id,
             // 'user_id' => $activity->user_id,
             'title' => $activity->title,
             'location' => $activity->location,    
@@ -941,7 +941,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             foreach ($vibes as $vibe) {
                 $activityCount = Activity::where('vibe_id', $vibe->id)->where('status',2)->count();
                 $vibeWithActivityCount[] = [
-                    'id' => $vibe->id,
+                    // 'id' => $vibe->id,
                     'name' => $vibe->name,
                     'activity_id' => $vibe->activity_id,
                     // 'image' => $vibe->image,
@@ -1046,7 +1046,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                 
                 // Add vibe with activity count and background color
                 $vibeWithActivityCount[] = [
-                    'id' => $vibe->id,
+                    // 'id' => $vibe->id,
                     'name' => $vibe->name,
                     'activity_id' => $vibe->activity_id,
                     'status' => $vibe->status,

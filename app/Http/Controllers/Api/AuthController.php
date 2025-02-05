@@ -439,10 +439,10 @@ class AuthController extends Controller
                 //     ]  
                 // ]);
                 return response()->json([
-                    'data' => [
+                    
                         'message' => 'Email verified successfully!',
-                        'status' => 206
-                    ],
+                        'status' => 206,
+                        'data' => [],
                     // 'status' => true
                 ]);
             } else {
@@ -470,11 +470,11 @@ class AuthController extends Controller
                 //     'token' => $token,
                 // ]);
                 return response()->json([
-                    'data' => [
+                    
                         'message' => 'Phone number verified successfully!',
                         'status' => $status,  
+                        'data' => [],
                         // 'token' => $token,
-                    ],
                 ]);
             } else {
                 return $this->successResponse('No user found with the provided phone number.', false, 404);

@@ -37,7 +37,7 @@ class InterestController extends Controller
     $statusCode = 200; 
 
     // Hide unnecessary fields
-    $data->makeHidden(['created_at', 'updated_at', 'deleted_at','id']);
+    $data->makeHidden(['created_at', 'updated_at', 'deleted_at']);
 
     return response()->json([
         'message' => $message,
@@ -53,7 +53,7 @@ class InterestController extends Controller
         $status = 200;
         $statusCode = 200; 
 
-        $data->makeHidden(['created_at', 'updated_at', 'deleted_at','id']);
+        $data->makeHidden(['created_at', 'updated_at', 'deleted_at']);
 
 
         return response()->json([
@@ -70,7 +70,7 @@ class InterestController extends Controller
         $status = 200;
         $statusCode = 200; 
 
-        $data->makeHidden(['created_at', 'updated_at', 'deleted_at', 'id']);
+        $data->makeHidden(['created_at', 'updated_at', 'deleted_at']);
 
         return response()->json([
             'message' => $message,

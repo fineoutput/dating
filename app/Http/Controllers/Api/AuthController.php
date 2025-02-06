@@ -761,39 +761,30 @@ class AuthController extends Controller
                 $updateData['interest'] = json_encode($request->interest);  // Store as JSON
             }
         
-            // Handle 'profile_image' field if provided
             if ($request->hasFile('profile_image') && is_array($request->profile_image)) {
                 $imagePaths = [];
-        
-                // Loop through all uploaded images and store them
+
                 foreach ($request->profile_image as $image) {
-                    // Validate image file
                     $imageValidator = Validator::make(['image' => $image], [
-                        'image' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',  // Add max size validation
+                        'image' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048', 
                     ]);
         
                     if ($imageValidator->fails()) {
                         return response()->json(['errors' => $imageValidator->errors()], 400);
                     }
         
-                    // Generate a unique image name
+
                     $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
         
-                    // Save the image directly to the 'public' folder
-                    $image->move(public_path('uploads/app/profile_images/'), $imageName);  // Save image in 'public' directory
-        
-                    // Store the image path in the array
-                    $imagePaths[] = $imageName;  // Add to array, no keys like "1", "2"
+                    $image->move(public_path('uploads/app/profile_images/'), $imageName);  
+                    $imagePaths[] = $imageName;  
                 }
-        
-                // Store the image paths as JSON
+
                 $updateData['profile_image'] = json_encode($imagePaths);
             }
-        
-            // Update the user record with the provided data
+
             $user->update($updateData);
-        
-            // Fetch interest names and icons (if available)
+
             $interestNamesWithIcons = [];
             if ($request->has('interest') && is_array($request->interest)) {
                 $interestIds = $request->interest;
@@ -802,21 +793,19 @@ class AuthController extends Controller
                 foreach ($interests as $interest) {
                     $interestNamesWithIcons[] = [
                         'name' => $interest->name,
-                        'icon' => $interest->icon,  // Assuming 'icon' is the field containing the icon image URL
+                        'icon' => $interest->icon, 
                     ];
                 }
             }
         
-            // Generate full URLs for the profile images
             $imageUrls = [];
             if ($user->profile_image) {
                 $imagePaths = json_decode($user->profile_image, true);
                 foreach ($imagePaths as $imageName) {
-                    $imageUrls[] = url('uploads/app/profile_images/' . $imageName); // Generate full URL for each image
+                    $imageUrls[] = url('uploads/app/profile_images/' . $imageName); 
                 }
             }
-        
-            // Prepare response with updated data and interest names with icons
+
             return response()->json([
                 'message' => 'Profile updated successfully',
                 'data' => [

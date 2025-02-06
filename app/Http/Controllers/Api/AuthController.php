@@ -820,14 +820,16 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Profile updated successfully',
                 'data' => [
-                    'rendom' => $user->rendom,
-                    'name' => $user->name,
-                    'age' => $user->age,
-                    'gender' => $user->gender,
-                    'looking_for' => $user->looking_for,
-                    'interest' => $interestNamesWithIcons,  // Send interests with names and icons
-                    'profile_image' => $imageUrls,  // Include full image URLs as an array
-                ],
+            [
+                'rendom' => $user->rendom,
+                'name' => $user->name,
+                'age' => $user->age,
+                'gender' => $user->gender,
+                'looking_for' => $user->looking_for,
+                'interest' => $interestNamesWithIcons,  // Send interests with names and icons
+                'profile_image' => $imageUrls,  // Include full image URLs as an array
+            ]
+        ],
                 'status' => 200,
             ], 200);
         }

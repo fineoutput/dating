@@ -651,76 +651,188 @@ class AuthController extends Controller
 
    
  
-public function userprofile(Request $request)
-{
-    $user = Auth::user();
-    
-    if (!$user) {
-        // If user is not authenticated, return with 401 status and message
-        return response()->json([
-            'status' => false,
-            'message' => 'User not authenticated',
-        ], 401);
-    }
-    
-    // Get the interest field from the user model
-    $interestField = $user->interest;
-    
-    // Decode the interest field
-    $interestFieldDecoded = json_decode($interestField, true);
+    public function userprofile(Request $request)
+        {
+            $user = Auth::user();
+            
+            if (!$user) {
+                // If user is not authenticated, return with 401 status and message
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not authenticated',
+                ], 401);
+            }
+            
+            // Get the interest field from the user model
+            $interestField = $user->interest;
+            
+            // Decode the interest field
+            $interestFieldDecoded = json_decode($interestField, true);
 
-    // Check if the decoded data is an array
-    if (!is_array($interestFieldDecoded)) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Invalid interest data',
-        ], 400);
-    }
+            // Check if the decoded data is an array
+            if (!is_array($interestFieldDecoded)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid interest data',
+                ], 400);
+            }
 
-    // Flatten the array and split each item by commas to get individual IDs
-    $interestIds = [];
-    foreach ($interestFieldDecoded as $item) {
-        // For each item, split by commas and merge the result
-        $interestIds = array_merge($interestIds, explode(',', $item));
-    }
+            // Flatten the array and split each item by commas to get individual IDs
+            $interestIds = [];
+            foreach ($interestFieldDecoded as $item) {
+                // For each item, split by commas and merge the result
+                $interestIds = array_merge($interestIds, explode(',', $item));
+            }
 
-    // Trim any extra spaces around the IDs
-    $interestIds = array_map('trim', $interestIds);
+            // Trim any extra spaces around the IDs
+            $interestIds = array_map('trim', $interestIds);
 
-    // Fetch the interests from the Interest model
-    $interests = Interest::whereIn('id', $interestIds)->get(['name', 'icon']);
-    
-    // Log the interest IDs and fetched interests for debugging
-    \Log::info("Interest IDs: ", $interestIds);
-    \Log::info("Fetched Interests: ", $interests->toArray());
+            // Fetch the interests from the Interest model
+            $interests = Interest::whereIn('id', $interestIds)->get(['name', 'icon']);
+            
+            // Log the interest IDs and fetched interests for debugging
+            \Log::info("Interest IDs: ", $interestIds);
+            \Log::info("Fetched Interests: ", $interests->toArray());
 
-    // Prepare the profile images URLs
-    $profileImages = json_decode($user->profile_image, true);
-    $imageUrls = [];
-    foreach ($profileImages as $image) {
-        $imageUrls[] = asset('uploads/app/profile_images/' . $image);
-    }
-    
-    // Prepare the user data
-    $userData = [
-        // 'id' => $user->id,
-        'number' => $user->number,
-        'name' => $user->name,
-        'email' => $user->email,
-        'age' => $user->age,
-        'gender' => $user->gender,
-        'looking_for' => $user->looking_for,
-        'interest' => $interests,  
-        'status' => $user->status,
-        'profile_images' => $imageUrls,
-    ];
-    
-    // Return the response with status and message
-    return response()->json([
-        'status' => 200,
-        'message' => 'User profile fetched successfully',
-        'data' => $userData,
-    ], 200);
-}
+            // Prepare the profile images URLs
+            $profileImages = json_decode($user->profile_image, true);
+            $imageUrls = [];
+            foreach ($profileImages as $image) {
+                $imageUrls[] = asset('uploads/app/profile_images/' . $image);
+            }
+            
+            // Prepare the user data
+            $userData = [
+                // 'id' => $user->id,
+                'number' => $user->number,
+                'name' => $user->name,
+                'email' => $user->email,
+                'age' => $user->age,
+                'gender' => $user->gender,
+                'looking_for' => $user->looking_for,
+                'interest' => $interests,  
+                'status' => $user->status,
+                'profile_images' => $imageUrls,
+            ];
+            
+            // Return the response with status and message
+            return response()->json([
+                'status' => 200,
+                'message' => 'User profile fetched successfully',
+                'data' => $userData,
+            ], 200);
+        }
 
+
+        public function updateProfile(Request $request)
+        {
+            // Get the authenticated user
+            $user = Auth::user();
+        
+            if (!$user) {
+                return response()->json(['message' => 'User not authenticated'], 401);
+            }
+        
+            // Validate the incoming request data
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'age' => 'required|integer|min:18|max:100',
+                'gender' => 'required|string',
+                'looking_for' => 'required|string|max:255',
+                'interest' => 'nullable|array',  // Array of interests
+                'profile_image' => 'nullable|array',  // Array of images
+            ]);
+        
+            // If validation fails, return error messages
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 400);
+            }
+        
+            // Prepare data to be updated
+            $updateData = [
+                'name' => $request->name,
+                'age' => $request->age,
+                'gender' => $request->gender,
+                'looking_for' => $request->looking_for,
+            ];
+        
+            // Handle 'interest' field if provided
+            if ($request->has('interest') && is_array($request->interest)) {
+                $updateData['interest'] = json_encode($request->interest);  // Store as JSON
+            }
+        
+            // Handle 'profile_image' field if provided
+            if ($request->hasFile('profile_image') && is_array($request->profile_image)) {
+                $imagePaths = [];
+        
+                // Loop through all uploaded images and store them
+                foreach ($request->profile_image as $image) {
+                    // Validate image file
+                    $imageValidator = Validator::make(['image' => $image], [
+                        'image' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',  // Add max size validation
+                    ]);
+        
+                    if ($imageValidator->fails()) {
+                        return response()->json(['errors' => $imageValidator->errors()], 400);
+                    }
+        
+                    // Generate a unique image name
+                    $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+        
+                    // Save the image directly to the 'public' folder
+                    $image->move(public_path('uploads/app/profile_images/'), $imageName);  // Save image in 'public' directory
+        
+                    // Store the image path in the array
+                    $imagePaths[] = $imageName;  // Add to array, no keys like "1", "2"
+                }
+        
+                // Store the image paths as JSON
+                $updateData['profile_image'] = json_encode($imagePaths);
+            }
+        
+            // Update the user record with the provided data
+            $user->update($updateData);
+        
+            // Fetch interest names and icons (if available)
+            $interestNamesWithIcons = [];
+            if ($request->has('interest') && is_array($request->interest)) {
+                $interestIds = $request->interest;
+                $interests = Interest::whereIn('id', $interestIds)->get();
+        
+                foreach ($interests as $interest) {
+                    $interestNamesWithIcons[] = [
+                        'name' => $interest->name,
+                        'icon' => $interest->icon,  // Assuming 'icon' is the field containing the icon image URL
+                    ];
+                }
+            }
+        
+            // Generate full URLs for the profile images
+            $imageUrls = [];
+            if ($user->profile_image) {
+                $imagePaths = json_decode($user->profile_image, true);
+                foreach ($imagePaths as $imageName) {
+                    $imageUrls[] = url('uploads/app/profile_images/' . $imageName); // Generate full URL for each image
+                }
+            }
+        
+            // Prepare response with updated data and interest names with icons
+            return response()->json([
+                'message' => 'Profile updated successfully',
+                'data' => [
+                    'rendom' => $user->rendom,
+                    'name' => $user->name,
+                    'age' => $user->age,
+                    'gender' => $user->gender,
+                    'looking_for' => $user->looking_for,
+                    'interest' => $interestNamesWithIcons,  // Send interests with names and icons
+                    'profile_image' => $imageUrls,  // Include full image URLs as an array
+                ],
+                'status' => 200,
+            ], 200);
+        }
+        
+        
+        
+        
 }

@@ -16,6 +16,7 @@ use App\Models\Chat;
 use App\Models\Cupid;
 use App\Models\Vibes;
 use App\Models\Activity;
+use App\Models\SlideLike;
 use App\Models\OtherInterest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
@@ -547,5 +548,95 @@ public function updateCupidMatch(Request $request)
         ], 500);
     }
 }
+
+
+    public function handleUserInteractions(Request $request)
+        {
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['message' => 'User not authenticated'], 401);
+            }
+
+            $matchingUserId = $request->input('matching_user'); 
+            $superLike = $request->input('super_like', 0);  
+            $likedUser = $request->input('liked_user', 0); 
+            $dislike = $request->input('dislike', 0);  
+            $matchedUser = $user->id; 
+
+            if (!$matchingUserId || !User::where('rendom',$matchingUserId)->first()) {
+                return response()->json([
+                    'message' => 'Matching user not found',
+                    'data' => [],
+                    'status'=>200
+                ], 200);
+            }
+
+            $user_id = User::where('rendom',$matchingUserId)->first();
+
+            $existingInteraction = SlideLike::where('matching_user', $user_id)
+                ->where('matched_user', $user->id)
+                ->first();
+
+            if ($existingInteraction) {
+                return response()->json(['message' => 'Interaction already exists'], 400);
+            }
+
+            $slideLike = new SlideLike();
+            $slideLike->matching_user = $user_id->id;
+            $slideLike->matched_user = $user->id;
+
+            // Assign action values to corresponding fields
+            if ($superLike) {
+                $slideLike->super_like = 1;
+            }
+            if ($likedUser) {
+                $slideLike->liked_user = 1;
+            }
+            if ($dislike) {
+                $slideLike->dislike = 1;
+            }
+
+            // Save the SlideLike interaction
+            $slideLike->save();
+
+            return response()->json([
+                'message' => 'Interaction saved successfully',
+                'data' => [],
+                'status' => 200,
+             ], 200);
+        }
+
+
+        public function getUserInteractionsCount(Request $request)
+        {
+            $user = Auth::user();
+            
+            if (!$user) {
+                return response()->json(['message' => 'User not authenticated'], 401);
+            }
+    
+            // Count the number of super likes, likes, and dislikes for the authenticated user
+            $likedCount = SlideLike::where('matched_user', $user->id)
+                ->where('liked_user', 1)
+                ->count();
+    
+            $dislikedCount = SlideLike::where('matched_user', $user->id)
+                ->where('dislike', 1)
+                ->count();
+    
+            $superLikedCount = SlideLike::where('matched_user', $user->id)
+                ->where('super_like', 1)
+                ->count();
+    
+            return response()->json([
+                'message' => 'Interaction counts fetched successfully',
+                'data' => [
+                    'liked_count' => $likedCount,
+                    'disliked_count' => $dislikedCount,
+                    'super_liked_count' => $superLikedCount,
+                ],
+                'status' => 200,
+            ], 200);
+        }
 
 }

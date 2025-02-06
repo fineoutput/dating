@@ -48,6 +48,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('chat-update-status', [ChatController::class, 'updateMessageStatus']);
 
     Route::get('user-profile', [AuthController::class, 'userprofile']);
+    
+    Route::post('update-profile', [AuthController::class, 'updateProfile']);
 
 
     Route::post('find-matching-users-interest', [DatingController::class, 'findMatchingUsers']);
@@ -56,6 +58,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/update-cupid-match', [DatingController::class, 'updateCupidMatch']);
 
     Route::post('/subscription-list', [SubscriptionController::class, 'subscriptionlist']);
+
+    Route::post('user-interactions', [DatingController::class, 'handleUserInteractions']);
+
+    Route::get('user-interactions-count', [DatingController::class, 'getUserInteractionsCount']);
+
+
     // Route::post('slide-like', [YourController::class, 'handleSlideLike']);  
 });   
 

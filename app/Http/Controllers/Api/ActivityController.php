@@ -599,7 +599,7 @@ public function getActivitydetailes(Request $request)
         return response()->json([
             'message' => 'Activity Not Found',
             'data' => [],
-            'status' => 200,
+            'status' => 201,
         ], 200);
     }
     $interestcount =OtherInterest::where('activity_id', $activity->id)->count();

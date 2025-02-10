@@ -204,8 +204,9 @@ class InterestController extends Controller
     if (!$activity) {
         return response()->json([
             'message' => 'Activity not found.',
-            'status' => 200,
-        ]);
+            'data' => [],
+            'status' => 201,
+        ],200);
     }
 
     $howMany = $activity->how_many;

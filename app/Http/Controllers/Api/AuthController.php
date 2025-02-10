@@ -185,7 +185,7 @@ class AuthController extends Controller
         foreach ($validator->errors()->getMessages() as $field => $messages) {
             $errors[$field] = $messages[0];
         }
-        return response()->json(['message' => $errors,'status' => 201], 201);
+        return response()->json(['message' => $errors,'data' => [],'status' => 201], 201);
     }
 
     if ($request->status === 'insert' && $request->number) {
@@ -355,7 +355,7 @@ class AuthController extends Controller
                 $errors[$field] = $messages[0];
                 break; 
             }
-            return response()->json(['message' => $errors,'status' => 201], 200);
+            return response()->json(['message' => $errors,'data' => [],'status' => 201], 200);
         }
         
         $validated = $validator->validated();
@@ -440,8 +440,10 @@ class AuthController extends Controller
                 return response()->json([
                     
                         'message' => 'Email verified successfully!',
-                        'status' => 206,
-                        'data' => [],
+                        'status' => 200,
+                        'data' => [
+                            'status' => 206,
+                        ],
                     // 'status' => true
                 ]);
             } else {
@@ -471,8 +473,10 @@ class AuthController extends Controller
                 return response()->json([
                     
                         'message' => 'Phone number verified successfully!',
-                        'status' => $status,  
-                        'data' => [],
+                        'status' => 200,  
+                        'data' => [
+                            'status' => $status,
+                        ],
                         // 'token' => $token,
                 ]);
             } else {

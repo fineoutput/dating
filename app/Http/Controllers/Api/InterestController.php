@@ -92,9 +92,18 @@ class InterestController extends Controller
         $activity_id = Activity::where('rendom',$request->rendom)->first();
         // return $activity_id;
 
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'rendom' => 'required|exists:activity_table',
         ]);
+        
+        if ($validator->fails()) {
+            $errors = [];
+            foreach ($validator->errors()->getMessages() as $field => $messages) {
+                $errors[$field] = $messages[0];
+                break; 
+            }
+            return response()->json(['message' => $errors,'data' => [],'status' => 201], 200);
+        }
         $existingInterest = OtherInterest::where('user_id', $user->id)
                                         ->where('activity_id', $activity_id->id)
                                         ->first();
@@ -365,9 +374,10 @@ class InterestController extends Controller
     
         if (!$activity) {
             return response()->json([
-                'message' => 'Activity not found.',
-                'status' => 200,
-            ]);
+               'message' => 'Activity not found',
+                'data'=>[],
+                'status'=>201
+            ],200);
         }
     
         $howMany = $activity->how_many;

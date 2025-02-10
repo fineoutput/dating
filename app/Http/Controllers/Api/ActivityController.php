@@ -347,7 +347,11 @@ class ActivityController extends Controller
             $activityTemp = ActivityTemp::where('rendom',$request->rendom)->first();
     
             if (!$activityTemp) {
-                return response()->json(['message' => 'Activity not found','status'=>201], 404);
+                return response()->json([
+                'message' => 'Activity not found',
+                'data'=>[],
+                'status'=>201
+            ], 200);
             }
     
             // Update activity details
@@ -392,7 +396,11 @@ class ActivityController extends Controller
             $activityTemp = ActivityTemp::where('rendom',$request->rendom)->first();
     
             if (!$activityTemp) {
-                return response()->json(['message' => 'Activity not found','status' => 200,], 404);
+                return response()->json([
+                    'message' => 'Activity not found',
+                    'data'=>[],
+                    'status'=>201
+            ], 200);
             }
     
             // Create the final activity in the Activity table

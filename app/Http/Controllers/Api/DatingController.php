@@ -536,8 +536,9 @@ public function updateCupidMatch(Request $request)
         } else {
             return response()->json([
                 'message' => 'Cupid match not found.',
-                'status' => 404
-            ], 404);
+                'data' => [],
+                'status' => 200
+            ], 200);
         }
 
     } catch (\Exception $e) {

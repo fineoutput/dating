@@ -305,9 +305,9 @@ class AuthController extends Controller
         } else {
             return response()->json([
                 'message' => 'User not found or email or phone not verified.',
-                // 'data' => [],
+                'data' => [],
                 'status' => 201,
-            ], 404);
+            ], 200);
         }
     }
 }
@@ -480,7 +480,7 @@ class AuthController extends Controller
                         // 'token' => $token,
                 ]);
             } else {
-                return $this->successResponse('No user found with the provided phone number.', false, 404);
+                return $this->successResponse('No user found with the provided phone number.', false, 200);
             }
         }
 

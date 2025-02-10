@@ -193,7 +193,7 @@ class InterestController extends Controller
     $user = Auth::user();
 
     $request->validate([
-        'rendom' => 'required|exists:activity_table',
+        'rendom' => 'required',
     ]);
 
     // Get the Activity record to check the how_many field
@@ -308,6 +308,14 @@ class InterestController extends Controller
         ]);
 
         $activity_rendom = Activity::where('rendom',$request->rendom)->first();
+
+        if (!$activity_rendom) {
+            return response()->json([
+                'message' => 'Data Not Found',
+                'data' => [],
+                'status' => 201,
+        ], 200);
+        }
     
         $interests = OtherInterest::where('activity_id', $activity_rendom->id)
                                    ->where('confirm', 1)

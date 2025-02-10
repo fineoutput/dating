@@ -154,7 +154,7 @@ class AuthController extends Controller
     public function signup(Request $request)
     {
     $validationRules  = [
-        'number' => 'required|numeric', 
+        'number' => 'required|numeric|digits:10',
         'status' => 'required|in:insert,update,final',         
         'name' => 'nullable|string|max:255',         
         'email' => 'nullable|string|email|max:255|unique:unverify_user', 
@@ -171,11 +171,11 @@ class AuthController extends Controller
     ];
 
     if ($request->status === 'insert') {
-        $validationRules['number'] = 'required|string'; 
+        $validationRules['number'] = 'required|string|digits:10'; 
         $validationRules['email'] = 'nullable|string|email|max:255|unique:users,email';
 
     } elseif ($request->status === 'update') {
-        $validationRules['number'] = 'required|string|exists:unverify_user,number'; 
+        $validationRules['number'] = 'required|string|digits:10|exists:unverify_user,number'; 
         $validationRules['email'] = 'nullable|string|email|max:255|unique:users,email,' . $request->number;
     }
 

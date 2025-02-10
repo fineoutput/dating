@@ -552,7 +552,7 @@ public function useractivitys(Request $request)
         $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
         $activitiesData[] = [
-            'id' => $activity->id,
+            'rendom' => $activity->rendom,
             'title' => $activity->title,
             'location' => $activity->location,
             'bg_color' => $bgColor,
@@ -873,6 +873,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             // 'id' => $activity->id,
             // 'user_id' => $activity->user_id,
             'title' => $activity->title,
+            'rendom' => $activity->rendom,
             'location' => $activity->location,    
             // 'image' => $imageUrl,
             'bg_color' => $activity->bg_color,

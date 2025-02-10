@@ -355,7 +355,7 @@ class AuthController extends Controller
                 $errors[$field] = $messages[0];
                 break; 
             }
-            return response()->json(['errors' => $errors], 400);
+            return response()->json(['errors' => $errors,'status' => 201], 400);
         }
         
         $validated = $validator->validated();

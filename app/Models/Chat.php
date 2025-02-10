@@ -14,6 +14,7 @@ class Chat extends Model
         'receiver_id',
         'message',
         'status',
+        'rendom',
     ];
 
     public function sender()

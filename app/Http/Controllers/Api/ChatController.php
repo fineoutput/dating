@@ -32,11 +32,28 @@ class ChatController extends Controller
         
         $receiver_rendom = User::where('rendom',$request->receiver_rendom)->first();
 
+        $generatedCodes = [];
+
+        function generateUniqueCode(&$generatedCodes) {
+            $randomCode = rand(100000, 999999);
+
+            while (in_array($randomCode, $generatedCodes)) {
+                $randomCode = rand(100000, 999999);
+            }
+
+            $generatedCodes[] = $randomCode;
+        
+            return $randomCode;
+        }
+
+        $code = generateUniqueCode($generatedCodes);
+
         $chat = Chat::create([
             'sender_id' => Auth::id(),
             'receiver_id' => $receiver_rendom->id,
             'message' => $request->message,
             'status' => 'sent',
+            'rendom' => $code,
         ]);
     
         // Format the created_at time into a human-readable format
@@ -49,6 +66,7 @@ class ChatController extends Controller
             'sender_rendom' => $rendom_1->rendom,
             'receiver_rendom' => $rendom_2->rendom,
             'message' => $chat->message,
+            'rendom' => $chat->rendom,
             'status' => $chat->status,
             'sent_time' => $timeAgo,  
         ];
@@ -98,7 +116,7 @@ class ChatController extends Controller
             $rendom_1 = User::where('id',$message->sender_id)->first();
             $rendom_2 = User::where('id',$message->receiver_id)->first();
             return [
-                'id' => $message->id,
+                'rendom' => $message->rendom,
                 'sender_rendom' => $rendom_1->rendom,
                 'receiver_rendom' => $rendom_2->rendom,
                 'message' => $message->message,
@@ -118,11 +136,11 @@ class ChatController extends Controller
     public function updateMessageStatus(Request $request)
     {
         $request->validate([
-            'message_id' => 'required',
+            'rendom' => 'required',
             'status' => 'required|in:sent,delivered,read',
         ]);
 
-        $message = Chat::find($request->message_id);
+        $message = Chat::where('rendom',$request->rendom)->first();
 
         if (!$message) {
             return response()->json([
@@ -139,7 +157,7 @@ class ChatController extends Controller
         $rendom_2 = User::where('id',$message->receiver_id)->first();
 
         $messageData = [
-            'id' => $message->id,
+            'rendom' => $message->rendom,
             'sender_rendom' => $rendom_1->rendom,
             'receiver_rendom' => $rendom_2->rendom,
             'message' => $message->message,

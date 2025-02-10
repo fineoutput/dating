@@ -594,8 +594,12 @@ public function getActivitydetailes(Request $request)
     ]);
 
     $activity = Activity::where('rendom', $request->rendom)->first();
+    if($activity){
     $interestcount =OtherInterest::where('activity_id', $activity->id)->count();
-
+    }
+    else{
+        $interestcount = [];
+    }
     // Handle the case where expense_id is stored as a JSON string
     $expenseIds = json_decode($activity->expense_id, true); // Decodes the string to an array
     $firstExpenseName = null;
@@ -865,6 +869,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             // 'id' => $activity->id,
             // 'user_id' => $activity->user_id,
             'title' => $activity->title,
+            'rendom' => $activity->rendom,
             'location' => $activity->location,    
             // 'image' => $imageUrl,
             'bg_color' => $activity->bg_color,

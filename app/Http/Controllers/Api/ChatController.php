@@ -31,6 +31,13 @@ class ChatController extends Controller
     
         
         $receiver_rendom = User::where('rendom',$request->receiver_rendom)->first();
+        if (!$receiver_rendom) {
+            return response()->json([
+                'message' => 'User Not Found',
+                'data' => [],
+                'status' => 200,
+            ], 200);
+        }
 
         $generatedCodes = [];
 

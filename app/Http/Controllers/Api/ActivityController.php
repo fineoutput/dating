@@ -497,30 +497,49 @@ public function useractivitys(Request $request)
     if (!$user) {
         return response()->json(['message' => 'User not authenticated'], 401);
     }
-    
-    $currentTime = Carbon::now('Asia/Kolkata');
-    $todayDate = Carbon::today('Asia/Kolkata'); // This gives you today's date at 00:00:00
-    
-    // Get all activities for the user
-    $activities = Activity::orderBy('id','DESC')->where('user_id', $user->id)
-        ->where('status', 2)
-        ->where(function ($query) use ($todayDate, $currentTime) {
-            // Handle when_time comparison (datetime comparison)
-            $query->where('when_time', '>=', $currentTime);
-    
-            // Handle end_time comparison (time comparison, combined with today's date)
-            $query->where(function ($subQuery) use ($todayDate, $currentTime) {
-                // Combine the current date with the end_time time
-                $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
-                
-                // Compare the combined end_time with the current time
-                $subQuery->where('end_time', '>=', $endTime);   
-            });
-        })
+
+    $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata
+    $todayDate = Carbon::today('Asia/Kolkata');  // Today's date in Asia/Kolkata
+
+    $activities = Activity::orderBy('id', 'DESC')
+        ->where('user_id', $user->id)
+        ->where('status', 2) 
+        ->whereDate('when_time', '>=', $todayDate->format('Y-m-d')) 
         ->get();
-        // return $activities;
     
-    // Check if activities exist
+    $filteredActivities = [];
+    
+    foreach ($activities as $activity) {
+
+        $whenTime = Carbon::parse($activity->when_time)->setTimezone('Asia/Kolkata');
+
+        $endTime = Carbon::createFromFormat('h:i A', $activity->end_time)->setTimezone('Asia/Kolkata'); 
+
+        $combinedDateTime = $whenTime->copy()->setTimeFromTimeString($endTime->toTimeString());
+
+        if ($combinedDateTime >= $currentTime) {
+
+            $filteredActivities[] = $activity;
+        }
+    }
+
+    // return $filteredActivities;
+    
+// $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata
+// $todayDate = Carbon::today('Asia/Kolkata');
+// // return $currentTime->format('H:i:s');
+
+// // Fetch activities
+// $activities = Activity::orderBy('id', 'DESC')
+//     ->where('user_id', $user->id)
+//     ->where('status', 2) 
+//     ->whereDate('when_time', '>=', $todayDate->format('Y-m-d'))  
+//     ->whereTime('end_time', '>=', $currentTime->format('H:i:s'))  
+//     ->get();
+
+// return $activities;
+
+
     if ($activities->isEmpty()) {
         return response()->json(['message' => 'No upcoming activities found','status'=>200], 200);
     }
@@ -553,6 +572,8 @@ public function useractivitys(Request $request)
 
         $activitiesData[] = [
             'rendom' => $activity->rendom,
+            'when_time' => $activity->when_time,
+            'end_time' => $activity->end_time,
             'title' => $activity->title,
             'location' => $activity->location,
             'bg_color' => $bgColor,

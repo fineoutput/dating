@@ -269,7 +269,11 @@ class AuthController extends Controller
             ->where('number_verify', 1)
             ->first();
 
-            $randomNumber = rand(100000, 999999);
+            // $randomNumber = rand(100000, 999999);
+            do {
+                $randomNumber = rand(100000, 999999);
+            } while (User::where('rendom', $randomNumber)->exists());
+            
 
         if ($unverifyUser) {
             $newUser = User::create([
@@ -417,7 +421,8 @@ class AuthController extends Controller
             ->update(['otp' => 0]);
 
         if ($type === 'email') {
-            $unverifyUser = UnverifyUser::where('email', $source_name)->first();
+            $unverifyUser = UnverifyUser::orderBy('id','DESC')->where('email', $source_name)->first();
+            // return $unverifyUser;
             if ($unverifyUser) {
                 $unverifyUser->update(['email_verify' => 1]);
 

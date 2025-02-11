@@ -435,11 +435,15 @@ public function cupidmatch(Request $request)
 
     try {
 
-        // Find the users by their random ids
         $rendom_1 = User::where('rendom', $request->user_1_rendom)->first();
         $rendom_2 = User::where('rendom', $request->user_2_rendom)->first();
 
-        $randomNumber = rand(100000, 999999);
+        // $randomNumber = rand(100000, 999999);
+
+        do {
+            $randomNumber = rand(100000, 999999);
+        } while (Cupid::where('rendom', $randomNumber)->exists());
+        
         $cupid = new Cupid([
             'user_id_1' => $rendom_1->id,
             'user_id_2' => $rendom_2->id,

@@ -447,7 +447,11 @@ class ActivityController extends Controller
         }
     
         // Create a new activity in ActivityTemp
-        $randomNumber = rand(100000, 999999);
+        // $randomNumber = rand(100000, 999999);
+        do {
+            $randomNumber = rand(100000, 999999);
+        } while (ActivityTemp::where('rendom', $randomNumber)->exists());
+        
         $activityTemp = ActivityTemp::create([
             'user_id' => $user->id,
             'rendom' => $randomNumber,

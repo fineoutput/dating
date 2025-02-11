@@ -928,8 +928,8 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
         $start_time = $request->input('start_time');  // Assuming this is a time like "4:31 PM"
         $end_time = $request->input('end_time');      // Assuming this is a time like "6:31 PM"
         $expense_id = $request->input('expense_id');  // This should now be an array, e.g., ["1"]
-        $interests_id = $request->input('interests_id');  // This should now be an array, e.g., ["1", "2"]
-    
+        $interests_id = $request->input('interests_id');
+        $other_activity = $request->input('other_activity');
         $query = Activity::query();
         $filterApplied = false;
     

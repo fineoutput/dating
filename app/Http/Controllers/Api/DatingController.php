@@ -479,7 +479,11 @@ public function cupidmatch(Request $request)
             ]
         ];
 
-        return response()->json($response, 200);
+        return response()->json([
+            'message' => '',
+            'data' => $response,
+            'status' => 200,
+        ],200);
 
     } catch (\Exception $e) {
         return response()->json([

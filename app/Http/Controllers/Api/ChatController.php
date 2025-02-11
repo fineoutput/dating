@@ -97,6 +97,12 @@ class ChatController extends Controller
         }
 
         $receiverExists = User::where('rendom',$receiverId)->first();
+        if (!$receiverExists) {
+            return response()->json([
+                'message' => 'Data Not Found',
+                'status' => 200,
+            ]);
+        }
 
         $receve_id = $receiverExists->id;
 
@@ -106,7 +112,7 @@ class ChatController extends Controller
             ]);
         }
 
-        // Fetch messages between the authenticated user and the receiver
+        // Fetch messages between the authenticate    d user and the receiver
         $messages = Chat::where(function ($query) use ($receve_id) {
                 $query->where('sender_id', Auth::id())
                     ->where('receiver_id', $receve_id);

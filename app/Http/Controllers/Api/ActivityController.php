@@ -921,229 +921,233 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
    
 
-
-    // public function filteractivity(Request $request)
-    // {
-    //     $location = $request->input('location');
-    //     $when_time = $request->input('when_time');
-    //     $start_time = $request->input('start_time');  // Assuming this is a time like "4:31 PM"
-    //     $end_time = $request->input('end_time');      // Assuming this is a time like "6:31 PM"
-    //     $expense_id = $request->input('expense_id');
-    //     $interests_id = $request->input('interests_id');
-    
-    //     $query = Activity::query();
-    //     $filterApplied = false;
-    
-    //     // Filter based on location
-    //     if ($location) {
-    //         $query->where('location', 'like', '%' . $location . '%');
-    //         $filterApplied = true;
-    //     }
-    
-    //     // Filter based on when_time
-    //     if ($when_time) {
-    //         $query->where('when_time', $when_time);
-    //         $filterApplied = true;
-    //     }
-    
-    //     // Filter based on start_time and end_time
-    //     if ($start_time && $end_time) {
-    //         // Parse the input time (assume user provides time in "H:i A" format)
-    //         $startTimeFormatted = \Carbon\Carbon::parse($start_time)->format('H:i:s');
-    //         $endTimeFormatted = \Carbon\Carbon::parse($end_time)->format('H:i:s');
-    
-    //         // Adjust filtering based on the start_time and end_time
-    //         $query->where(function($q) use ($startTimeFormatted, $endTimeFormatted) {
-    //             $q->whereBetween('start_time', [$startTimeFormatted, $endTimeFormatted])
-    //               ->orWhereBetween('end_time', [$startTimeFormatted, $endTimeFormatted])
-    //               ->orWhere(function($query) use ($startTimeFormatted, $endTimeFormatted) {
-    //                   $query->where('start_time', '<=', $startTimeFormatted)
-    //                         ->where('end_time', '>=', $endTimeFormatted);
-    //               });
-    //         });
-    
-    //         $filterApplied = true;
-    //     }
-    
-    //     // Filter based on expense_id
-    //     if ($expense_id) {
-    //         $query->where('expense_id', $expense_id);
-    //         $filterApplied = true;
-    //     }
-    
-    //     // Filter based on interests_id
-    //     if ($interests_id) {
-    //         $query->where('interests_id', $interests_id);
-    //         $filterApplied = true;
-    //     }
-    
-    //     // Return a message if no filter is applied
-    //     if (!$filterApplied) {
-    //         return response()->json([
-    //             'message' => 'No filters applied, returning all activities',
-    //             'status' =>  200,
-    //             'data' =>  [],
-    //         ], 200);
-    //     }
-    
-    //     // Get the filtered activities with the user details
-    //     $activities = $query->with('user')->get();  // Assuming you have a 'user' relationship set up in the Activity model
-    
-    //     // Hide unnecessary fields
-    //     $activities->makeHidden(['created_at', 'updated_at', 'deleted_at', 'id', 'user_id']);
-    
-    //     // Prepare response data
-    //     $responseData = $activities->map(function($activity) {
-            
-    //         $hash = md5($activity->id);
-    //         $r = hexdec(substr($hash, 0, 2));
-    //         $g = hexdec(substr($hash, 2, 2));
-    //         $b = hexdec(substr($hash, 4, 2));
-            
-    //         $lightenFactor = 0.5;  // Adjust the lightening factor to 50%
-    //         $r = round($r + (255 - $r) * $lightenFactor);
-    //         $g = round($g + (255 - $g) * $lightenFactor);
-    //         $b = round($b + (255 - $b) * $lightenFactor);
-            
-    //         // Convert back to hex format
-    //         $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
-
-    //         $userDetails = $activity->user;
-    
-    //         // Construct the response array
-    //         return [
-    //             'title' => $activity->title,
-    //             'rendom' => $activity->rendom,
-    //             'location' => $activity->location,
-    //             'bg_color' => $bgColor,
-    //             'vibe_name' => $activity->vibe->name ?? '',
-    //             'vibe_icon' => $activity->vibe->icon ?? '',
-    //             'user_name' => $userDetails->name,
-    //             'user_profile_image' => json_decode($userDetails->profile_image, true)[1] ?? '',  // Assuming the profile image is stored in JSON format
-    //             'user_time' => \Carbon\Carbon::parse($userDetails->created_at)->format('d-F H:i'),
-    //         ];
-    //     });
-    
-    //     return response()->json([
-    //         'message' => 'Activities retrieved successfully',
-    //         'status' => 200,
-    //         'data' => $responseData,
-    //     ], 200);
-    // }
-    
-
     public function filteractivity(Request $request)
-{
-    $location = $request->input('location');
-    $when_time = $request->input('when_time');
-    $start_time = $request->input('start_time');  // Assuming this is a time like "4:31 PM"
-    $end_time = $request->input('end_time');      // Assuming this is a time like "6:31 PM"
-    $expense_id = $request->input('expense_id');
-    $interests_id = $request->input('interests_id');
-
-    $query = Activity::query();
-    $filterApplied = false;
-
-    // Filter based on location
-    if ($location) {
-        $query->where('location', 'like', '%' . $location . '%');
-        $filterApplied = true;
-    }
-
-    // Filter based on when_time
-    if ($when_time) {
-        $query->where('when_time', $when_time);
-        $filterApplied = true;
-    }
-
-    // Filter based on start_time and end_time
-    if ($start_time && $end_time) {
-        // Parse the input time (assume user provides time in "H:i A" format)
-        $startTimeFormatted = \Carbon\Carbon::parse($start_time)->format('H:i:s');
-        $endTimeFormatted = \Carbon\Carbon::parse($end_time)->format('H:i:s');
-
-        // Adjust filtering based on the start_time and end_time
-        $query->where(function($q) use ($startTimeFormatted, $endTimeFormatted) {
-            $q->whereBetween('start_time', [$startTimeFormatted, $endTimeFormatted])
-              ->orWhereBetween('end_time', [$startTimeFormatted, $endTimeFormatted])
-              ->orWhere(function($query) use ($startTimeFormatted, $endTimeFormatted) {
-                  $query->where('start_time', '<=', $startTimeFormatted)
-                        ->where('end_time', '>=', $endTimeFormatted);
-              });
+    {
+        $location = $request->input('location');
+        $when_time = $request->input('when_time');
+        $start_time = $request->input('start_time');  // Assuming this is a time like "4:31 PM"
+        $end_time = $request->input('end_time');      // Assuming this is a time like "6:31 PM"
+        $expense_id = $request->input('expense_id');  // This should now be an array, e.g., ["1"]
+        $interests_id = $request->input('interests_id');  // This should now be an array, e.g., ["1", "2"]
+    
+        $query = Activity::query();
+        $filterApplied = false;
+    
+        // Filter based on location
+        if ($location) {
+            $query->where('location', 'like', '%' . $location . '%');
+            $filterApplied = true;
+        }
+    
+        // Filter based on when_time
+        if ($when_time) {
+            $query->where('when_time', $when_time);
+            $filterApplied = true;
+        }
+    
+        // Filter based on start_time and end_time
+        if ($start_time && $end_time) {
+            // Parse the input time (assume user provides time in "H:i A" format)
+            $startTimeFormatted = \Carbon\Carbon::parse($start_time)->format('H:i:s');
+            $endTimeFormatted = \Carbon\Carbon::parse($end_time)->format('H:i:s');
+    
+            // Adjust filtering based on the start_time and end_time
+            $query->where(function($q) use ($startTimeFormatted, $endTimeFormatted) {
+                $q->whereBetween('start_time', [$startTimeFormatted, $endTimeFormatted])
+                  ->orWhereBetween('end_time', [$startTimeFormatted, $endTimeFormatted])
+                  ->orWhere(function($query) use ($startTimeFormatted, $endTimeFormatted) {
+                      $query->where('start_time', '<=', $startTimeFormatted)
+                            ->where('end_time', '>=', $endTimeFormatted);
+                  });
+            });
+    
+            $filterApplied = true;
+        }
+    
+        // Filter based on expense_id (array)
+        if ($expense_id && is_array($expense_id)) {
+            $query->whereIn('expense_id', $expense_id);
+            $filterApplied = true;
+        }
+    
+        // Filter based on interests_id (array)
+        if ($interests_id && is_array($interests_id)) {
+            $query->whereIn('interests_id', $interests_id);
+            $filterApplied = true;
+        }
+    
+        // Return a message if no filter is applied
+        if (!$filterApplied) {
+            return response()->json([
+                'message' => 'No filters applied, returning all activities',
+                'status' =>  200,
+                'data' =>  [],
+            ], 200);
+        }
+    
+        // Get the filtered activities with the user details
+        $activities = $query->with('user')->get();  // Assuming you have a 'user' relationship set up in the Activity model
+    
+        // Hide unnecessary fields
+        $activities->makeHidden(['created_at', 'updated_at', 'deleted_at', 'id', 'user_id']);
+    
+        // Prepare response data
+        $responseData = $activities->map(function($activity) {
+            
+            $hash = md5($activity->id);
+            $r = hexdec(substr($hash, 0, 2));
+            $g = hexdec(substr($hash, 2, 2));
+            $b = hexdec(substr($hash, 4, 2));
+            
+            $lightenFactor = 0.5;  // Adjust the lightening factor to 50%
+            $r = round($r + (255 - $r) * $lightenFactor);
+            $g = round($g + (255 - $g) * $lightenFactor);
+            $b = round($b + (255 - $b) * $lightenFactor);
+            
+            // Convert back to hex format
+            $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
+    
+            $userDetails = $activity->user;
+            
+            // Get the profile image URL
+            $profileImages = json_decode($userDetails->profile_image, true);
+            $profileImageUrl = isset($profileImages[1]) ? url('uploads/app/profile_images/' . $profileImages[1]) : null;
+    
+            // Construct the response array
+            return [
+                'title' => $activity->title,
+                'rendom' => $activity->rendom,
+                'location' => $activity->location,
+                'bg_color' => $bgColor,
+                'vibe_name' => $activity->vibe->name ?? '',
+                'vibe_icon' => $activity->vibe->icon ?? '',
+                'user_name' => $userDetails->name,
+                'user_profile_image' => $profileImageUrl,  // Full profile image URL
+                'user_time' => \Carbon\Carbon::parse($userDetails->created_at)->format('d-F H:i'),
+            ];
         });
-
-        $filterApplied = true;
-    }
-
-    // Filter based on expense_id
-    if ($expense_id) {
-        $query->where('expense_id', $expense_id);
-        $filterApplied = true;
-    }
-
-    // Filter based on interests_id
-    if ($interests_id) {
-        $query->where('interests_id', $interests_id);
-        $filterApplied = true;
-    }
-
-    // Return a message if no filter is applied
-    if (!$filterApplied) {
+    
         return response()->json([
-            'message' => 'No filters applied, returning all activities',
-            'status' =>  200,
-            'data' =>  [],
+            'message' => 'Activities retrieved successfully',
+            'status' => 200,
+            'data' => $responseData,
         ], 200);
     }
+    
+    
 
-    // Get the filtered activities with the user details
-    $activities = $query->with('user')->get();  // Assuming you have a 'user' relationship set up in the Activity model
+//     public function filteractivity(Request $request)
+// {
+//     $location = $request->input('location');
+//     $when_time = $request->input('when_time');
+//     $start_time = $request->input('start_time');  // Assuming this is a time like "4:31 PM"
+//     $end_time = $request->input('end_time');      // Assuming this is a time like "6:31 PM"
+//     $expense_id = $request->input('expense_id');
+//     $interests_id = $request->input('interests_id');
 
-    // Hide unnecessary fields
-    $activities->makeHidden(['created_at', 'updated_at', 'deleted_at', 'id', 'user_id']);
+//     $query = Activity::query();
+//     $filterApplied = false;
 
-    // Prepare response data
-    $responseData = $activities->map(function($activity) {
+//     // Filter based on location
+//     if ($location) {
+//         $query->where('location', 'like', '%' . $location . '%');
+//         $filterApplied = true;
+//     }
+
+//     // Filter based on when_time
+//     if ($when_time) {
+//         $query->where('when_time', $when_time);
+//         $filterApplied = true;
+//     }
+
+//     // Filter based on start_time and end_time
+//     if ($start_time && $end_time) {
+//         // Parse the input time (assume user provides time in "H:i A" format)
+//         $startTimeFormatted = \Carbon\Carbon::parse($start_time)->format('H:i:s');
+//         $endTimeFormatted = \Carbon\Carbon::parse($end_time)->format('H:i:s');
+
+//         // Adjust filtering based on the start_time and end_time
+//         $query->where(function($q) use ($startTimeFormatted, $endTimeFormatted) {
+//             $q->whereBetween('start_time', [$startTimeFormatted, $endTimeFormatted])
+//               ->orWhereBetween('end_time', [$startTimeFormatted, $endTimeFormatted])
+//               ->orWhere(function($query) use ($startTimeFormatted, $endTimeFormatted) {
+//                   $query->where('start_time', '<=', $startTimeFormatted)
+//                         ->where('end_time', '>=', $endTimeFormatted);
+//               });
+//         });
+
+//         $filterApplied = true;
+//     }
+
+//     // Filter based on expense_id
+//     if ($expense_id) {
+//         $query->where('expense_id', $expense_id);
+//         $filterApplied = true;
+//     }
+
+//     // Filter based on interests_id
+//     if ($interests_id) {
+//         $query->where('interests_id', $interests_id);
+//         $filterApplied = true;
+//     }
+
+//     // Return a message if no filter is applied
+//     if (!$filterApplied) {
+//         return response()->json([
+//             'message' => 'No filters applied, returning all activities',
+//             'status' =>  200,
+//             'data' =>  [],
+//         ], 200);
+//     }
+
+//     // Get the filtered activities with the user details
+//     $activities = $query->with('user')->get();  // Assuming you have a 'user' relationship set up in the Activity model
+
+//     // Hide unnecessary fields
+//     $activities->makeHidden(['created_at', 'updated_at', 'deleted_at', 'id', 'user_id']);
+
+//     // Prepare response data
+//     $responseData = $activities->map(function($activity) {
         
-        $hash = md5($activity->id);
-        $r = hexdec(substr($hash, 0, 2));
-        $g = hexdec(substr($hash, 2, 2));
-        $b = hexdec(substr($hash, 4, 2));
+//         $hash = md5($activity->id);
+//         $r = hexdec(substr($hash, 0, 2));
+//         $g = hexdec(substr($hash, 2, 2));
+//         $b = hexdec(substr($hash, 4, 2));
         
-        $lightenFactor = 0.5;  // Adjust the lightening factor to 50%
-        $r = round($r + (255 - $r) * $lightenFactor);
-        $g = round($g + (255 - $g) * $lightenFactor);
-        $b = round($b + (255 - $b) * $lightenFactor);
+//         $lightenFactor = 0.5;  // Adjust the lightening factor to 50%
+//         $r = round($r + (255 - $r) * $lightenFactor);
+//         $g = round($g + (255 - $g) * $lightenFactor);
+//         $b = round($b + (255 - $b) * $lightenFactor);
         
-        // Convert back to hex format
-        $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
+//         // Convert back to hex format
+//         $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
-        $userDetails = $activity->user;
+//         $userDetails = $activity->user;
         
-        // Get the profile image URL
-        $profileImages = json_decode($userDetails->profile_image, true);
-        $profileImageUrl = isset($profileImages[1]) ? url('uploads/app/profile_images/' . $profileImages[1]) : null;
+//         // Get the profile image URL
+//         $profileImages = json_decode($userDetails->profile_image, true);
+//         $profileImageUrl = isset($profileImages[1]) ? url('uploads/app/profile_images/' . $profileImages[1]) : null;
 
-        // Construct the response array
-        return [
-            'title' => $activity->title,
-            'rendom' => $activity->rendom,
-            'location' => $activity->location,
-            'bg_color' => $bgColor,
-            'vibe_name' => $activity->vibe->name ?? '',
-            'vibe_icon' => $activity->vibe->icon ?? '',
-            'user_name' => $userDetails->name,
-            'user_profile_image' => $profileImageUrl,  // Full profile image URL
-            'user_time' => \Carbon\Carbon::parse($userDetails->created_at)->format('d-F H:i'),
-        ];
-    });
+//         // Construct the response array
+//         return [
+//             'title' => $activity->title,
+//             'rendom' => $activity->rendom,
+//             'location' => $activity->location,
+//             'bg_color' => $bgColor,
+//             'vibe_name' => $activity->vibe->name ?? '',
+//             'vibe_icon' => $activity->vibe->icon ?? '',
+//             'user_name' => $userDetails->name,
+//             'user_profile_image' => $profileImageUrl,  // Full profile image URL
+//             'user_time' => \Carbon\Carbon::parse($userDetails->created_at)->format('d-F H:i'),
+//         ];
+//     });
 
-    return response()->json([
-        'message' => 'Activities retrieved successfully',
-        'status' => 200,
-        'data' => $responseData,
-    ], 200);
-}
+//     return response()->json([
+//         'message' => 'Activities retrieved successfully',
+//         'status' => 200,
+//         'data' => $responseData,
+//     ], 200);
+// }
 
         
         public function vibeactivitycount()

@@ -109,6 +109,7 @@ class ChatController extends Controller
         if (!$receiverExists) {
             return response()->json([
                 'message' => 'Receiver not found.',
+                'status' => 200,
             ]);
         }
 

@@ -648,4 +648,83 @@ public function updateCupidMatch(Request $request)
             ], 200);
         }
 
+
+        public function getUserData(Request $request)
+        {
+            $request->validate([
+                'rendom' => 'required', 
+            ]);
+        
+            // Retrieve the value of 'rendom'
+            $phoneNumber = $request->input('rendom');
+            
+            // Find the user by the 'rendom' field
+            $user = User::where('rendom', $phoneNumber)->first();
+            
+            // If the user is found
+            if ($user) {
+                $interestField = $user->interest;
+                
+                // Decode the 'interest' field (assuming it's stored as a JSON string)
+                $interestFieldDecoded = json_decode($interestField, true);
+                
+                // Check if decoded data is an array
+                if (!is_array($interestFieldDecoded)) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Invalid interest data',
+                    ], 400);
+                }
+        
+                // Flatten the array and split items by commas
+                $interestIds = [];
+                foreach ($interestFieldDecoded as $item) {
+                    $interestIds = array_merge($interestIds, explode(',', $item));
+                }
+        
+                // Clean up the array by trimming any extra spaces
+                $interestIds = array_map('trim', $interestIds);
+                
+                // Fetch the interests from the Interest model based on IDs
+                $interests = Interest::whereIn('id', $interestIds)->get(['name', 'icon']);
+        
+                // Decode the profile images field
+                $profileImages = json_decode($user->profile_image, true);
+                $imageUrls = [];
+                foreach ($profileImages as $image) {
+                    $imageUrls[] = asset('uploads/app/profile_images/' . $image);
+                }
+        
+                // Prepare user data
+                $userData = [
+                    'number' => $user->number,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'age' => $user->age,
+                    'gender' => $user->gender,
+                    'looking_for' => $user->looking_for,
+                    'interest' => $interests,
+                    'status' => $user->status,
+                    'profile_images' => $imageUrls,
+                ];
+        
+                // Return the user data as a JSON response
+                return response()->json([
+                    'message' => 'Data fetched successfully!',
+                    'status' => 200,
+                    'data' => $userData,
+                ]);
+            } else {
+                // If no user is found, return an error response
+                return response()->json([
+                    'message' => 'User not found',
+                    'status' => 200,
+                    'data' => [],
+                ]);
+            }
+        }
+        
+
+
+
 }

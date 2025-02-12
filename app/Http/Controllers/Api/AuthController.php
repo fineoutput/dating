@@ -743,10 +743,10 @@ class AuthController extends Controller
         
             // Validate the incoming request data
             $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
-                'age' => 'required|integer|min:18|max:100',
-                'gender' => 'required|string',
-                'looking_for' => 'required|string|max:255',
+                'name' => 'nullable|string|max:255',
+                'age' => 'nullable|integer|min:18|max:100',
+                'gender' => 'nullable|string',
+                'looking_for' => 'nullable|string|max:255',
                 'interest' => 'nullable|array',  // Array of interests
                 'profile_image' => 'nullable|array',  // Array of images
             ]);

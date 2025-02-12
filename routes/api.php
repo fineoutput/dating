@@ -64,7 +64,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user-interactions-count', [DatingController::class, 'getUserInteractionsCount']);
 
 
-    // Route::post('slide-like', [YourController::class, 'handleSlideLike']);  
+    Route::post('/get-user-data', [DatingController::class, 'getUserData']);
+
 });   
 
 

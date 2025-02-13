@@ -545,7 +545,11 @@ public function useractivitys(Request $request)
 
 
     if ($activities->isEmpty()) {
-        return response()->json(['message' => 'No upcoming activities found','status'=>200], 200);
+        return response()->json([
+            'message' => 'No upcoming activities found',
+            'status'=>200,
+            'data'=>[],
+        ], 200);
     }
 
     // Process the profile image URL
@@ -856,7 +860,11 @@ $matchingActivities = Activity::whereIn('interests_id', $interestIds)
         //                             ->get();
 
     if ($matchingActivities->isEmpty()) {
-        return response()->json(['message' => 'No matching activities found','status'=>200], 404);
+        return response()->json([
+            'message' => 'No matching activities found',
+            'status'=>200,
+            'data'=>[],
+        ], 200);
     }
 
     $activitiesWithUserDetails = $matchingActivities->map(function ($activity) {

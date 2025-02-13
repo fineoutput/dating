@@ -1388,7 +1388,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                 
                 // Add vibe with activity count and background color
                 $vibeWithActivityCount[] = [
-                    // 'id' => $vibe->id,
+                    'id' => $vibe->id,
                     'name' => $vibe->name,
                     // 'activity_id' => $vibe->activity_id,
                     'status' => $vibe->status,

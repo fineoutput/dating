@@ -57,7 +57,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cupidmatch', [DatingController::class, 'cupidmatch']);
     Route::post('/update-cupid-match', [DatingController::class, 'updateCupidMatch']);
 
-    Route::post('/subscription-list', [SubscriptionController::class, 'subscriptionlist']);
+    Route::post('/subscription-list', [SubscriptionController::class, 'subscriptionlists']);
 
     Route::post('user-interactions', [DatingController::class, 'handleUserInteractions']);
 
@@ -65,6 +65,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     Route::post('/get-user-data', [DatingController::class, 'getUserData']);
+
+    Route::get('/coin-categories', [SubscriptionController::class, 'subscriptionlist']);
+
 
 });   
 

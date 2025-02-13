@@ -15,6 +15,7 @@ use App\Models\Expense;
 use App\Models\Interest;
 use App\Models\Vibes;
 use App\Models\Activity;
+use App\Models\CoinCategory;
 use App\Models\ActivityTemp;
 use App\Models\OtherInterest;
 use Carbon\Carbon;
@@ -26,7 +27,7 @@ use Illuminate\Support\Facades\Auth;
 class SubscriptionController extends Controller
 {
   
-    public function subscriptionlist(Request $request)
+    public function subscriptionlists(Request $request)
     {
         $user = Auth::user();
         
@@ -98,7 +99,42 @@ class SubscriptionController extends Controller
             'data' => $activitiesData, 
         ]);
     }
+
+
+    public function subscriptionlist()
+{
+    // Fetch all coin categories from the database
+    $categories = CoinCategory::all();
+
+    // Initialize the array to store formatted data
+    $categoriesData = [];
+
+    // Loop through each category and add it to the response array
+    foreach ($categories as $category) {
+        $categoriesData[] = [
+            'id' => $category->id,
+            'category' => $category->category,
+            'cost' => $category->cost,
+            'description' => $category->description,
+            'extend_chat_coin' => $category->extend_chat_coin,
+            'monthly_activities_coin' => $category->monthly_activities_coin,
+            'monthly_interests_coin' => $category->monthly_interests_coin,
+            'interest_messages_coin' => $category->interest_messages_coin,
+
+        ];
+    }
+
+    // Return the data as a JSON response
+    return response()->json([
+        'message' => 'Data fetched successfully.',
+        'data' => $categoriesData,
+        'status' => 200,
+    ]);
+}
+
  
+
+
 
 
 }

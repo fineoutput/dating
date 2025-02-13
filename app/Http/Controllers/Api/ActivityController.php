@@ -1192,217 +1192,217 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
 
 
-        public function vibeactivitydetails(Request $request)
-{
-    // Check if the user is authenticated
-    if (!Auth::check()) {
-        return response()->json([
-            'message' => 'Unauthorized. Please log in.',
-        ], 401);
-    }
+//         public function vibeactivitydetails(Request $request)
+// {
+//     // Check if the user is authenticated
+//     if (!Auth::check()) {
+//         return response()->json([
+//             'message' => 'Unauthorized. Please log in.',
+//         ], 401);
+//     }
 
-    // If a vibe_id is provided, fetch the specific vibe and its associated activities
-    if ($request->has('vibe_id')) {
-        $vibe = Vibes::find($request->vibe_id);
+//     // If a vibe_id is provided, fetch the specific vibe and its associated activities
+//     if ($request->has('vibe_id')) {
+//         $vibe = Vibes::find($request->vibe_id);
 
-        // If the vibe doesn't exist
-        if (!$vibe) {
-            return response()->json([
-                'message' => 'Vibe not found.',
-                'status' => 201,
-                'data' => [],
-            ], 404);
-        }
+//         // If the vibe doesn't exist
+//         if (!$vibe) {
+//             return response()->json([
+//                 'message' => 'Vibe not found.',
+//                 'status' => 201,
+//                 'data' => [],
+//             ], 404);
+//         }
 
-        // Get the activities associated with the provided vibe_id
-        $activities = Activity::where('vibe_id', $vibe->id)->where('status', 2)->get();
+//         // Get the activities associated with the provided vibe_id
+//         $activities = Activity::where('vibe_id', $vibe->id)->where('status', 2)->get();
 
-        // Prepare the response data for the specific vibe
-        $vibeDetails = [
-            'id' => $vibe->id,
-            'name' => $vibe->name,
-            'status' => $vibe->status,
-            'icon' => $vibe->icon,
-            'activities' => $activities->map(function ($activity) {
-                // Get user and activity details
-                $user_rendom = User::where('id', $activity->user_id)->first();
-                $interestsNames = Interest::whereIn('id', json_decode($activity->interests_id))->pluck('name')->toArray();
-                $expenseNames = Expense::whereIn('id', json_decode($activity->expense_id))->pluck('name')->toArray();
+//         // Prepare the response data for the specific vibe
+//         $vibeDetails = [
+//             'id' => $vibe->id,
+//             'name' => $vibe->name,
+//             'status' => $vibe->status,
+//             'icon' => $vibe->icon,
+//             'activities' => $activities->map(function ($activity) {
+//                 // Get user and activity details
+//                 $user_rendom = User::where('id', $activity->user_id)->first();
+//                 $interestsNames = Interest::whereIn('id', json_decode($activity->interests_id))->pluck('name')->toArray();
+//                 $expenseNames = Expense::whereIn('id', json_decode($activity->expense_id))->pluck('name')->toArray();
 
-                $profileImages = json_decode($activity->user->profile_image, true);
-                $profileImageUrl = null;
+//                 $profileImages = json_decode($activity->user->profile_image, true);
+//                 $profileImageUrl = null;
     
-                if (!empty($profileImages) && isset($profileImages[1])) {
-                    $profileImageUrl = asset('uploads/app/profile_images/' . $profileImages[1]);
+//                 if (!empty($profileImages) && isset($profileImages[1])) {
+//                     $profileImageUrl = asset('uploads/app/profile_images/' . $profileImages[1]);
+//                 }
+
+//                 return [
+//                     'activity_rendom' => $activity->rendom,
+//                     'user_rendom' => $user_rendom->rendom,
+//                     'profile_image' => $profileImageUrl,
+//                     'user_time' => \Carbon\Carbon::parse($activity->created_at)->format('d-F H:i'), 
+//                     'title' => $activity->title,
+//                     'location' => $activity->location,
+//                     'interests_id' => $interestsNames, 
+//                     'expense_id' => $expenseNames, 
+//                     'vibe_id' => $activity->vibe_id,
+//                     // 'image' => $activity->image,
+//                     'status' => $activity->status,
+//                 ];
+//             })
+//         ];
+
+//         return response()->json([
+//             'message' => 'Vibe activity details fetched successfully.',
+//             'status' => 200,
+//             'data' => $vibeDetails
+//         ]);
+//     }
+
+//     // If no vibe_id is provided, return activity counts for all vibes
+//     $vibes = Vibes::all();
+
+//     $vibeWithActivityCount = [];
+
+//     foreach ($vibes as $vibe) {
+//         // Generate a unique color for each vibe
+//         $hash = md5($vibe->id);
+//         $r = hexdec(substr($hash, 0, 2));
+//         $g = hexdec(substr($hash, 2, 2));
+//         $b = hexdec(substr($hash, 4, 2));
+        
+//         $lightenFactor = 0.5;  // Adjust the lightening factor to 50%
+//         $r = round($r + (255 - $r) * $lightenFactor);
+//         $g = round($g + (255 - $g) * $lightenFactor);
+//         $b = round($b + (255 - $b) * $lightenFactor);
+        
+//         // Convert back to hex format
+//         $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
+
+//         // Count activities associated with each vibe
+//         $activityCount = Activity::where('vibe_id', $vibe->id)->where('status', 2)->count();
+        
+//         // Add vibe with activity count and background color
+//         $vibeWithActivityCount[] = [
+//             'id' => $vibe->id,
+//             'name' => $vibe->name,
+//             'status' => $vibe->status,
+//             'icon' => $vibe->icon,
+//             'bg_color' => $bgColor, // Background color based on vibe ID
+//             'activity_count' => $activityCount
+//         ];
+//     }
+
+//     return response()->json([
+//         'message' => 'Vibe activity counts fetched successfully.',
+//         'status' => 200,
+//         'data' => $vibeWithActivityCount
+//     ]);
+// }
+
+        public function vibeactivitydetails(Request $request)
+        {
+            // Check if the user is authenticated
+            if (!Auth::check()) {
+                return response()->json([
+                    'message' => 'Unauthorized. Please log in.',
+                ], 401);
+            }
+
+            // If a vibe_id is provided, fetch the specific vibe and its associated activities
+            if ($request->has('vibe_id')) {
+                $vibe = Vibes::find($request->vibe_id);
+
+                // If the vibe doesn't exist
+                if (!$vibe) {
+                    return response()->json([
+                        'message' => 'Vibe not found.',
+                        'status' => 201,
+                        'data' => [],
+                    ], 404);
                 }
 
-                return [
-                    'activity_rendom' => $activity->rendom,
-                    'user_rendom' => $user_rendom->rendom,
-                    'profile_image' => $profileImageUrl,
-                    'user_time' => \Carbon\Carbon::parse($activity->created_at)->format('d-F H:i'), 
-                    'title' => $activity->title,
-                    'location' => $activity->location,
-                    'interests_id' => $interestsNames, 
-                    'expense_id' => $expenseNames, 
-                    'vibe_id' => $activity->vibe_id,
-                    // 'image' => $activity->image,
-                    'status' => $activity->status,
-                ];
-            })
-        ];
-
-        return response()->json([
-            'message' => 'Vibe activity details fetched successfully.',
-            'status' => 200,
-            'data' => $vibeDetails
-        ]);
-    }
-
-    // If no vibe_id is provided, return activity counts for all vibes
-    $vibes = Vibes::all();
-
-    $vibeWithActivityCount = [];
-
-    foreach ($vibes as $vibe) {
-        // Generate a unique color for each vibe
-        $hash = md5($vibe->id);
-        $r = hexdec(substr($hash, 0, 2));
-        $g = hexdec(substr($hash, 2, 2));
-        $b = hexdec(substr($hash, 4, 2));
-        
-        $lightenFactor = 0.5;  // Adjust the lightening factor to 50%
-        $r = round($r + (255 - $r) * $lightenFactor);
-        $g = round($g + (255 - $g) * $lightenFactor);
-        $b = round($b + (255 - $b) * $lightenFactor);
-        
-        // Convert back to hex format
-        $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
-
-        // Count activities associated with each vibe
-        $activityCount = Activity::where('vibe_id', $vibe->id)->where('status', 2)->count();
-        
-        // Add vibe with activity count and background color
-        $vibeWithActivityCount[] = [
-            'id' => $vibe->id,
-            'name' => $vibe->name,
-            'status' => $vibe->status,
-            'icon' => $vibe->icon,
-            'bg_color' => $bgColor, // Background color based on vibe ID
-            'activity_count' => $activityCount
-        ];
-    }
-
-    return response()->json([
-        'message' => 'Vibe activity counts fetched successfully.',
-        'status' => 200,
-        'data' => $vibeWithActivityCount
-    ]);
-}
-
-        // public function vibeactivitydetails(Request $request)
-        // {
-        //     // Check if the user is authenticated
-        //     if (!Auth::check()) {
-        //         return response()->json([
-        //             'message' => 'Unauthorized. Please log in.',
-        //         ], 401);
-        //     }
-
-        //     // If a vibe_id is provided, fetch the specific vibe and its associated activities
-        //     if ($request->has('vibe_id')) {
-        //         $vibe = Vibes::find($request->vibe_id);
-
-        //         // If the vibe doesn't exist
-        //         if (!$vibe) {
-        //             return response()->json([
-        //                 'message' => 'Vibe not found.',
-        //                 'status' => 201,
-        //                 'data' => [],
-        //             ], 404);
-        //         }
-
-        //         // Get the activities associated with the provided vibe_id
-        //         $activities = Activity::where('vibe_id', $vibe->id)->where('status',2)->get();
+                // Get the activities associated with the provided vibe_id
+                $activities = Activity::where('vibe_id', $vibe->id)->where('status',2)->get();
                
 
-        //         // Prepare the response data for the specific vibe
-        //         $vibeDetails = [
-        //             'id' => $vibe->id,
-        //             'name' => $vibe->name,
-        //             // 'activity_id' => $vibe->activity_id,
-        //             'status' => $vibe->status,
-        //             'icon' => $vibe->icon,
-        //             'activities' => $activities->map(function ($activity) {
-        //                 $user_rendom = User::where('id', $activity->user_id)->first();
-        //                 return [
-        //                     'activity_rendom' => $activity->rendom,
-        //                     'user_rendom' => $user_rendom->rendom,
-        //                     'user_time' => \Carbon\Carbon::parse($activity->created_at)->format('d-F H:i'), 
-        //                     'title' => $activity->title,
-        //                     'location' => $activity->location,
-        //                     // 'when_time' => $activity->when_time,
-        //                     // 'how_many' => $activity->how_many,
-        //                     // 'start_time' => $activity->start_time,
-        //                     // 'end_time' => $activity->end_time,
-        //                     'interests_id' => $activity->interests_id,
-        //                     'vibe_id' => $activity->vibe_id,
-        //                     'expense_id' => $activity->expense_id,
-        //                     // 'other_activity' => $activity->other_activity,
-        //                     // 'description' => $activity->description,
-        //                     'image' => $activity->image,
-        //                     'status' => $activity->status,
-        //                 ];
-        //             })
-        //         ];
+                // Prepare the response data for the specific vibe
+                $vibeDetails = [
+                    'id' => $vibe->id,
+                    'name' => $vibe->name,
+                    // 'activity_id' => $vibe->activity_id,
+                    'status' => $vibe->status,
+                    'icon' => $vibe->icon,
+                    'activities' => $activities->map(function ($activity) {
+                        $user_rendom = User::where('id', $activity->user_id)->first();
+                        return [
+                            'activity_rendom' => $activity->rendom,
+                            'user_rendom' => $user_rendom->rendom,
+                            'user_time' => \Carbon\Carbon::parse($activity->created_at)->format('d-F H:i'), 
+                            'title' => $activity->title,
+                            'location' => $activity->location,
+                            // 'when_time' => $activity->when_time,
+                            // 'how_many' => $activity->how_many,
+                            // 'start_time' => $activity->start_time,
+                            // 'end_time' => $activity->end_time,
+                            'interests_id' => $activity->interests_id,
+                            'vibe_id' => $activity->vibe_id,
+                            'expense_id' => $activity->expense_id,
+                            // 'other_activity' => $activity->other_activity,
+                            // 'description' => $activity->description,
+                            'image' => $activity->image,
+                            'status' => $activity->status,
+                        ];
+                    })
+                ];
 
-        //         return response()->json([
-        //             'message' => 'Vibe activity details fetched successfully.',
-        //             'status' => 200,
-        //             'data' => $vibeDetails
-        //         ]);
-        //     }
+                return response()->json([
+                    'message' => 'Vibe activity details fetched successfully.',
+                    'status' => 200,
+                    'data' => $vibeDetails
+                ]);
+            }
 
-        //     // If no vibe_id is provided, return activity counts for all vibes
-        //     $vibes = Vibes::all();
+            // If no vibe_id is provided, return activity counts for all vibes
+            $vibes = Vibes::all();
 
-        //     $vibeWithActivityCount = [];
+            $vibeWithActivityCount = [];
 
-        //     foreach ($vibes as $vibe) {
-        //         // Generate a unique color for each vibe
-        //         $hash = md5($vibe->id);
-        //         $r = hexdec(substr($hash, 0, 2));
-        //         $g = hexdec(substr($hash, 2, 2));
-        //         $b = hexdec(substr($hash, 4, 2));
+            foreach ($vibes as $vibe) {
+                // Generate a unique color for each vibe
+                $hash = md5($vibe->id);
+                $r = hexdec(substr($hash, 0, 2));
+                $g = hexdec(substr($hash, 2, 2));
+                $b = hexdec(substr($hash, 4, 2));
                 
-        //         $lightenFactor = 0.5;  // Adjust the lightening factor to 50%
-        //         $r = round($r + (255 - $r) * $lightenFactor);
-        //         $g = round($g + (255 - $g) * $lightenFactor);
-        //         $b = round($b + (255 - $b) * $lightenFactor);
+                $lightenFactor = 0.5;  // Adjust the lightening factor to 50%
+                $r = round($r + (255 - $r) * $lightenFactor);
+                $g = round($g + (255 - $g) * $lightenFactor);
+                $b = round($b + (255 - $b) * $lightenFactor);
                 
-        //         // Convert back to hex format
-        //         $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
+                // Convert back to hex format
+                $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
-        //         // Count activities associated with each vibe
-        //         $activityCount = Activity::where('vibe_id', $vibe->id)->where('status',2)->count();
+                // Count activities associated with each vibe
+                $activityCount = Activity::where('vibe_id', $vibe->id)->where('status',2)->count();
                 
-        //         // Add vibe with activity count and background color
-        //         $vibeWithActivityCount[] = [
-        //             // 'id' => $vibe->id,
-        //             'name' => $vibe->name,
-        //             // 'activity_id' => $vibe->activity_id,
-        //             'status' => $vibe->status,
-        //             'icon' => $vibe->icon,
-        //             'bg_color' => $bgColor, // Background color based on vibe ID
-        //             'activity_count' => $activityCount
-        //         ];
-        //     }
+                // Add vibe with activity count and background color
+                $vibeWithActivityCount[] = [
+                    // 'id' => $vibe->id,
+                    'name' => $vibe->name,
+                    // 'activity_id' => $vibe->activity_id,
+                    'status' => $vibe->status,
+                    'icon' => $vibe->icon,
+                    'bg_color' => $bgColor, // Background color based on vibe ID
+                    'activity_count' => $activityCount
+                ];
+            }
 
-        //     return response()->json([
-        //         'message' => 'Vibe activity counts fetched successfully.',
-        //         'status' => 200,
-        //         'data' => $vibeWithActivityCount
-        //     ]);
-        // }
+            return response()->json([
+                'message' => 'Vibe activity counts fetched successfully.',
+                'status' => 200,
+                'data' => $vibeWithActivityCount
+            ]);
+        }
 
 }

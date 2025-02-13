@@ -8,6 +8,7 @@ use App\Models\UnverifyUser;
 use App\Models\UserOtp;
 use App\Models\Chat;
 use App\Models\ActivitySubscription;
+use App\Models\DatingSubscription;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Hash;
@@ -92,6 +93,7 @@ class ChatController extends Controller
     $request->validate([
         'receiver_rendom' => 'required',
         'message' => 'required|string|max:255',
+        'type' => 'required',
     ]);
 
     // Get the current user
@@ -108,12 +110,16 @@ class ChatController extends Controller
     }
 
     $message_count = ActivitySubscription::orderBy('id','DESC')->first(); 
+    $dating_message_count = DatingSubscription::orderBy('id','DESC')->first(); 
 
-    $message_count_1 = (int) $message_count->message_count; 
+    $message_count_1 = (int) $message_count->message_count ?? ''; 
+    $message_count_2 = (int) $dating_message_count->swipe_message ?? ''; 
 
-// $message_count = intval($message_count->message_count);
 
 
+    $type = $request->input('type');
+
+    if($type == 0){
     if ($sender->subscription == 0) {
 
         $messagesSentThisWeek = Chat::where('sender_id', $sender->id)
@@ -129,8 +135,26 @@ class ChatController extends Controller
             ], 200);
         }
     }
+}
+else{
+    if ($sender->subscription == 0) {
 
-    // Function to generate unique code
+        $messagesSentThisWeek = Chat::where('sender_id', $sender->id)
+            ->whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+            ->count();
+
+
+        if ($messagesSentThisWeek >= $message_count_2) {
+            return response()->json([
+                'message' => 'Subscribe to send more messages for dating.',
+                'data' => [],
+                'status' => 200,
+            ], 200);
+        }
+    }
+}
+
+
     $generatedCodes = [];
     function generateUniqueCode(&$generatedCodes) {
         $randomCode = rand(100000, 999999);

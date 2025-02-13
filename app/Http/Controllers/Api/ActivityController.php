@@ -1405,4 +1405,69 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             ]);
         }
 
+
+
+public function updateConfirm(Request $request)
+{
+    // Validate incoming request
+    $request->validate([
+        'random' => 'required|string', // Ensure random is a string
+        'pactup' => 'required', // Ensure pactup is 1
+        'activity_rendom' => 'required', // Ensure pactup is 1
+    ]);
+
+    // Get the random value and pactup value from the request
+    $random = $request->input('random');
+    $pactup = $request->input('pactup');
+    $activity_rendom = $request->input('activity_rendom');
+
+
+
+    $user = User::where('rendom', $random)->first();
+    $activity_rendom_1 = Activity::where('rendom', $activity_rendom)->first();
+
+    if (!$activity_rendom_1) {
+        return response()->json([
+        'message' => 'Activity not found',
+        'data'=>[],
+        'status'=>201
+    ], 200);
+    }
+
+    // Check if the user is found
+    if (!$user) {
+        return response()->json([
+            'message' => 'User not found.',
+            'status' => 201,
+            'data' => [],
+    ], 201);
+    }
+
+    
+    // return $user->id;
+
+    $otherInterest = OtherInterest::where('user_id', $user->id)->where('activity_id',$activity_rendom_1->id)->first();
+    // return $otherInterest;
+
+    if ($otherInterest) {
+        // If found, update the confirm field to 0
+        $otherInterest->update(['confirm' => 0]);
+
+        return response()->json([
+            'message' => 'Confirm updated successfully to',
+            'status' => 200,
+            'data' => [],
+        ], 200);
+    }
+
+    return response()->json([
+        'message' => 'No matching record in OtherInterest table.',
+        'status' => 201,
+        'data' => [],
+], 201);
+}
+
+
+        
+
 }

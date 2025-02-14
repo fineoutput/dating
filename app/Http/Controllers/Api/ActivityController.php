@@ -1322,8 +1322,48 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                 ], 422);
             }
 
-            // If a vibe_id is provided, fetch the specific vibe and its associated activities
-            if ($request->vibe_id  !== 0) {
+            if ($request->vibe_id  == 0) {
+
+                $vibes = Vibes::all();
+
+                $vibeWithActivityCount = [];
+    
+                foreach ($vibes as $vibe) {
+                    // Generate a unique color for each vibe
+                    $hash = md5($vibe->id);
+                    $r = hexdec(substr($hash, 0, 2));
+                    $g = hexdec(substr($hash, 2, 2));
+                    $b = hexdec(substr($hash, 4, 2));
+                    
+                    $lightenFactor = 0.5;  // Adjust the lightening factor to 50%
+                    $r = round($r + (255 - $r) * $lightenFactor);
+                    $g = round($g + (255 - $g) * $lightenFactor);
+                    $b = round($b + (255 - $b) * $lightenFactor);
+                    
+                    // Convert back to hex format
+                    $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
+    
+                    // Count activities associated with each vibe
+                    $activityCount = Activity::where('vibe_id', $vibe->id)->where('status',2)->count();
+                    
+                    // Add vibe with activity count and background color
+                    $vibeWithActivityCount[] = [
+                        'id' => $vibe->id,
+                        'name' => $vibe->name,
+                        // 'activity_id' => $vibe->activity_id,
+                        'status' => $vibe->status,
+                        'icon' => $vibe->icon,
+                        'bg_color' => $bgColor, // Background color based on vibe ID
+                        'activity_count' => $activityCount
+                    ];
+                }
+    
+                return response()->json([
+                    'message' => 'Vibe activity counts fetched successfully.',
+                    'status' => 200,
+                    'data' => $vibeWithActivityCount
+                ]);
+            }else{
                 $vibe = Vibes::find($request->vibe_id);
 
                 // If the vibe doesn't exist
@@ -1374,47 +1414,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                     'status' => 200,
                     'data' => $vibeDetails
                 ]);
-            }else{
-
-            $vibes = Vibes::all();
-
-            $vibeWithActivityCount = [];
-
-            foreach ($vibes as $vibe) {
-                // Generate a unique color for each vibe
-                $hash = md5($vibe->id);
-                $r = hexdec(substr($hash, 0, 2));
-                $g = hexdec(substr($hash, 2, 2));
-                $b = hexdec(substr($hash, 4, 2));
-                
-                $lightenFactor = 0.5;  // Adjust the lightening factor to 50%
-                $r = round($r + (255 - $r) * $lightenFactor);
-                $g = round($g + (255 - $g) * $lightenFactor);
-                $b = round($b + (255 - $b) * $lightenFactor);
-                
-                // Convert back to hex format
-                $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
-
-                // Count activities associated with each vibe
-                $activityCount = Activity::where('vibe_id', $vibe->id)->where('status',2)->count();
-                
-                // Add vibe with activity count and background color
-                $vibeWithActivityCount[] = [
-                    'id' => $vibe->id,
-                    'name' => $vibe->name,
-                    // 'activity_id' => $vibe->activity_id,
-                    'status' => $vibe->status,
-                    'icon' => $vibe->icon,
-                    'bg_color' => $bgColor, // Background color based on vibe ID
-                    'activity_count' => $activityCount
-                ];
-            }
-
-            return response()->json([
-                'message' => 'Vibe activity counts fetched successfully.',
-                'status' => 200,
-                'data' => $vibeWithActivityCount
-            ]);
+          
         }
         }
 

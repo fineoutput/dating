@@ -1302,15 +1302,28 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
         public function vibeactivitydetails(Request $request)
         {
-            // Check if the user is authenticated
+            
             if (!Auth::check()) {
                 return response()->json([
                     'message' => 'Unauthorized. Please log in.',
                 ], 401);
             }
 
+
+            $validator = Validator::make($request->all(), [
+                'vibe_id' => 'required',
+            ]);
+            
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors(),
+                    'status' => 201,
+                ], 422);
+            }
+
             // If a vibe_id is provided, fetch the specific vibe and its associated activities
-            if ($request->has('vibe_id')) {
+            if ($request->vibe_id  !== 0) {
                 $vibe = Vibes::find($request->vibe_id);
 
                 // If the vibe doesn't exist
@@ -1361,9 +1374,8 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                     'status' => 200,
                     'data' => $vibeDetails
                 ]);
-            }
+            }else{
 
-            // If no vibe_id is provided, return activity counts for all vibes
             $vibes = Vibes::all();
 
             $vibeWithActivityCount = [];
@@ -1403,6 +1415,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                 'status' => 200,
                 'data' => $vibeWithActivityCount
             ]);
+        }
         }
 
 

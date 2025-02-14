@@ -1314,6 +1314,9 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                 'vibe_id' => 'required',
             ]);
             
+            $user_id = Auth::id();
+            $user = User::where('id',$user_id)->first();
+
             if ($validator->fails()) {
                 return response()->json([
                     'message' => 'Validation failed',
@@ -1364,9 +1367,9 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                     'data' => $vibeWithActivityCount
                 ]);
             }else{
+
                 $vibe = Vibes::find($request->vibe_id);
 
-                // If the vibe doesn't exist
                 if (!$vibe) {
                     return response()->json([
                         'message' => 'Vibe not found.',
@@ -1375,11 +1378,8 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                     ], 404);
                 }
 
-                // Get the activities associated with the provided vibe_id
                 $activities = Activity::where('vibe_id', $vibe->id)->where('status',2)->get();
-               
 
-                // Prepare the response data for the specific vibe
                 $vibeDetails = [
                     'id' => $vibe->id,
                     'name' => $vibe->name,
@@ -1387,24 +1387,44 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                     'status' => $vibe->status,
                     'icon' => $vibe->icon,
                     'activities' => $activities->map(function ($activity) {
+
+                    $hash = md5($activity->id);
+                    $r = hexdec(substr($hash, 0, 2));
+                    $g = hexdec(substr($hash, 2, 2));
+                    $b = hexdec(substr($hash, 4, 2));
+            
+                    $lightenFactor = 0.5;
+                    $r = round($r + (255 - $r) * $lightenFactor);
+                    $g = round($g + (255 - $g) * $lightenFactor);
+                    $b = round($b + (255 - $b) * $lightenFactor);
+            
+                    $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
+
                         $user_rendom = User::where('id', $activity->user_id)->first();
+
+                        $profileImageUrl = null;
+                        if ($user_rendom->profile_image) {
+                            $profileImages = json_decode($user_rendom->profile_image, true);
+                    
+                            if (!empty($profileImages) && isset($profileImages[1])) {
+                                $profileImageUrl = url('uploads/app/profile_images/' . $profileImages[1]);
+                            }
+                        }
+
                         return [
-                            'activity_rendom' => $activity->rendom,
-                            'user_rendom' => $user_rendom->rendom,
-                            'user_time' => \Carbon\Carbon::parse($activity->created_at)->format('d-F H:i'), 
+                            'rendom' => $activity->rendom,
+                            'when_time' => $activity->when_time,
+                            'end_time' => $activity->end_time,
                             'title' => $activity->title,
                             'location' => $activity->location,
-                            // 'when_time' => $activity->when_time,
-                            // 'how_many' => $activity->how_many,
-                            // 'start_time' => $activity->start_time,
-                            // 'end_time' => $activity->end_time,
-                            'interests_id' => $activity->interests_id,
-                            'vibe_id' => $activity->vibe_id,
-                            'expense_id' => $activity->expense_id,
-                            // 'other_activity' => $activity->other_activity,
-                            // 'description' => $activity->description,
-                            'image' => $activity->image,
-                            'status' => $activity->status,
+                            'bg_color' => $bgColor,
+                            'how_many' => $activity->how_many,
+                            'vibe_name' => $activity->vibe->name ?? '',
+                            'vibe_icon' => $activity->vibe->icon ?? '',
+                            'user_name' => $user_rendom->name,
+                            'user_profile_image' => $profileImageUrl,
+                            'user_time' => \Carbon\Carbon::parse($activity->created_at)->format('d-F H:i'),
+                            'status' => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
                         ];
                     })
                 ];

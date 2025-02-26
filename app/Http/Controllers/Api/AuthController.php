@@ -398,7 +398,8 @@ class AuthController extends Controller
                     // OTP did not match or is expired
                     return response()->json([
                         'message' => 'Invalid OTP or OTP expired.',
-                        'status' => 400,
+                        'data' => [],
+                        'status' => 201,
                     ]);
                 }
             }
@@ -414,7 +415,7 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Invalid OTP or details!',
                 'data' => [],
-                'status' => 200
+                'status' => 201
             ],200);
             
         }

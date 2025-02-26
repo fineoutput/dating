@@ -370,28 +370,40 @@ class AuthController extends Controller
         if ($type === 'phone') {
             $existingUser = User::where('number', $source_name)->first();
             if ($existingUser) {
+                
+                $otpRecord = UserOtp::where('source_name', $source_name)
+                ->where('otp', $otp)
+                ->latest()
+                ->first();
 
-                $token = $existingUser->createToken('auth_token')->plainTextToken;
-
-                $existingUser->auth = $token;
-                $existingUser->save();
-
-                // return $this->successResponse([
-                //     'message' => 'Login successful !',
-                //     'token' => $token,
-                //     'status' => true,
-                // ],  200);
-
-                return response()->json([
-                    'message' => 'Login successful !',
-                    'data' => [
-                        'token' => $token,
-                    ],
-                    'status' => 200,
-                ]);
-
+                if ($otpRecord) {
+                    // You may want to add logic here to check if OTP has expired (if necessary)
+        
+                    // Step 3: Generate token for authenticated user
+                    $token = $existingUser->createToken('auth_token')->plainTextToken;
+        
+                    // Save the token to the user (optional step)
+                    $existingUser->auth = $token;
+                    $existingUser->save();
+        
+                    // Return the successful response
+                    return response()->json([
+                        'message' => 'Login successful!',
+                        'data' => [
+                            'token' => $token,
+                        ],
+                        'status' => 200,
+                    ]);
+                } else {
+                    // OTP did not match or is expired
+                    return response()->json([
+                        'message' => 'Invalid OTP or OTP expired.',
+                        'status' => 400,
+                    ]);
+                }
             }
-        }
+            }
+
 
         $otpUser = UserOtp::where('type', $type)
             ->where('source_name', $source_name)

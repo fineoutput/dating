@@ -37,6 +37,12 @@ class User extends Authenticatable
         'rendom',
     ];
 
+    public function interests()
+    {
+        return $this->hasOne(Interest::class ,'id','interest');
+    }
+
+
     /**
      * The attributes that should be hidden for serialization.
      *

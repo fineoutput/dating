@@ -73,7 +73,21 @@
                         <td>{{ $data->age}}</td>
                         <td>{{ $data->gender}}</td>
                         <td>{{ $data->looking_for}}</td>
-                        <td>{{ $data->interest}}</td>
+                        {{-- <td>{{ $data->interest}}</td> --}}
+                        <td>
+                          @foreach(json_decode($data->interest) as $interestId)
+                              @php
+                                  // Fetch the interest name based on the ID
+                                  $interest = \App\Models\Interest::find($interestId);
+                              @endphp
+                      
+                              @if($interest)
+                                  {{ $interest->name }} @if(!$loop->last),@endif
+                              @endif
+                          @endforeach
+                      </td>
+                      
+                      
                         <td>{{ $data->state}}</td>
                         <td>{{ $data->city}}</td>
                         @if($data->status == 1)

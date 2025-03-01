@@ -167,6 +167,7 @@ class AuthController extends Controller
         'profile_image.*' => 'nullable|image',
         'state' => 'nullable|string|max:255',        
         'city' => 'nullable|string|max:255',                
+        'location' => 'nullable|string|max:255',                
         'password' => 'nullable|string|min:6',
     ];
 
@@ -230,7 +231,7 @@ class AuthController extends Controller
         }
 
         $updateData = array_filter($request->only([
-            'name', 'longitude', 'latitude', 'email', 'age', 'gender', 'looking_for', 
+            'name', 'longitude', 'latitude', 'location', 'email', 'age', 'gender', 'looking_for', 
             'interest', 'profile_image', 'state', 'city', 'password'
         ]));
 
@@ -290,6 +291,7 @@ class AuthController extends Controller
                 'city' => $unverifyUser->city,
                 'latitude' => $unverifyUser->latitude,
                 'longitude' => $unverifyUser->longitude,
+                'location' => $unverifyUser->location,
                 'rendom' => $randomNumber,
                 'status' => 1,
             ]);

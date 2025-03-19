@@ -320,14 +320,47 @@ class AuthController extends Controller
 
 
 
+    // private function sendOtp($phone = null, $email = null)
+    // {
+    //     $otp = rand(1000, 9999); 
+    //     $sourceName = $phone ?? $email; 
+    //     $existingOtp = UserOtp::where('source_name', $sourceName);
+    //     if ($existingOtp) {
+    //         $existingOtp->update(['otp' => 0]);
+    //     }
+    //     $data = [
+    //         'otp' => $otp,
+    //         'expires_at' => now()->addMinutes(10), 
+    //         'source_name' => $sourceName,
+    //         'type' => $phone ? 'phone' : 'email',
+    //     ];
+    //     UserOtp::create($data);
+    //     if ($phone) {
+    //         // $this->sendOtpToPhone($phone, $otp);
+    //     } elseif ($email) {
+    //         // $this->sendOtpToEmail($email, $otp);
+    //     }
+    // }
+
     private function sendOtp($phone = null, $email = null)
-    {
-        $otp = rand(1000, 9999); 
-        $sourceName = $phone ?? $email; 
-        $existingOtp = UserOtp::where('source_name', $sourceName);
-        if ($existingOtp) {
-            $existingOtp->update(['otp' => 0]);
-        }
+{
+    // Generate a random OTP between 1000 and 9999
+    $otp = rand(1000, 9999);
+    
+    // Use phone or email as the source name
+    $sourceName = $phone ?? $email; 
+
+    // Check if an OTP record exists for the provided source name
+    $existingOtp = UserOtp::where('source_name', $sourceName)->first();
+
+    // If the OTP record exists, update it, but don't set it to 0 (we only update the OTP)
+    if ($existingOtp) {
+        $existingOtp->update([
+            'otp' => $otp, // Set the newly generated OTP
+            'expires_at' => now()->addMinutes(10) // Reset expiration time
+        ]);
+    } else {
+        // If no record exists, create a new OTP record
         $data = [
             'otp' => $otp,
             'expires_at' => now()->addMinutes(10), 
@@ -335,12 +368,16 @@ class AuthController extends Controller
             'type' => $phone ? 'phone' : 'email',
         ];
         UserOtp::create($data);
-        if ($phone) {
-            // $this->sendOtpToPhone($phone, $otp);
-        } elseif ($email) {
-            // $this->sendOtpToEmail($email, $otp);
-        }
     }
+
+    // Send OTP to phone or email (you can implement these methods)
+    if ($phone) {
+        // $this->sendOtpToPhone($phone, $otp); // Uncomment to send OTP to phone
+    } elseif ($email) {
+        // $this->sendOtpToEmail($email, $otp); // Uncomment to send OTP to email
+    }
+}
+
     
     private function sendOtpToEmail($email, $otp)
     {
@@ -435,55 +472,55 @@ class AuthController extends Controller
             ->where('source_name', $source_name)
             ->update(['otp' => 0]);
 
-        // if ($type === 'email') {
-        //     $unverifyUser = UnverifyUser::orderBy('id','DESC')->where('email', $source_name)->first();
-        //     // return $unverifyUser;
-        //     if ($unverifyUser) {
-        //         $unverifyUser->update(['email_verify' => 1]);
+        if ($type === 'email') {
+            $unverifyUser = UnverifyUser::orderBy('id','DESC')->where('email', $source_name)->first();
+            // return $unverifyUser;
+            if ($unverifyUser) {
+                $unverifyUser->update(['email_verify' => 1]);
 
     
-        //         return response()->json([
+                return response()->json([
                     
-        //                 'message' => 'Email verified successfully!',
-        //                 'status' => 200,
-        //                 'data' => [
-        //                     'status' => 206,
-        //                 ],
-        //             // 'status' => true
-        //         ]);
-        //     } else {
-        //         return $this->successResponse('No user found with the provided email.', false, 404);
-        //     }
-        // }
-
-        if ($type === 'email') {
-            // Find the unverified user based on the provided email
-            $unverifyUser = UnverifyUser::orderBy('id', 'DESC')->where('email', $source_name)->first();
-        
-            if ($unverifyUser) {
-                // For testing purposes, we will always use '0000' as the OTP
-                $otp = '0000';
-        
-                // Simulate OTP validation with '0000' (as if it matches every time)
-                if ($otp === '0000') {
-                    // Update the email verification status
-                    $unverifyUser->update(['email_verify' => 1]);
-        
-                    return response()->json([
                         'message' => 'Email verified successfully!',
                         'status' => 200,
                         'data' => [
                             'status' => 206,
                         ],
-                    ]);
-                } else {
-                    // If you wanted to handle an invalid OTP case (though it won't happen with '0000')
-                    return $this->successResponse('Invalid OTP provided.', false, 400);
-                }
+                    // 'status' => true
+                ]);
             } else {
                 return $this->successResponse('No user found with the provided email.', false, 404);
             }
         }
+
+        // if ($type === 'email') {
+        //     // Find the unverified user based on the provided email
+        //     $unverifyUser = UnverifyUser::orderBy('id', 'DESC')->where('email', $source_name)->first();
+        
+        //     if ($unverifyUser) {
+        //         // For testing purposes, we will always use '0000' as the OTP
+        //         $otp = '0000';
+        
+        //         // Simulate OTP validation with '0000' (as if it matches every time)
+        //         if ($otp === '0000') {
+        //             // Update the email verification status
+        //             $unverifyUser->update(['email_verify' => 1]);
+        
+        //             return response()->json([
+        //                 'message' => 'Email verified successfully!',
+        //                 'status' => 200,
+        //                 'data' => [
+        //                     'status' => 206,
+        //                 ],
+        //             ]);
+        //         } else {
+        //             // If you wanted to handle an invalid OTP case (though it won't happen with '0000')
+        //             return $this->successResponse('Invalid OTP provided.', false, 400);
+        //         }
+        //     } else {
+        //         return $this->successResponse('No user found with the provided email.', false, 404);
+        //     }
+        // }
         
 
         if ($type === 'phone') {

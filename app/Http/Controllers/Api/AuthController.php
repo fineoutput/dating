@@ -435,41 +435,56 @@ class AuthController extends Controller
             ->where('source_name', $source_name)
             ->update(['otp' => 0]);
 
-        if ($type === 'email') {
-            $unverifyUser = UnverifyUser::orderBy('id','DESC')->where('email', $source_name)->first();
-            // return $unverifyUser;
-            if ($unverifyUser) {
-                $unverifyUser->update(['email_verify' => 1]);
+        // if ($type === 'email') {
+        //     $unverifyUser = UnverifyUser::orderBy('id','DESC')->where('email', $source_name)->first();
+        //     // return $unverifyUser;
+        //     if ($unverifyUser) {
+        //         $unverifyUser->update(['email_verify' => 1]);
 
-                // $user = User::create([
-                //     'email' => $source_name,
-                //     'name' => $unverifyUser->name,
-                //     'password' => $unverifyUser->password,
-                // ]);
-                
-                // $token = $user->createToken('auth_token')->plainTextToken;
-                // $user->auth = $token;
-                // $user->save();
-
-                // return $this->successResponse([
-                //     'data' => [
-                //         'message' => 'Email verified successfully!',
-                //         'status' => 206
-                //     ]  
-                // ]);
-                return response()->json([
+    
+        //         return response()->json([
                     
+        //                 'message' => 'Email verified successfully!',
+        //                 'status' => 200,
+        //                 'data' => [
+        //                     'status' => 206,
+        //                 ],
+        //             // 'status' => true
+        //         ]);
+        //     } else {
+        //         return $this->successResponse('No user found with the provided email.', false, 404);
+        //     }
+        // }
+
+        if ($type === 'email') {
+            // Find the unverified user based on the provided email
+            $unverifyUser = UnverifyUser::orderBy('id', 'DESC')->where('email', $source_name)->first();
+        
+            if ($unverifyUser) {
+                // For testing purposes, we will always use '0000' as the OTP
+                $otp = '0000';
+        
+                // Simulate OTP validation with '0000' (as if it matches every time)
+                if ($otp === '0000') {
+                    // Update the email verification status
+                    $unverifyUser->update(['email_verify' => 1]);
+        
+                    return response()->json([
                         'message' => 'Email verified successfully!',
                         'status' => 200,
                         'data' => [
                             'status' => 206,
                         ],
-                    // 'status' => true
-                ]);
+                    ]);
+                } else {
+                    // If you wanted to handle an invalid OTP case (though it won't happen with '0000')
+                    return $this->successResponse('Invalid OTP provided.', false, 400);
+                }
             } else {
                 return $this->successResponse('No user found with the provided email.', false, 404);
             }
         }
+        
 
         if ($type === 'phone') {
             $unverifyUser = UnverifyUser::where('number', $source_name)->first();

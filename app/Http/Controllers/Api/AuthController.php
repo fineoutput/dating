@@ -344,16 +344,22 @@ class AuthController extends Controller
 
     private function sendOtp($phone = null, $email = null)
 {
-    // Generate a random OTP between 1000 and 9999
-    $otp = rand(1000, 9999);
-    
+    // Generate a random OTP for phone or set 0000 for email
+    if ($phone) {
+        // Generate a random OTP between 1000 and 9999 for phone
+        $otp = rand(1000, 9999);
+    } elseif ($email) {
+        // Always set OTP to 0000 for email
+        $otp = 1111;
+    }
+
     // Use phone or email as the source name
-    $sourceName = $phone ?? $email; 
+    $sourceName = $phone ?? $email;
 
     // Check if an OTP record exists for the provided source name
     $existingOtp = UserOtp::where('source_name', $sourceName)->first();
 
-    // If the OTP record exists, update it, but don't set it to 0 (we only update the OTP)
+    // If the OTP record exists, update it with the new OTP
     if ($existingOtp) {
         $existingOtp->update([
             'otp' => $otp, // Set the newly generated OTP
@@ -377,6 +383,9 @@ class AuthController extends Controller
         // $this->sendOtpToEmail($email, $otp); // Uncomment to send OTP to email
     }
 }
+
+
+   
 
     
     private function sendOtpToEmail($email, $otp)

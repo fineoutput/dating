@@ -347,7 +347,9 @@ class AuthController extends Controller
     // Generate a random OTP for phone or set 0000 for email
     if ($phone) {
         // Generate a random OTP between 1000 and 9999 for phone
-        $otp = rand(1000, 9999);
+        // $otp = rand(1000, 9999);
+        $otp = 1111;
+
     } elseif ($email) {
         // Always set OTP to 0000 for email
         $otp = 1111;

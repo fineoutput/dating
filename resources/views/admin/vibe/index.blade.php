@@ -1,5 +1,11 @@
 @extends('admin.base_template')
 @section('main')
+
+<style>
+  button.btn{
+    border-radius: 105px;
+}
+</style>
 <!-- Start content -->
 <div class="content">
   <div class="container-fluid">
@@ -40,7 +46,7 @@
                 <div class="col-md-10">
                   <h4 class="mt-0 header-title">View {{$tital}} List</h4>
                 </div>
-                {{-- <div class="col-md-2"> <a class="btn btn-info cticket" href="{{route('interests.create')}}" role="button" style="margin-left: 20px;"> Add {{$tital}}</a></div> --}}
+                <div class="col-md-2"> <a class="btn btn-info cticket" href="{{route('vibe.create')}}" role="button" style="margin-left: 20px;"> Add {{$tital}}</a></div>
               </div>
               <hr style="margin-bottom: 50px;background-color: darkgrey;">
               <div class="table-rep-plugin">
@@ -54,7 +60,7 @@
                         {{-- <th data-priority="3">Image</th> --}}
                         <th data-priority="4">status</th>
                         <th data-priority="5">created_at</th>
-                        {{-- <th data-priority="6">Action</th> --}}
+                        <th data-priority="6">Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -76,22 +82,33 @@
                         </td>
                         @endif
                         <td>{{ formatDateTime($data->created_at) }}</td>
-                        {{-- <td>
+                        <td>
                           <div class="btn-group" id="btns<?php echo $a ?>">
 
 
-                            @if ($data->status == 0)
-                            <a href="{{route('intereststatus',['active',base64_encode($data->id)])}}" data-toggle="tooltip" data-placement="top" title="Active"><i class="fas fa-check success-icon"></i></a>
-                            @else
-                            <a href="{{route('intereststatus',['inactive',base64_encode($data->id)])}}" data-toggle="tooltip" data-placement="top" title="Inactive"><i class="fas fa-times danger-icon"></i></a>
-                            @endif
+                            <form action="{{ route('vibe.updateStatus', $data->id) }}" method="POST" style="display:inline;">
+                              @csrf
+                              @method('PATCH') 
+                              @if ($data->status == 1) <!-- If active -->
+                                  <button type="submit" class="btn btn-warning " onclick="return confirm('Are you sure you want to deactivate this vendor?');" data-toggle="tooltip" data-placement="top" title="Deactivate vendor">
+                                      <i class="fas fa-times"></i> <!-- Times icon for Deactivate -->
+                                  </button>
+                              @else <!-- If inactive -->
+                                  <button type="submit" class="btn btn-success " onclick="return confirm('Are you sure you want to activate this vendor?');" data-toggle="tooltip" data-placement="top" title="Activate vendor">
+                                      <i class="fas fa-check"></i> <!-- Check icon for Activate -->
+                                  </button>
+                              @endif
+                          </form>
+
                             <a href="javascript:();" class="dCnf" mydata="<?php echo $a ?>" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fas fa-trash danger-icon"></i></a>
-                            <a href="{{ route('interests.show', $data->id) }}" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fas fa-edit info-icon"></i></a>
+
+                            <a href="{{ route('vibe.edit',['id'=> $data->id]) }}" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fas fa-edit info-icon"></i></a>
 
                           </div>
+
                           <div style="display:none" id="cnfbox<?php echo $a ?>">
                             <p> Are you sure delete this </p>
-                            <form id="deleteForm<?php echo $a; ?>" action="{{ route('interests.destroy', $data->id) }}" method="post" style="display:inline;">
+                            <form id="deleteForm<?php echo $a; ?>" action="{{ route('vibe.destroy',['id'=> $data->id]) }}" method="post" style="display:inline;">
                               @csrf
                               @method('DELETE')
                               <button type="submit" class="btn btn-danger" data-toggle="tooltip" data-placement="top" title="Delete">
@@ -100,7 +117,8 @@
                           </form>
                             <a href="javascript:();" class="cans btn btn-default" mydatas="<?php echo $a ?>">No</a>
                           </div>
-                        </td> --}}
+
+                        </td>
                       </tr>
                       @endforeach
                 

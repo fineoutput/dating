@@ -98,8 +98,25 @@ Route::get('/user/add-activity-coin/{id}', [UserController::class, 'addcoin'])->
 Route::post('/user/{id}/create-coin', [UserController::class, 'createCoin'])->name('createCoin');
 
 
-Route::get('/vibes', [VibeController::class, 'index'])->name('vibe.index');
+// Route::get('/vibes', [VibeController::class, 'index'])->name('vibe.index');
+
+Route::get('/vibe', [VibeController::class, 'index'])->name('vibe.index');
+Route::get('/vibe/create', [VibeController::class, 'create'])->name('vibe.create');
+Route::post('/vibe/store', [VibeController::class, 'store'])->name('vibe.store');
+Route::get('/vibe/edit/{id}', [VibeController::class, 'edit'])->name('vibe.edit');
+Route::put('/vibe/update/{id}', [VibeController::class, 'update'])->name('vibe.update');
+Route::delete('/vibe/{id}', [VibeController::class, 'destroy'])->name('vibe.destroy');
+Route::patch('/vibe/update-status/{id}', [VibeController::class, 'updateStatus'])->name('vibe.updateStatus');
+
+
 Route::get('/expense', [ExpenseController::class, 'index'])->name('expense.index');
+Route::get('/expense/create', [ExpenseController::class, 'create'])->name('expense.create');
+Route::post('/expense/store', [ExpenseController::class, 'store'])->name('expense.store');
+Route::get('/expense/edit/{id}', [ExpenseController::class, 'edit'])->name('expense.edit');
+Route::put('/expense/update/{id}', [ExpenseController::class, 'update'])->name('expense.update');
+Route::delete('/expense/{id}', [ExpenseController::class, 'destroy'])->name('expense.destroy');
+Route::patch('/expense/update-status/{id}', [ExpenseController::class, 'updateStatus'])->name('expense.updateStatus');
+
 Route::get('/panding-activity', [ActivityApprovedController::class, 'pandingactivity'])->name('pandingactivity');
 Route::get('/approved-activity', [ActivityApprovedController::class, 'approvedactivity'])->name('approvedactivity');
 Route::get('/activity/status/{action}/{id}', [ActivityApprovedController::class, 'updateStatus'])->name('activitystatus');

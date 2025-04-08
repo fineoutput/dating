@@ -70,13 +70,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/update-confirm', [ActivityController::class, 'updateConfirm']);
 
+    Route::get('user-interest', [InterestController::class, 'userinterest']);
 
 
 });   
 
-
-
 Route::get('interest', [InterestController::class, 'interest']);
+
+
 Route::get('vibes', [InterestController::class, 'vibes']);
 Route::get('expense', [InterestController::class, 'expense']);
 

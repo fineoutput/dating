@@ -25,26 +25,58 @@ class InterestController extends Controller
 {
 
     public function interest()
-{
-    $data = Interest::where('status', 1)->get();
+    {
+        $data = Interest::where('status', 1)->get();
 
-    // Include icon URL for each interest item (assuming each interest has an 'icon' field)
-    // $data->each(function ($item) {
-    //     $item->icon_url = asset('uploads/app/int_images/' . $item->icon);
-    // });
+        $message = "Interest fetched successfully";
+        $statusCode = 200; 
 
-    $message = "Interest fetched successfully";
-    $statusCode = 200; 
+        // Hide unnecessary fields
+        $data->makeHidden(['created_at', 'updated_at', 'deleted_at']);
 
-    // Hide unnecessary fields
-    $data->makeHidden(['created_at', 'updated_at', 'deleted_at']);
+        return response()->json([
+            'message' => $message,
+            'data' => $data,
+            'status' => $statusCode,
+        ], $statusCode);
+    }
 
-    return response()->json([
-        'message' => $message,
-        'data' => $data,
-        'status' => $statusCode,
-    ], $statusCode);
-}
+
+    public function userinterest()
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'User not authenticated.',
+                'status' => 200
+            ], 200);
+        }
+
+        $user = Auth::user();
+ 
+        $interest_ids = json_decode($user->interest);
+    
+        if ($interest_ids === null) {
+            return response()->json([
+                'message' => 'Invalid interest data.',
+                'status' => 400
+            ], 400);
+        }
+  
+        $data = Interest::whereIn('id', $interest_ids)->where('status', 1)->get();
+  
+        $message = "Interest fetched successfully";
+        $statusCode = 200;
+    
+        $data->makeHidden(['created_at', 'updated_at', 'deleted_at']);
+    
+        return response()->json([
+            'message' => $message,
+            'data' => $data,
+            'status' => $statusCode,
+        ], $statusCode);
+    }
+    
+
 
     public function vibes()
     {

@@ -54,7 +54,7 @@
                         <th data-priority="3">amount </th>
                         <th data-priority="4">Time</th>
                         <th data-priority="5">Squad</th>
-                        <th data-priority="6">Start Time</th>
+                        {{-- <th data-priority="6">Start Time</th> --}}
                         <th data-priority="7">End Time</th>
                         {{-- <th data-priority="8">Vibe</th> --}}
                         <th data-priority="9">description</th>
@@ -71,7 +71,7 @@
                         <td>{{ $data->amount }}</td>
                         <td>{{ $data->when_time}}</td>
                         <td>{{ $data->how_many}}</td>
-                        <td>{{ $data->start_time}}</td>
+                        {{-- <td>{{ $data->start_time}}</td> --}}
                         <td>{{ $data->end_time}}</td>
                         {{-- <td>{{ $data->vibe->vibe_id ?? ''}}</td> --}}
                         <td>{{ $data->description}}</td>

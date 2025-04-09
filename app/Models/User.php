@@ -36,6 +36,8 @@ class User extends Authenticatable
         'subscription', 
         'password',
         'rendom',
+        'about',
+        'address',
     ];
 
     public function interests()

@@ -937,14 +937,9 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
         if (!$user) {
             return response()->json(['message' => 'User not authenticated'], 401);
         }
-    
-        // Step 1: Get the interest records for the logged-in user
+
         $interestIds = OtherInterest::where('user_id', $user->id)->get();
-    
-        // Step 2: Extract the activity_id values from the collection
-        $activityIds = $interestIds->pluck('activity_id');  // This will get an array of activity_ids
-    
-        // Step 3: Fetch the matching activities that have status = 2 (assuming 2 means "active" or "approved")
+        $activityIds = $interestIds->pluck('activity_id'); 
         $matchingActivities = Activity::whereIn('id', $activityIds)->where('status', 2)->get();
     
         if ($matchingActivities->isEmpty()) {
@@ -961,25 +956,22 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             $g = hexdec(substr($hash, 2, 2));
             $b = hexdec(substr($hash, 4, 2));
     
-            $lightenFactor = 0.5;  // Adjust the lightening factor to 50%
+            $lightenFactor = 0.5;  
             $r = round($r + (255 - $r) * $lightenFactor);
             $g = round($g + (255 - $g) * $lightenFactor);
             $b = round($b + (255 - $b) * $lightenFactor);
-    
-            // Convert back to hex format
+
             $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
     
             $userd = Auth::id();
             $userDetails = User::find($userd);
     
-            // Initialize $profileImageUrl to null by default
             $profileImageUrl = null;
     
             if ($userDetails) {
                 $profileImages = json_decode($userDetails->profile_image, true);
                 $profileImageUrl = isset($profileImages[1]) ? url('uploads/app/profile_images/' . $profileImages[1]) : null;
     
-                // Merging user details directly in the main array
                 $userData = [
                     'id' => $userDetails->id,
                     'name' => $userDetails->name,
@@ -1002,7 +994,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                 'vibe_name' => $activity->vibe->name ?? '',
                 'vibe_icon' => $activity->vibe->icon ?? '',
                 'user_name' => $userDetails->name,
-                'user_profile_image' => $profileImageUrl,  // Full profile image URL
+                'user_profile_image' => $profileImageUrl, 
                 'user_time' => \Carbon\Carbon::parse($userDetails->created_at)->format('d-F H:i'),
             ];
         });
@@ -1032,20 +1024,17 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             $query->where('location', 'like', '%' . $location . '%');
             $filterApplied = true;
         }
-    
-        // Filter based on when_time
+
         if ($when_time) {
             $query->where('when_time', $when_time);
             $filterApplied = true;
         }
-    
-        // Filter based on start_time and end_time
+
         if ($start_time && $end_time) {
-            // Parse the input time (assume user provides time in "H:i A" format)
+
             $startTimeFormatted = \Carbon\Carbon::parse($start_time)->format('H:i:s');
             $endTimeFormatted = \Carbon\Carbon::parse($end_time)->format('H:i:s');
     
-            // Adjust filtering based on the start_time and end_time
             $query->where(function($q) use ($startTimeFormatted, $endTimeFormatted) {
                 $q->whereBetween('start_time', [$startTimeFormatted, $endTimeFormatted])
                   ->orWhereBetween('end_time', [$startTimeFormatted, $endTimeFormatted])
@@ -1057,20 +1046,17 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
     
             $filterApplied = true;
         }
-    
-        // Filter based on expense_id (array)
+
         if ($expense_id && is_array($expense_id)) {
             $query->whereIn('expense_id', $expense_id);
             $filterApplied = true;
         }
-    
-        // Filter based on interests_id (array)
+
         if ($interests_id && is_array($interests_id)) {
             $query->whereIn('interests_id', $interests_id);
             $filterApplied = true;
         }
-    
-        // Return a message if no filter is applied
+
         if (!$filterApplied) {
             return response()->json([
                 'message' => 'No filters applied, returning all activities',
@@ -1078,14 +1064,10 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                 'data' =>  [],
             ], 200);
         }
-    
-        // Get the filtered activities with the user details
-        $activities = $query->with('user')->get();  // Assuming you have a 'user' relationship set up in the Activity model
-    
-        // Hide unnecessary fields
+
+        $activities = $query->with('user')->get();  
         $activities->makeHidden(['created_at', 'updated_at', 'deleted_at', 'id', 'user_id']);
-    
-        // Prepare response data
+
         $responseData = $activities->map(function($activity) {
             
             $hash = md5($activity->id);
@@ -1093,21 +1075,18 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             $g = hexdec(substr($hash, 2, 2));
             $b = hexdec(substr($hash, 4, 2));
             
-            $lightenFactor = 0.5;  // Adjust the lightening factor to 50%
+            $lightenFactor = 0.5; 
             $r = round($r + (255 - $r) * $lightenFactor);
             $g = round($g + (255 - $g) * $lightenFactor);
             $b = round($b + (255 - $b) * $lightenFactor);
-            
-            // Convert back to hex format
+  
             $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
     
             $userDetails = $activity->user;
-            
-            // Get the profile image URL
+
             $profileImages = json_decode($userDetails->profile_image, true);
             $profileImageUrl = isset($profileImages[1]) ? url('uploads/app/profile_images/' . $profileImages[1]) : null;
-    
-            // Construct the response array
+ 
             return [
                 'title' => $activity->title,
                 'rendom' => $activity->rendom,
@@ -1116,7 +1095,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                 'vibe_name' => $activity->vibe->name ?? '',
                 'vibe_icon' => $activity->vibe->icon ?? '',
                 'user_name' => $userDetails->name,
-                'user_profile_image' => $profileImageUrl,  // Full profile image URL
+                'user_profile_image' => $profileImageUrl,  
                 'user_time' => \Carbon\Carbon::parse($userDetails->created_at)->format('d-F H:i'),
             ];
         });

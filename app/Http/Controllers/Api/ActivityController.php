@@ -1005,6 +1005,39 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             'data' => $activitiesWithUserDetails,
         ]);
     }
+
+    public function friendcount(Request $request)
+    {
+        $user = Auth::user(); 
+    
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+
+        $matchingActivities = Activity::where('user_id', $user->id)
+                                       ->where('status', 2)
+                                       ->get();
+
+        $activityIds = $matchingActivities->pluck('id'); 
+
+        $interestIds = OtherInterest::whereIn('activity_id', $activityIds)->get();
+
+        $distinctUserIds = $interestIds->pluck('user_id')->unique();
+    
+        $distinctUserCount = $distinctUserIds->count();
+
+        $totalInterestCount = $interestIds->count();
+  
+        return response()->json([
+            'message' => 'Interest counts found successfully',
+            'status' => 200,
+            'data' => [
+                'friend_count' => $distinctUserCount, 
+                'like_count' => $totalInterestCount, 
+            ],
+        ]);
+    }
+    
     
 
     public function filteractivity(Request $request)

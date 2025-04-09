@@ -161,7 +161,7 @@ class AuthController extends Controller
         'age' => 'nullable|string|max:255',         
         'gender' => 'nullable|string|max:255',       
         'looking_for' => 'nullable|string|max:255',  
-        'interest' => 'nullable|array|max:10',
+        'interest' => 'nullable|array',
         'interest.*' => 'nullable|exists:interests,id',     
         'profile_image' => 'nullable|array',
         'profile_image.*' => 'nullable|image',

@@ -367,7 +367,7 @@ class ActivityController extends Controller
             $activityTemp->vibe_id = $request->vibe_id ?? $activityTemp->vibe_id;
             $activityTemp->expense_id = isset($request->expense_id) ? implode(',', (array)$request->expense_id) : $activityTemp->expense_id;
             $activityTemp->other_activity = $request->other_activity ?? $activityTemp->other_activity;
-            $activityTemp->status = 1;  // Keep status as 1 unless changed in final status
+            $activityTemp->status = 2;  // Keep status as 1 unless changed in final status
             $activityTemp->title = $request->title ?? $activityTemp->title;
             $activityTemp->description = $request->description ?? $activityTemp->description;
             $activityTemp->location = $request->location ?? $activityTemp->location;

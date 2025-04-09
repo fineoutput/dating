@@ -20,7 +20,7 @@ class ActivityApprovedController extends Controller
      */
     public function pandingactivity()
     {
-        $data = Activity::orderBy('id','DESC')->where('status',1)->get(); // Fetch all users
+        $data = Activity::orderBy('id','DESC')->get(); // Fetch all users
         $title = "Panding Activity";
         return view('admin.activityapproved.pandingactivity', compact('data', 'title'));
     }
@@ -158,7 +158,8 @@ class ActivityApprovedController extends Controller
     public function updateStatus($action, $encodedId)
     {
      $userId = base64_decode($encodedId);
-     $newStatus = ($action === 'active') ? 1 : 2;
+     $newStatus = ($action === 'inactive') ? 
+     2 : 1;
 
    
         $user = Activity::find($userId); 

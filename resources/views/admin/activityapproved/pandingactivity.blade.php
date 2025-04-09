@@ -40,7 +40,7 @@
                 <div class="col-md-10">
                   <h4 class="mt-0 header-title">View {{$title}} List</h4>
                 </div>
-                <div class="col-md-2"> <a class="btn btn-info cticket" href="{{route('users.createOrEdit')}}" role="button" style="margin-left: 20px;"> Add {{$title}}</a></div>
+                {{-- <div class="col-md-2"> <a class="btn btn-info cticket" href="{{route('users.createOrEdit')}}" role="button" style="margin-left: 20px;"> Add {{$title}}</a></div> --}}
               </div>
               <hr style="margin-bottom: 50px;background-color: darkgrey;">
               <div class="table-rep-plugin">
@@ -90,10 +90,15 @@
 
 
                             @if ($data->status == 1)
-                            <a href="{{route('activitystatus',['2',base64_encode($data->id)])}}" data-toggle="tooltip" data-placement="top" title="Active"><i class="fas fa-check success-icon"></i></a>
-                            @else
-                            <a href="{{route('activitystatus',['1',base64_encode($data->id)])}}" data-toggle="tooltip" data-placement="top" title="Inactive"><i class="fas fa-times danger-icon"></i></a>
-                            @endif
+                            <a href="{{ route('activitystatus', ['inactive', base64_encode($data->id)]) }}" data-toggle="tooltip" data-placement="top" title="Active">
+                                <i class="fas fa-check success-icon"></i>
+                            </a>
+                        @else
+                            <a href="{{ route('activitystatus', ['active', base64_encode($data->id)]) }}" data-toggle="tooltip" data-placement="top" title="Inactive">
+                                <i class="fas fa-times danger-icon"></i>
+                            </a>
+                        @endif
+                        
                             {{-- <a href="javascript:();" class="dCnf" mydata="<?php echo $a ?>" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fas fa-trash danger-icon"></i></a>
                             <a href="{{ route('users.createOrEdit', ['id' => $data->id]) }}" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fas fa-edit info-icon"></i></a> --}}
 

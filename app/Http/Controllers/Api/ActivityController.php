@@ -17,6 +17,7 @@ use App\Models\Vibes;
 use App\Models\Activity;
 use App\Models\ActivitySubscription;
 use App\Models\ActivityTemp;
+use App\Models\Cupid;
 use App\Models\OtherInterest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -1006,54 +1007,133 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
         ]);
     }
 
+
+
+
+
     public function friendcount(Request $request)
     {
         $user = Auth::user(); 
-    
+
         if (!$user) {
             return response()->json(['message' => 'User not authenticated'], 401);
         }
-    
+
         $matchingActivities = Activity::where('user_id', $user->id)
-                                       ->where('status', 2)
-                                       ->get();
-    
+                                    ->where('status', 2)
+                                    ->get();
+
         $activityIds = $matchingActivities->pluck('id'); 
-    
+
         $interestIds = OtherInterest::whereIn('activity_id', $activityIds)->get();
-    
+
         $user_detailes = $interestIds->pluck('user_id');
-    
+
         $user_detailes_2 = User::whereIn('id', $user_detailes)->get();
-    
+
         $userList = $user_detailes_2->map(function ($user) {
             $imagePath = null;
-    
+
             if ($user->profile_image) {
                 $images = json_decode($user->profile_image, true); 
                 if (is_array($images) && count($images)) {
                     $imagePath = reset($images);
                 }
             }
-    
+
             return [
                 'id' => $user->id,
                 'name' => $user->name,
                 'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
             ];
         });
-    
+
         $distinctUserCount = $userList->count();
         $totalInterestCount = $interestIds->count();
-    
+
+        $CupidMatches = Cupid::where('user_id_1', $user->id)
+                        ->orWhere('user_id_2', $user->id)
+                        ->get();
+
+        $matchedUsers = $CupidMatches->map(function ($match) use ($user) {
+            $matchedUserId = $match->user_id_1 == $user->id ? $match->user_id_2 : $match->user_id_1;
+
+            $matchedUser = User::find($matchedUserId);
+
+            if (!$matchedUser) return null;
+
+            $images = json_decode($matchedUser->profile_image, true);
+            $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
+
+            return [
+                'id' => $matchedUser->id,
+                'name' => $matchedUser->name,
+                'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
+                'status' => $match->status,
+            ];
+        })->filter(); // remove nulls
+
         return response()->json([
-            'message' => 'Interest counts found successfully',
+            'message' => 'Friend and Cupid data fetched successfully',
             'status' => 200,
-            'data' => $userList,
-            'friend_count' => $distinctUserCount,
-            'like_count' => $totalInterestCount,
+            'data' => [
+                'interest_friends' => $userList,
+                'cupid_matches' => $matchedUsers->values(),
+                'friend_count' => $distinctUserCount,
+                'like_count' => $totalInterestCount
+            ]
         ]);
     }
+
+
+    // public function friendcount(Request $request)
+    // {
+    //     $user = Auth::user(); 
+    
+    //     if (!$user) {
+    //         return response()->json(['message' => 'User not authenticated'], 401);
+    //     }
+    
+    //     $matchingActivities = Activity::where('user_id', $user->id)
+    //                                    ->where('status', 2)
+    //                                    ->get();
+    
+    //     $activityIds = $matchingActivities->pluck('id'); 
+    
+    //     $interestIds = OtherInterest::whereIn('activity_id', $activityIds)->get();
+    
+    //     $user_detailes = $interestIds->pluck('user_id');
+    
+    //     $user_detailes_2 = User::whereIn('id', $user_detailes)->get();
+    
+    //     $userList = $user_detailes_2->map(function ($user) {
+    //         $imagePath = null;
+    
+    //         if ($user->profile_image) {
+    //             $images = json_decode($user->profile_image, true); 
+    //             if (is_array($images) && count($images)) {
+    //                 $imagePath = reset($images);
+    //             }
+    //         }
+    
+    //         return [
+    //             'id' => $user->id,
+    //             'name' => $user->name,
+    //             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+    //         ];
+    //     });
+    
+    //     $distinctUserCount = $userList->count();
+    //     $totalInterestCount = $interestIds->count();
+    
+    //     return response()->json([
+    //         'message' => 'Interest counts found successfully',
+    //         'status' => 200,
+    //         'data' => $userList,
+    //         'friend_count' => $distinctUserCount,
+    //         'like_count' => $totalInterestCount,
+    //     ]);
+    // }
     
     
     

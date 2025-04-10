@@ -507,7 +507,6 @@ public function cupidmatch(Request $request)
 
 public function cupidMatchFriend(Request $request)
 {
-    // Check if the user is authenticated
     if (!Auth::check()) {
         return response()->json([
             'message' => 'User not authenticated',
@@ -515,32 +514,36 @@ public function cupidMatchFriend(Request $request)
         ], 401);
     }
 
+    $maker = Auth::user();
 
-    $maker_id = Auth::user();
-//  return $maker_id;
-    $Cupid = Cupid::where('user_id_1', $maker_id->id)
-              ->orWhere('user_id_2', $maker_id->id)
-              ->get()
-              ->unique();
-    return $Cupid;
+    $Cupid = Cupid::where('user_id_1', $maker->id)
+                ->orWhere('user_id_2', $maker->id)
+                ->get();
 
-        $response = [
-            'message' => 'Cupid match saved successfully!',
-            'status' => 200,
-            'data' => [
-                'user_1_rendom' => $Cupid->rendom,
-                'user_2_rendom' => $Cupid->rendom,
-                'accept' => $Cupid->accept,
-            ]
-        ];
+    $userIds = $Cupid->flatMap(function ($item) {
+        return [$item->user_id_1, $item->user_id_2];
+    })->unique()->filter(function ($id) use ($maker) {
+        return $id != $maker->id;
+    });
 
-        return response()->json([
-            'message' => '',
-            'data' => $response,
-            'status' => 200,
-        ],200);
+    $users = User::whereIn('id', $userIds)->get(['id', 'name', 'profile_image']);
 
-    } 
+
+    $users = $users->map(function ($user) {
+        $images = json_decode($user->profile_image, true);
+        $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
+
+        $user->profile_image = $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null;
+    
+        return $user;
+    });
+
+    return response()->json([
+        'message' => 'Cupid matches found successfully!',
+        'status' => 200,
+        'data' => $users
+    ], 200);
+}
 
 
 

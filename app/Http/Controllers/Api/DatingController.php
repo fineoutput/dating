@@ -475,6 +475,7 @@ public function cupidmatch(Request $request)
                 'identity' => $cupid->identity,
                 'maker_rendom' => $maker_rendom->rendom,
                 'rendom' => $cupid->rendom,
+                'status' => 0,
                 // You can add any other necessary fields you want to return in the response
             ]
         ];

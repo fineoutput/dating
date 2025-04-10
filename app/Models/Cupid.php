@@ -19,6 +19,7 @@ class Cupid extends Model
         'message',
         'rendom',
         'identity',
+        'status',
     ];
 
 }

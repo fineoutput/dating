@@ -438,6 +438,15 @@ public function cupidmatch(Request $request)
         $rendom_1 = User::where('rendom', $request->user_1_rendom)->first();
         $rendom_2 = User::where('rendom', $request->user_2_rendom)->first();
 
+        if (!$rendom_1 || !$rendom_2) {
+            return response()->json([
+                'message' => 'User not found',
+                'data' => [],
+                'status' => 200,
+        ], 404);
+        }
+
+
         // $randomNumber = rand(100000, 999999);
 
         do {
@@ -494,6 +503,45 @@ public function cupidmatch(Request $request)
         ], 500);
     }
 }
+
+
+public function cupidMatchFriend(Request $request)
+{
+    // Check if the user is authenticated
+    if (!Auth::check()) {
+        return response()->json([
+            'message' => 'User not authenticated',
+            'status' => 401
+        ], 401);
+    }
+
+
+    $maker_id = Auth::user();
+//  return $maker_id;
+    $Cupid = Cupid::where('user_id_1', $maker_id->id)
+              ->orWhere('user_id_2', $maker_id->id)
+              ->get()
+              ->unique();
+    return $Cupid;
+
+        $response = [
+            'message' => 'Cupid match saved successfully!',
+            'status' => 200,
+            'data' => [
+                'user_1_rendom' => $Cupid->rendom,
+                'user_2_rendom' => $Cupid->rendom,
+                'accept' => $Cupid->accept,
+            ]
+        ];
+
+        return response()->json([
+            'message' => '',
+            'data' => $response,
+            'status' => 200,
+        ],200);
+
+    } 
+
 
 
 public function updateCupidMatch(Request $request)

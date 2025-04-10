@@ -60,6 +60,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cupidmatch', [DatingController::class, 'cupidmatch']);
 
     Route::get('/cupidmatch-friend', [DatingController::class, 'cupidMatchFriend']);
+    Route::post('/accept-cupid', [DatingController::class, 'acceptCupid']);
 
     Route::post('/update-cupid-match', [DatingController::class, 'updateCupidMatch']);
 

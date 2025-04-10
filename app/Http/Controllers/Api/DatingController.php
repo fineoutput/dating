@@ -535,7 +535,8 @@ public function cupidMatchFriend(Request $request)
             'id' => $user->id,
             'name' => $user->name,
             'profile_image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
-            'status' => $match->status
+            'status' => $match->status,
+            'status_id' => $match->id
         ];
     })->filter(); 
 
@@ -545,6 +546,48 @@ public function cupidMatchFriend(Request $request)
         'data' => $matchedUsers->values()
     ], 200);
 }
+
+
+
+public function acceptCupid(Request $request)
+{
+    if (!Auth::check()) {
+        return response()->json([
+            'message' => 'User not authenticated',
+            'status' => 401
+        ], 401);
+    }
+
+    // Validate request data
+    $request->validate([
+        'status' => 'required|string',
+        'id' => 'required|integer|exists:cupids,id',
+    ]);
+
+    $maker = Auth::user();
+
+    $cupid = Cupid::where('id', $request->id)->first();
+
+    if (!$cupid) {
+        return response()->json([
+            'message' => 'Cupid match not found or not authorized',
+            'status' => 404
+        ], 404);
+    }
+
+    $cupid->status = $request->status;
+    $cupid->save();
+
+    return response()->json([
+        'message' => 'Cupid match status updated successfully!',
+        'status' => 200,
+        'data' => [
+            'id' => $cupid->id,
+            'status' => $cupid->status
+        ]
+    ], 200);
+}
+
 
 
 // public function cupidMatchFriend(Request $request)

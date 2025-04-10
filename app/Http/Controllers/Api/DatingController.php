@@ -517,21 +517,17 @@ public function cupidMatchFriend(Request $request)
 
     $maker = Auth::user();
 
-    // Get all matches involving the current user
     $CupidMatches = Cupid::where('user_id_1', $maker->id)
                     ->orWhere('user_id_2', $maker->id)
                     ->get();
 
-    // Prepare the response data
     $matchedUsers = $CupidMatches->map(function ($match) use ($maker) {
-        // Get the matched user's ID
         $matchedUserId = $match->user_id_1 == $maker->id ? $match->user_id_2 : $match->user_id_1;
 
         $user = User::find($matchedUserId);
 
-        if (!$user) return null; // Just in case user was deleted
+        if (!$user) return null; 
 
-        // Decode and get first profile image
         $images = json_decode($user->profile_image, true);
         $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
 
@@ -541,7 +537,7 @@ public function cupidMatchFriend(Request $request)
             'profile_image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
             'status' => $match->status
         ];
-    })->filter(); // Removes any nulls from deleted users
+    })->filter(); 
 
     return response()->json([
         'message' => 'Cupid matches found successfully!',

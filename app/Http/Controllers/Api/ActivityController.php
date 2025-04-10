@@ -1022,11 +1022,33 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
         $interestIds = OtherInterest::whereIn('activity_id', $activityIds)->get();
 
+        $user_detailes = $interestIds->pluck('user_id');
+
+        $user_detailes_2 = User::whereIn('id',$user_detailes)->get();
+
         $distinctUserIds = $interestIds->pluck('user_id')->unique();
     
         $distinctUserCount = $distinctUserIds->count();
 
         $totalInterestCount = $interestIds->count();
+
+        $userList = $user_detailes_2->map(function ($user) {
+            $imagePath = null;
+        
+            if ($user->profile_image) {
+                $images = json_decode($user->profile_image, true); 
+        
+                if (is_array($images) && count($images)) {
+                    $imagePath = reset($images);
+                }
+            }
+        
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+            ];
+        });
   
         return response()->json([
             'message' => 'Interest counts found successfully',
@@ -1034,6 +1056,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             'data' => [
                 'friend_count' => $distinctUserCount, 
                 'like_count' => $totalInterestCount, 
+                'user' => $userList, 
             ],
         ]);
     }

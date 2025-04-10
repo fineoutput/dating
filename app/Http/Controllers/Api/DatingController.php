@@ -560,13 +560,13 @@ public function acceptCupid(Request $request)
 
     // Validate request data
     $request->validate([
-        'status' => 'required|string',
-        'id' => 'required|integer|exists:cupids,id',
+        'status' => 'required',
+        'user_id' => 'required',
     ]);
 
     $maker = Auth::user();
 
-    $cupid = Cupid::where('id', $request->id)->first();
+    $cupid = Cupid::where('id', $request->user_id)->first();
 
     if (!$cupid) {
         return response()->json([

@@ -627,6 +627,8 @@ public function getActivitydetailes(Request $request)
 
 
     $activity = Activity::where('rendom', $request->rendom)->first();
+    $activityUSER = Activity::where('rendom', $request->rendom)->where('user_id',$user->id)->first();
+
     if (!$activity) {
         return response()->json([
             'message' => 'Activity Not Found',
@@ -691,6 +693,12 @@ $activityInterestWithProfileImage = $activityInterestWithProfileImage->filter(fu
                 }
                 
     $time = strtotime($activity->when_time);
+    
+    if(!empty($activityUSER)){
+        $like_user = true;
+    }else{
+        $like_user = false;
+    }
     $activityData = [
         // 'id' => $activity->id,
         'user_name' => $activity->user->name ?? '',
@@ -703,6 +711,7 @@ $activityInterestWithProfileImage = $activityInterestWithProfileImage->filter(fu
         'interestCount' => $interestcount,
         'vibe_name' => $activity->vibe->name ?? '',  
         'vibe_icon' => $activity->vibe->icon ?? '',  
+        'like_user' => $like_user ?? '',  
         // 'expense_id' => $activity->expense_id,
         'expense_name' => $firstExpenseName, 
         'status' => $activity->status,

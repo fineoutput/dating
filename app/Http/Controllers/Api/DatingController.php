@@ -433,8 +433,7 @@ public function cupidmatch(Request $request)
 
     $maker_id = Auth::id();
 
-    try {
-
+   
         $rendom_1 = User::where('rendom', $request->user_1_rendom)->first();
         $rendom_2 = User::where('rendom', $request->user_2_rendom)->first();
 
@@ -485,13 +484,7 @@ public function cupidmatch(Request $request)
             'status' => 200,
         ],200);
 
-    } catch (\Exception $e) {
-        return response()->json([
-            'message' => 'Error saving cupid match.',
-            'error' => $e->getMessage(),
-            'status' => 500
-        ], 500);
-    }
+    
 }
 
 

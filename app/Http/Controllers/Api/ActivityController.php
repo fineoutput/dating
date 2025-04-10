@@ -1069,17 +1069,19 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                 'id' => $matchedUser->id,
                 'name' => $matchedUser->name,
                 'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
-                'status' => $match->status,
+                // 'status' => $match->status,
             ];
         })->filter(); // remove nulls
+
+        $combinedFriends = collect($userList)->merge($matchedUsers)->unique('id');
 
         return response()->json([
             'message' => 'Friend and Cupid data fetched successfully',
             'status' => 200,
             'data' => [
-                'interest_friends' => $userList,
-                'cupid_matches' => $matchedUsers->values(),
-                'friend_count' => $distinctUserCount,
+                // 'interest_friends' => $userList,
+                // 'cupid_matches' => $matchedUsers->values(),
+                'friend_count' => $combinedFriends,
                 'like_count' => $totalInterestCount
             ]
         ]);

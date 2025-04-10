@@ -505,6 +505,7 @@ public function cupidmatch(Request $request)
 }
 
 
+
 public function cupidMatchFriend(Request $request)
 {
     if (!Auth::check()) {
@@ -516,34 +517,79 @@ public function cupidMatchFriend(Request $request)
 
     $maker = Auth::user();
 
-    $Cupid = Cupid::where('user_id_1', $maker->id)
-                ->orWhere('user_id_2', $maker->id)
-                ->get();
+    // Get all matches involving the current user
+    $CupidMatches = Cupid::where('user_id_1', $maker->id)
+                    ->orWhere('user_id_2', $maker->id)
+                    ->get();
 
-    $userIds = $Cupid->flatMap(function ($item) {
-        return [$item->user_id_1, $item->user_id_2];
-    })->unique()->filter(function ($id) use ($maker) {
-        return $id != $maker->id;
-    });
+    // Prepare the response data
+    $matchedUsers = $CupidMatches->map(function ($match) use ($maker) {
+        // Get the matched user's ID
+        $matchedUserId = $match->user_id_1 == $maker->id ? $match->user_id_2 : $match->user_id_1;
 
-    $users = User::whereIn('id', $userIds)->get(['id', 'name', 'profile_image']);
+        $user = User::find($matchedUserId);
 
+        if (!$user) return null; // Just in case user was deleted
 
-    $users = $users->map(function ($user) {
+        // Decode and get first profile image
         $images = json_decode($user->profile_image, true);
         $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
 
-        $user->profile_image = $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null;
-    
-        return $user;
-    });
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'profile_image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
+            'status' => $match->status
+        ];
+    })->filter(); // Removes any nulls from deleted users
 
     return response()->json([
         'message' => 'Cupid matches found successfully!',
         'status' => 200,
-        'data' => $users
+        'data' => $matchedUsers->values()
     ], 200);
 }
+
+
+// public function cupidMatchFriend(Request $request)
+// {
+//     if (!Auth::check()) {
+//         return response()->json([
+//             'message' => 'User not authenticated',
+//             'status' => 401
+//         ], 401);
+//     }
+
+//     $maker = Auth::user();
+
+//     $Cupid = Cupid::where('user_id_1', $maker->id)
+//                 ->orWhere('user_id_2', $maker->id)
+//                 ->get();
+
+//     $userIds = $Cupid->flatMap(function ($item) {
+//         return [$item->user_id_1, $item->user_id_2];
+//     })->unique()->filter(function ($id) use ($maker) {
+//         return $id != $maker->id;
+//     });
+
+//     $users = User::whereIn('id', $userIds)->get(['id', 'name', 'profile_image']);
+
+
+//     $users = $users->map(function ($user) {
+//         $images = json_decode($user->profile_image, true);
+//         $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
+
+//         $user->profile_image = $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null;
+    
+//         return $user;
+//     });
+
+//     return response()->json([
+//         'message' => 'Cupid matches found successfully!',
+//         'status' => 200,
+//         'data' => $users
+//     ], 200);
+// }
 
 
 

@@ -465,7 +465,7 @@ class ActivityController extends Controller
             'how_many' => $request->how_many,
             'start_time' => $request->start_time,
             'end_time' => $request->end_time,
-            'interests_id' => isset($request->interests_id) ? implode(',', (array)$request->interests_id) : null,  // Handling multiple interests_id
+            'interests_id' => isset($user->interests_id) ? implode(',', (array)$user->interests_id) : null,  // Handling multiple interests_id
             'vibe_id' => $request->vibe_id,
             'expense_id' => isset($request->expense_id) ? implode(',', (array)$request->expense_id) : null, // Handling multiple expense_id
             'status' => 1,

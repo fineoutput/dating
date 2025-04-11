@@ -364,7 +364,7 @@ class ActivityController extends Controller
             $activityTemp->how_many = $request->how_many ?? $activityTemp->how_many;
             $activityTemp->start_time = $request->start_time ?? $activityTemp->start_time;
             $activityTemp->end_time = $request->end_time ?? $activityTemp->end_time;
-            $activityTemp->interests_id = isset($request->interests_id) ? implode(',', (array)$request->interests_id) : $activityTemp->interests_id;
+            $activityTemp->interests_id = isset($user->interest) ? implode(',', (array)$user->interest) : $user->interest;
             $activityTemp->vibe_id = $request->vibe_id ?? $activityTemp->vibe_id;
             $activityTemp->expense_id = isset($request->expense_id) ? implode(',', (array)$request->expense_id) : $activityTemp->expense_id;
             $activityTemp->other_activity = $request->other_activity ?? $activityTemp->other_activity;

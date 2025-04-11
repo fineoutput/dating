@@ -897,7 +897,7 @@ class AuthController extends Controller
                 'gender' => 'nullable|string',
                 'looking_for' => 'nullable|string|max:255',
                 'interest' => 'nullable|array',  // Array of interests (only updated for subscribed users)
-                'profile_image' => 'nullable|array',  // Array of images
+                'profile_image' => 'nullable',  // Array of images
                 'about' => 'nullable|string|max:1000',  // New field for "about" text (can be updated by any user)
             ]);
 
@@ -926,26 +926,26 @@ class AuthController extends Controller
                 $updateData['address'] = $request->address;
             }
 
-            if ($request->hasFile('profile_image') && is_array($request->profile_image)) {
+            if ($request->hasFile('profile_image')) {
                 $imagePaths = [];
-
-                foreach ($request->profile_image as $image) {
+            
+                foreach ($request->file('profile_image') as $image) {
                     $imageValidator = Validator::make(['image' => $image], [
-                        'image' => 'required', 
+                        'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120', // Max 5MB
                     ]);
-
+            
                     if ($imageValidator->fails()) {
                         return response()->json(['errors' => $imageValidator->errors()], 400);
                     }
-
+            
                     $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-
-                    $image->move(public_path('uploads/app/profile_images/'), $imageName);  
-                    $imagePaths[] = $imageName;  
+                    $image->move(public_path('uploads/app/profile_images/'), $imageName);
+                    $imagePaths[] = $imageName;
                 }
-
+            
                 $updateData['profile_image'] = json_encode($imagePaths);
             }
+            
 
             // Update the user with new data
             $user->update($updateData);

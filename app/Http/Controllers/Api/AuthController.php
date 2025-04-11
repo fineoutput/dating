@@ -851,7 +851,7 @@ class AuthController extends Controller
 
                 foreach ($request->profile_image as $image) {
                     $imageValidator = Validator::make(['image' => $image], [
-                        'image' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048', 
+                        'image' => 'required', 
                     ]);
 
                     if ($imageValidator->fails()) {

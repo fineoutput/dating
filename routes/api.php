@@ -36,7 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('interest-activity', [ActivityController::class, 'interestactivity']);
     Route::get('vibe-activity-count', [ActivityController::class, 'vibeactivitycount']);
     Route::post('vibe-activity-details', [ActivityController::class, 'vibeactivitydetails']);
-    Route::get('filter-activity', [ActivityController::class, 'filteractivity']);
+    Route::post('filter-activity', [ActivityController::class, 'filteractivity']);
 
     Route::get('friend-count', [ActivityController::class, 'friendcount']);
 

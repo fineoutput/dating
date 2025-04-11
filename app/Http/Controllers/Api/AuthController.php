@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log; 
+use Illuminate\Support\Facades\Http;
 
 
 
@@ -737,68 +738,147 @@ class AuthController extends Controller
 
    
  
-    public function userprofile(Request $request)
-        {
-            $user = Auth::user();
+    // public function userprofile(Request $request)
+    //     {
+    //         $user = Auth::user();
             
-            if (!$user) {
+    //         if (!$user) {
 
-                return response()->json([
-                    'status' => false,
-                    'message' => 'User not authenticated',
-                ], 401);
-            }
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'User not authenticated',
+    //             ], 401);
+    //         }
             
-            $interestField = $user->interest;
+    //         $interestField = $user->interest;
 
-            $interestFieldDecoded = json_decode($interestField, true);
+    //         $interestFieldDecoded = json_decode($interestField, true);
 
-            if (!is_array($interestFieldDecoded)) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Invalid interest data',
-                ], 400);
-            }
+    //         if (!is_array($interestFieldDecoded)) {
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Invalid interest data',
+    //             ], 400);
+    //         }
 
-            $interestIds = [];
-            foreach ($interestFieldDecoded as $item) {
-                $interestIds = array_merge($interestIds, explode(',', $item));
-            }
+    //         $interestIds = [];
+    //         foreach ($interestFieldDecoded as $item) {
+    //             $interestIds = array_merge($interestIds, explode(',', $item));
+    //         }
 
-            $interestIds = array_map('trim', $interestIds);
+    //         $interestIds = array_map('trim', $interestIds);
 
-            $interests = Interest::whereIn('id', $interestIds)->get(['id','name', 'icon']);
+    //         $interests = Interest::whereIn('id', $interestIds)->get(['id','name', 'icon']);
 
-            \Log::info("Interest IDs: ", $interestIds);
-            \Log::info("Fetched Interests: ", $interests->toArray());
+    //         \Log::info("Interest IDs: ", $interestIds);
+    //         \Log::info("Fetched Interests: ", $interests->toArray());
 
-            $profileImages = json_decode($user->profile_image, true);
-            $imageUrls = [];
-            foreach ($profileImages as $image) {
-                $imageUrls[] = asset('uploads/app/profile_images/' . $image);
-            }
+    //         $profileImages = json_decode($user->profile_image, true);
+    //         $imageUrls = [];
+    //         foreach ($profileImages as $image) {
+    //             $imageUrls[] = asset('uploads/app/profile_images/' . $image);
+    //         }
  
-            $userData = [
-                // 'id' => $user->id,
-                'number' => $user->number,
-                'name' => $user->name,
-                'email' => $user->email,
-                'age' => $user->age,
-                'gender' => $user->gender,
-                'looking_for' => $user->looking_for,
-                'interest' => $interests,  
-                'status' => $user->status,
-                'profile_images' => $imageUrls,
-                'about' => $user->about ?? '',
-                'address' => $user->address ?? '',
-            ];
+    //         $userData = [
+    //             // 'id' => $user->id,
+    //             'number' => $user->number,
+    //             'name' => $user->name,
+    //             'email' => $user->email,
+    //             'age' => $user->age,
+    //             'gender' => $user->gender,
+    //             'looking_for' => $user->looking_for,
+    //             'interest' => $interests,  
+    //             'status' => $user->status,
+    //             'profile_images' => $imageUrls,
+    //             'about' => $user->about ?? '',
+    //             'address' => $user->address ?? '',
+    //         ];
 
-            return response()->json([
-                'status' => 200,
-                'message' => 'User profile fetched successfully',
-                'data' => $userData,
-            ], 200);
+    //         return response()->json([
+    //             'status' => 200,
+    //             'message' => 'User profile fetched successfully',
+    //             'data' => $userData,
+    //         ], 200);
+    //     }
+
+
+    public function userprofile(Request $request)
+{
+    $user = Auth::user();
+    
+    if (!$user) {
+        return response()->json([
+            'status' => false,
+            'message' => 'User not authenticated',
+        ], 401);
+    }
+
+    // Decode interest field
+    $interestFieldDecoded = json_decode($user->interest, true);
+
+    if (!is_array($interestFieldDecoded)) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Invalid interest data',
+        ], 400);
+    }
+
+    $interestIds = [];
+    foreach ($interestFieldDecoded as $item) {
+        $interestIds = array_merge($interestIds, explode(',', $item));
+    }
+
+    $interestIds = array_map('trim', $interestIds);
+    $interests = Interest::whereIn('id', $interestIds)->get(['id','name', 'icon']);
+
+    // Profile images
+    $profileImages = json_decode($user->profile_image, true);
+    $imageUrls = [];
+    foreach ($profileImages as $image) {
+        $imageUrls[] = asset('uploads/app/profile_images/' . $image);
+    }
+
+    // 🗺️ Reverse geocoding (if lat/lng available)
+    $locationString = null;
+
+    if ($user->latitude && $user->longitude) {
+        try {
+            $response = Http::get("https://nominatim.openstreetmap.org/reverse", [
+                'lat' => $user->latitude,
+                'lon' => $user->longitude,
+                'format' => 'json'
+            ]);
+
+            if ($response->successful()) {
+                $locationString = $response['display_name'] ?? null;
+            }
+        } catch (\Exception $e) {
+            \Log::error("Reverse geocoding failed: " . $e->getMessage());
         }
+    }
+
+    // Final response
+    $userData = [
+        'number' => $user->number,
+        'name' => $user->name,
+        'email' => $user->email,
+        'age' => $user->age,
+        'gender' => $user->gender,
+        'looking_for' => $user->looking_for,
+        'interest' => $interests,
+        'status' => $user->status,
+        'profile_images' => $imageUrls,
+        'about' => $user->about ?? '',
+        'address' => $user->address ?? '',
+        'location' => $locationString, // 🌍 Human-readable location
+    ];
+
+    return response()->json([
+        'status' => 200,
+        'message' => 'User profile fetched successfully',
+        'data' => $userData,
+    ], 200);
+}
 
 
 

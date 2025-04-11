@@ -842,31 +842,55 @@ $activityInterestWithProfileImage = $activityInterestWithProfileImage->filter(fu
             $interestIds = array_merge($interestIds, explode(',', $item));
         }
 
-        $interestIds = array_map('trim', $interestIds);
+    //     $interestIds = array_map('trim', $interestIds);
 
-        $currentTime = Carbon::now('Asia/Kolkata');
-$todayDate = Carbon::today('Asia/Kolkata'); // This gives you today's date at 00:00:00
+    //     $currentTime = Carbon::now('Asia/Kolkata');
+    //     $todayDate = Carbon::today('Asia/Kolkata');
 
-// Get all activities that match the interest IDs and other conditions
-$matchingActivities = Activity::whereIn('interests_id', $interestIds)
-    ->where('user_id', '!=', $user->id)  // Exclude current user
-    ->where('status', 2)  // Only active activities
-    ->whereDate('when_time', '>=', $todayDate)  // Compare only the date part of when_time with today's date
-    ->where(function ($query) use ($todayDate, $currentTime) {
-        // Handle end_time comparison (time comparison, combined with today's date)
-        $query->where(function ($subQuery) use ($todayDate, $currentTime) {
-            // Combine the current date with the end_time time
-            $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
+    //     $matchingActivities = Activity::whereIn('interests_id', $interestIds)
+    //         ->where('user_id', '!=', $user->id) 
+    //         ->where('status', 2)  
+    //         ->whereDate('when_time', '>=', $todayDate)  
+
+    // ->where(function ($query) use ($todayDate, $currentTime) {
+    //     // Handle end_time comparison (time comparison, combined with today's date)
+    //     $query->where(function ($subQuery) use ($todayDate, $currentTime) {
+    //         // Combine the current date with the end_time time
+    //         $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
             
-            // Compare the combined end_time with the current time
+    //         // Compare the combined end_time with the current time
+    //         $subQuery->where('end_time', '>=', $endTime);
+    //     });
+
+    //     // Also handle when_time comparison (datetime comparison)
+    //     $query->where('when_time', '>=', $currentTime);  // Compare when_time (datetime) with current datetime
+    // })
+    // ->get();
+
+    $interestIds = array_map('trim', $interestIds);
+
+    $currentTime = Carbon::now('Asia/Kolkata');
+    $todayDate = Carbon::today('Asia/Kolkata');
+
+    $matchingActivities = Activity::where('user_id', '!=', $user->id)
+    ->where('status', 2)
+    ->whereDate('when_time', '>=', $todayDate)
+    ->where(function ($query) use ($interestIds) {
+        foreach ($interestIds as $id) {
+            $query->orWhere('interests_id', 'LIKE', '%"'.$id.'"%');
+        }
+    })->where(function ($query) use ($todayDate, $currentTime) {
+        $query->where(function ($subQuery) use ($todayDate, $currentTime) {
+   
+            $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
+ 
             $subQuery->where('end_time', '>=', $endTime);
         });
 
-        // Also handle when_time comparison (datetime comparison)
-        $query->where('when_time', '>=', $currentTime);  // Compare when_time (datetime) with current datetime
+        $query->where('when_time', '>=', $currentTime);  
     })
     ->get();
-
+   
         // $matchingActivities = Activity::whereIn('interests_id', $interestIds)
         //                             ->where('user_id', '!=', $user->id)
         //                             ->get();

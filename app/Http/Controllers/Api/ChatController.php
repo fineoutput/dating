@@ -207,8 +207,8 @@ else{
     {
         $userss = Auth::user();
 
-        $receiverId = $request->header('receiver_rendom');
-        return $receiverId;
+        $receiverId = $request->input('receiver_rendom'); 
+        // return $receiverId;
         $receiverExists = User::where('rendom',$receiverId)->first();
         
         if (!$receiverExists) {

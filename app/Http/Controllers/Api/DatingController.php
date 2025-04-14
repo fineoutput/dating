@@ -469,6 +469,7 @@ public function cupidmatch(Request $request)
             'message' => $request->message ?? null,
             'identity' => $request->identity ?? null,
             'rendom' => $randomNumber,
+            'status' => 0,
         ]);
 
         // Save the Cupid match

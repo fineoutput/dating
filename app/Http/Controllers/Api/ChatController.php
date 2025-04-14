@@ -205,9 +205,11 @@ else{
 
    public function getMessages(Request $request)
     {
+        $userss = Auth::user();
         $receiverId = $request->header('receiver_rendom');
 
         $receiverExists = User::where('rendom',$receiverId)->first();
+        
         if (!$receiverExists) {
             return response()->json([
                 'message' => 'Data Not Found',

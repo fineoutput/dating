@@ -206,6 +206,7 @@ else{
    public function getMessages(Request $request)
     {
         $userss = Auth::user();
+        return $userss;
         $receiverId = $request->header('receiver_rendom');
 
         $receiverExists = User::where('rendom',$receiverId)->first();

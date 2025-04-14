@@ -1226,12 +1226,10 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
         ];
     });
 
-    // Fetch Cupid matches for the user
     $CupidMatches = Cupid::where('user_id_1', $user->id)
                         ->orWhere('user_id_2', $user->id)
                         ->get();
 
-    // Prepare the list of users who are matched through Cupid
     $matchedUsers = $CupidMatches->map(function ($match) use ($user) {
         $matchedUserId = $match->user_id_1 == $user->id ? $match->user_id_2 : $match->user_id_1;
         $matchedUser = User::find($matchedUserId);
@@ -1247,16 +1245,14 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             'name' => $matchedUser->name,
             'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
         ];
-    })->filter(); // remove nulls
+    })->filter();
 
-    // Combine the users from different sources: Activity-based, SlideLike, and Cupid matches
     $combinedUsers = collect([
         'activity_users' => $userList,
         'liked_users' => $likeUserList,
         'cupid_users' => $matchedUsers
     ]);
 
-    // Return the response with separate arrays for each type of user (Activity users, Liked users, Cupid matches)
     $matchUsers = collect($likeUserList)->merge($matchedUsers);
     return response()->json([
         'message' => 'Friend and Cupid data fetched successfully',

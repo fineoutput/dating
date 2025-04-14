@@ -40,7 +40,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('friend-count', [ActivityController::class, 'friendcount']);
 
-
     Route::post('add-interest', [InterestController::class, 'addinterest']);
     Route::post('get-user-interest', [InterestController::class, 'getuserinterest']);
     Route::post('confirm-user-interest', [InterestController::class, 'confirmuserinterest']);

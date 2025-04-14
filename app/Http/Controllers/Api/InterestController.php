@@ -173,157 +173,111 @@ class InterestController extends Controller
         }
     }
 
-    // public function getuserinterest(Request $request)
-    // {
-    //     if (!Auth::check()) {
-    //         return response()->json([
-    //             'message' => 'Unauthorized. Please log in.',
-    //         ], 401);
-    //     }
-    
-    //     $user = Auth::user();
-    
-    //     $request->validate([
-    //         'activity_id' => 'required|exists:activity_table,id',
-    //     ]);
-    
-    //     $interests = OtherInterest::where('activity_id', $request->activity_id)
-    //                                ->where('confirm', 0)
-    //                                ->get();
-    
-    //     if ($interests->isEmpty()) {
-    //         return response()->json([
-    //             'message' => 'No interests found for this activity.',
-    //         ], 404);
-    //     }
-
-    //     $interestsArray = $interests->map(function ($interest) {
-    //         return [
-    //             'id' => $interest->id,
-    //             'user' => $interest->user->name ?? '',
-    //             'user_id' => $interest->user_id,
-    //             'activity_id' => $interest->activity_id,
-    //             'confirm' => $interest->confirm,
-    //         ];
-    //     });
-    
-    //     return response()->json([
-    //         'message' => 'User interests fetched successfully',
-    //         'data' => $interestsArray,
-    //     ]);
-    // }
 
     public function getuserinterest(Request $request)
-{
-    if (!Auth::check()) {
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Unauthorized. Please log in.',
+                'status' => 201,
+            ]);
+        }
+
+        $user = Auth::user();
+
+        $request->validate([
+            'rendom' => 'required',
+        ]);
+
+        $activity = Activity::where('rendom',$request->rendom)->first();
+
+        if (!$activity) {
+            return response()->json([
+                'message' => 'Activity not found.',
+                'data' => [],
+                'status' => 201,
+            ],200);
+        }
+
+        $howMany = $activity->how_many;
+
+        $interests = OtherInterest::where('activity_id', $activity->id)
+                                ->where('confirm', 0)
+                                ->get();
+
+        $confirm = OtherInterest::where('activity_id', $activity->id)
+                                ->where('confirm', 1)
+                                ->take($howMany)
+                                ->get();
+
+        if ($interests->isEmpty() && $confirm->isEmpty()) {
+            return response()->json([
+                'message' => 'No interests found for this activity.',
+            ]);
+        }
+
+        $interestsArray = $interests->map(function ($interest) {
+            $userInterestsCount = OtherInterest::where('user_id', $interest->user_id)
+                                            ->where('confirm', 0)->count(); 
+            $userInterestsconfirmCount = OtherInterest::where('user_id', $interest->user_id)
+                                                    ->where('confirm', 1)->count(); 
+            $userInterestsactivityCount = Activity::where('user_id', $interest->user_id)
+                                                ->count(); 
+
+            $profileImages = json_decode($interest->user->profile_image ?? '[]', true);
+            $profileImageUrl = !empty($profileImages) ? asset('uploads/app/profile_images/' . $profileImages[1] ?? '') : '';
+
+            $activity_rendom = Activity::where('id',$interest->activity_id)->first();
+            $user_rendom = User::where('id',$interest->user_id)->first();
+
+            return [
+                // 'id' => $interest->id,
+                'user' => $interest->user->name ?? '',
+                'user_rendom' => $user_rendom->rendom,
+                'user_profile' => $profileImageUrl,
+                'activity_rendom' => $activity_rendom->rendom,
+                'confirm' => $interest->confirm,
+                'ghosted' => $userInterestsCount,
+                'attended' => $userInterestsconfirmCount,
+                'created' => $userInterestsactivityCount,
+            ];
+        });
+
+        $confirmArray = $confirm->map(function ($interest) {
+            $userInterestsCount = OtherInterest::where('user_id', $interest->user_id)
+                                            ->where('confirm', 0)->count(); 
+            $userInterestsconfirmCount = OtherInterest::where('user_id', $interest->user_id)
+                                                    ->where('confirm', 1)->count(); 
+            $userInterestsactivityCount = Activity::where('user_id', $interest->user_id)
+                                                ->count(); 
+
+            $profileImages = json_decode($interest->user->profile_image ?? '[]', true);
+            $profileImageUrl = !empty($profileImages) ? asset('uploads/app/profile_images/' . $profileImages[1] ?? '') : '';
+
+            $activity_rendom = Activity::where('id',$interest->activity_id)->first();
+            $user_rendom = User::where('id',$interest->user_id)->first();
+            return [
+                // 'id' => $interest->id,
+                'user' => $interest->user->name ?? '',
+                'user_rendom' => $user_rendom->rendom,
+                'user_profile' => $profileImageUrl,
+                'activity_rendom' => $activity_rendom->rendom,
+                'confirm' => $interest->confirm,
+                'ghosted' => $userInterestsCount,
+                'attended' => $userInterestsconfirmCount,
+                'created' => $userInterestsactivityCount,
+            ];
+        });
+
         return response()->json([
-            'message' => 'Unauthorized. Please log in.',
-            'status' => 201,
+            'message' => 'User interests fetched successfully',
+            'status' => 200,
+            'data' => [
+                'interests' => $interestsArray,
+                'confirmed' => $confirmArray
+            ],
         ]);
     }
-
-    $user = Auth::user();
-
-    $request->validate([
-        'rendom' => 'required',
-    ]);
-
-    // Get the Activity record to check the how_many field
-    // $activity = Activity::find($request->activity_id);
-    $activity = Activity::where('rendom',$request->rendom)->first();
-    // return $activity_id;
-
-    if (!$activity) {
-        return response()->json([
-            'message' => 'Activity not found.',
-            'data' => [],
-            'status' => 201,
-        ],200);
-    }
-
-    $howMany = $activity->how_many;
-
-    // Get the interests where confirm is 0 for the given activity
-    $interests = OtherInterest::where('activity_id', $activity->id)
-                               ->where('confirm', 0)
-                               ->get();
-
-    // Get the interests where confirm is 1 for the given activity
-    $confirm = OtherInterest::where('activity_id', $activity->id)
-                             ->where('confirm', 1)
-                             ->take($howMany) // Limit the number of confirmed interests based on how_many
-                             ->get();
-
-    if ($interests->isEmpty() && $confirm->isEmpty()) {
-        return response()->json([
-            'message' => 'No interests found for this activity.',
-        ]);
-    }
-
-    // Map the pending interests and include the count of interests for each user
-    $interestsArray = $interests->map(function ($interest) {
-        $userInterestsCount = OtherInterest::where('user_id', $interest->user_id)
-                                           ->where('confirm', 0)->count(); 
-        $userInterestsconfirmCount = OtherInterest::where('user_id', $interest->user_id)
-                                                  ->where('confirm', 1)->count(); 
-        $userInterestsactivityCount = Activity::where('user_id', $interest->user_id)
-                                              ->count(); 
-
-        $profileImages = json_decode($interest->user->profile_image ?? '[]', true);
-        $profileImageUrl = !empty($profileImages) ? asset('uploads/app/profile_images/' . $profileImages[1] ?? '') : '';
-
-        $activity_rendom = Activity::where('id',$interest->activity_id)->first();
-        $user_rendom = User::where('id',$interest->user_id)->first();
-
-        return [
-            // 'id' => $interest->id,
-            'user' => $interest->user->name ?? '',
-            'user_rendom' => $user_rendom->rendom,
-            'user_profile' => $profileImageUrl,
-            'activity_rendom' => $activity_rendom->rendom,
-            'confirm' => $interest->confirm,
-            'ghosted' => $userInterestsCount,
-            'attended' => $userInterestsconfirmCount,
-            'created' => $userInterestsactivityCount,
-        ];
-    });
-
-    // Map confirmed interests similarly, but limit based on how_many
-    $confirmArray = $confirm->map(function ($interest) {
-        $userInterestsCount = OtherInterest::where('user_id', $interest->user_id)
-                                           ->where('confirm', 0)->count(); 
-        $userInterestsconfirmCount = OtherInterest::where('user_id', $interest->user_id)
-                                                  ->where('confirm', 1)->count(); 
-        $userInterestsactivityCount = Activity::where('user_id', $interest->user_id)
-                                              ->count(); 
-
-        $profileImages = json_decode($interest->user->profile_image ?? '[]', true);
-        $profileImageUrl = !empty($profileImages) ? asset('uploads/app/profile_images/' . $profileImages[1] ?? '') : '';
-
-        $activity_rendom = Activity::where('id',$interest->activity_id)->first();
-        $user_rendom = User::where('id',$interest->user_id)->first();
-        return [
-            // 'id' => $interest->id,
-            'user' => $interest->user->name ?? '',
-            'user_rendom' => $user_rendom->rendom,
-            'user_profile' => $profileImageUrl,
-            'activity_rendom' => $activity_rendom->rendom,
-            'confirm' => $interest->confirm,
-            'ghosted' => $userInterestsCount,
-            'attended' => $userInterestsconfirmCount,
-            'created' => $userInterestsactivityCount,
-        ];
-    });
-
-    return response()->json([
-        'message' => 'User interests fetched successfully',
-        'status' => 200,
-        'data' => [
-            'interests' => $interestsArray,
-            'confirmed' => $confirmArray
-        ],
-    ]);
-}
 
     public function confirmuserinterest(Request $request)
     {

@@ -18,6 +18,7 @@ use App\Models\Activity;
 use App\Models\ActivitySubscription;
 use App\Models\ActivityTemp;
 use App\Models\Cupid;
+use App\Models\SlideLike;
 use App\Models\OtherInterest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -1176,6 +1177,10 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
         $user_detailes = $interestIds->pluck('user_id');
 
+        $like_user = SlideLike::where('matching_user',$user->id);
+        $likeuser_detailes = $like_user->pluck('matching_user'); 
+        return $likeuser_detailes;
+
         $user_detailes_2 = User::whereIn('id', $user_detailes)->get();
 
         $userList = $user_detailes_2->map(function ($user) {
@@ -1190,6 +1195,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
             return [
                 'id' => $user->id,
+                'rendom' => $user->rendom,
                 'name' => $user->name,
                 'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
             ];

@@ -543,6 +543,8 @@ public function cupidMatchFriend(Request $request)
             'name' => $user->name,
             'profile_image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
             'status' => $match->status,
+            'message' => $match->message,
+            'time' => Carbon::parse($match->created_at)->diffForHumans(),
             'status_id' => $match->id
         ];
     })->filter(); 

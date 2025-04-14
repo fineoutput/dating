@@ -1214,6 +1214,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
             return [
                 'id' => $matchedUser->id,
+                'rendom' => $matchedUser->rendom,
                 'name' => $matchedUser->name,
                 'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
                 // 'status' => $match->status,

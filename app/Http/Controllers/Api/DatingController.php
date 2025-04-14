@@ -189,9 +189,14 @@ class DatingController extends Controller
         return $query->where('looking_for', 'like', "%$lookingFor%");
     })
     ->get();
+    // return $matchingUsers;
 
     if ($matchingUsers->isEmpty()) {
-        return response()->json(['message' => 'No matching users found'], 404);
+        return response()->json([
+        'message' => 'No matching users found',
+        'status' => 201,
+        'data' => [],
+    ], 200);
     }
 
     $usersWithInterests = [];
@@ -208,6 +213,7 @@ class DatingController extends Controller
             }
 
             $userInterestsIds = array_map('trim', $userInterestsIds);
+
             $userInterests = Interest::whereIn('id', $userInterestsIds)->get();
 
             $matchingInterestCount = 0;
@@ -252,10 +258,11 @@ class DatingController extends Controller
                 'looking_for' => $matchingUser->looking_for,
                 'user_profile' => $profileImageUrl,
                 'status' => $matchingUser->status,
+                'address' => $matchingUser->address,
                 'match_percentage' => number_format($matchingPercentage, 2),
                 'message' => $message ? $message->message : null,
                 'message_status' => $message ? $message->status : null,
-                'distance' => $distance . ' km', // Always include the distance
+                'distance' => $distance . ' km', 
             ];
 
             $usersWithInterests[] = $userData;

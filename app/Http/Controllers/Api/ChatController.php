@@ -207,12 +207,6 @@ else{
     {
         $receiverId = $request->header('receiver_rendom');
 
-        if (!$receiverId) {
-            return response()->json([
-                'message' => 'Receiver ID is required.',
-            ]);
-        }
-
         $receiverExists = User::where('rendom',$receiverId)->first();
         if (!$receiverExists) {
             return response()->json([

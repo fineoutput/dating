@@ -1290,15 +1290,14 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
     // Fetch the users associated with these interests
     $userDetailsFromInterest = $interestIds->pluck('user_id');
 
-    // Get the users who liked the current user (SlideLike)
     $likeUser = SlideLike::where('matching_user', $user->id);
     $likeUserDetails = $likeUser->pluck('matching_user'); 
+    
 
     // Fetch the user details based on the user IDs
     $userDetailsFromInterest2 = User::whereIn('id', $userDetailsFromInterest)->get();
     $likeUserDetails2 = User::whereIn('id', $likeUserDetails)->get();
 
-    // Prepare the list of users from the interests
     $userList = $userDetailsFromInterest2->map(function ($user) {
         $imagePath = null;
 
@@ -1338,11 +1337,11 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
         ];
     });
 
-    // Fetch Cupid matches
     $CupidMatches = Cupid::where('user_id_1', $user->id)
                         ->orWhere('user_id_2', $user->id)
-                        ->get();
+                        ->get()->unique();
 
+// return $CupidMatches;
     // Prepare the list of matched users from Cupid matches
     $matchedUsers = $CupidMatches->map(function ($match) use ($user) {
         $matchedUserId = $match->user_id_1 == $user->id ? $match->user_id_2 : $match->user_id_1;
@@ -1374,7 +1373,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
         'message' => 'Friend and Cupid data fetched successfully',
         'status' => 200,
         'data' => [
-            'match_users' => $matchUsers,  // Combined list of all users
+            'match_users' => $matchUsers->unique('rendom'), 
             'friend_count' => $userList->count() + $likeUserList->count() + $matchedUsers->count(),
             'like_count' => $interestIds->count(),
         ]

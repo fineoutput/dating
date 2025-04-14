@@ -46,7 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('add-confirm-user-interest', [InterestController::class, 'confirm_user_interest']);
 
     Route::post('chat-send', [ChatController::class, 'sendMessage']);
-    Route::get('chat-messages', [ChatController::class, 'getMessages']);
+    Route::post('chat-messages', [ChatController::class, 'getMessages']);
     Route::post('chat-update-status', [ChatController::class, 'updateMessageStatus']);
 
     Route::get('user-profile', [AuthController::class, 'userprofile']);

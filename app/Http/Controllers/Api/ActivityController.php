@@ -1242,8 +1242,8 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
     // Fetch the users associated with these interests
     $userDetailsFromInterest = $interestIds->pluck('user_id');
 
-    $likeUser = SlideLike::where('matching_user', $user->id);
-    $likeUserDetails = $likeUser->pluck('matching_user'); 
+    $likeUser = SlideLike::where('matched_user', $user->id);
+    $likeUserDetails = $likeUser->pluck('matched_user'); 
     
 
     // Fetch the user details based on the user IDs

@@ -1,83 +1,919 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>{{config('constants.options.SITE_NAME')}}</title>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DYMM - Connect Through Activities & Dating</title>
+    <meta name="description" content="Join DYMM to create or join activities, meet like-minded people, and make meaningful connections. Find your perfect match through shared interests and our unique Cupid feature.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="/lovable-Uploads/645829d6-708c-4ab2-9a74-b01a81d3b93b.png">
+    <link href="https://unpkg.com/lucide-icons/dist/umd/lucide-icons.js" rel="stylesheet">
 </head>
 <style>
-    body {
-        background: #000;
-    }
+/* Base Styles */
+:root {
+    --primary: #9b87f5;
+    --primary-dark: #7E69AB;
+    --accent: #D946EF;
+    --dark: #1A1F2C;
+    --dark-lighter: #2a2f3c;
+    --dark-darker: #161922;
+    --white: #ffffff;
+}
 
-    #word {
-        color: green;
-        /*color: #8002f5;*/
-        font-family: Monaco, monospace;
-        font-size: 24px;
-        width: 100%;
+body.light-mode {
+    --primary: #6B46C1;
+    --primary-dark: #553C9A;
+    --accent: #ED64A6;
+    --dark: #F7FAFC;
+    --dark-lighter: #EDF2F7;
+    --dark-darker: #E2E8F0;
+    --white: #1A202C;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--dark);
+    color: var(--white);
+    line-height: 1.6;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+/* Utility Classes */
+.gradient-text {
+    background: linear-gradient(to right, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.gradient-bg {
+    background: linear-gradient(to bottom right, var(--primary), var(--accent));
+}
+
+/* Header Styles */
+.header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 50;
+    backdrop-filter: blur(12px);
+    background: rgba(26, 31, 44, 0.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.light-mode .header {
+    background: rgba(247, 250, 252, 0.8);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.header nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.logo-text {
+    font-size: 1.5rem;
+    font-weight: bold;
+    background: linear-gradient(to right, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.beta-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: rgba(107, 70, 193, 0.2);
+    color: var(--primary);
+    border-radius: 9999px;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.nav-links a {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+body.light-mode .nav-links a {
+    color: rgba(26, 32, 44, 0.7);
+}
+
+.nav-links a:hover {
+    color: var(--white);
+}
+
+.download-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--accent);
+    color: var(--white);
+    border: none;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+body.light-mode .download-btn {
+    color: var(--dark);
+}
+
+.download-btn:hover {
+    opacity: 0.9;
+}
+
+.theme-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: transparent;
+    color: var(--white);
+    border: 1px solid var(--primary);
+    border-radius: 0.375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+}
+
+.theme-toggle-btn:hover {
+    background: var(--primary);
+    color: var(--dark);
+}
+
+body.light-mode .theme-toggle-btn:hover {
+    color: var(--white);
+}
+
+/* Hero Section */
+.hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 4rem 0;
+}
+
+.hero .container {
+    text-align: center;
+    position: relative;
+    z-index: 10;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+}
+
+.hero p {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.7);
+    max-width: 36rem;
+    margin: 0 auto;
+}
+
+body.light-mode .hero p {
+    color: rgba(26, 32, 44, 0.7);
+}
+
+.gradient-bg {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(to bottom right, var(--dark), var(--dark-darker));
+}
+
+.pattern-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-image: url('/public/pattern.svg');
+    opacity: 0.02;
+}
+
+body.light-mode .pattern-overlay {
+    opacity: 0.1;
+}
+
+.scroll-indicator {
+    margin-top: 3rem;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Features Section */
+.features {
+    padding: 5rem 0;
+    background: var(--dark-lighter);
+}
+
+.features h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 3rem;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.feature-card {
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s;
+}
+
+body.light-mode .feature-card {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+.feature-card i {
+    color: var(--accent);
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.feature-card h3 {
+    margin-bottom: 0.5rem;
+}
+
+/* Activities Section */
+.activities {
+    padding: 5rem 0;
+    background: var(--dark);
+}
+
+.activities h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.activities > p {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    max-width: 36rem;
+    margin: 0 auto 3rem;
+}
+
+body.light-mode .activities > p {
+    color: rgba(26, 32, 44, 0.7);
+}
+
+.activities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.activity-card {
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    transition: transform 0.3s;
+}
+
+.activity-card:hover {
+    transform: scale(1.05);
+}
+
+.activity-card.yellow { background: #fef3c7; color: #92400e; }
+.activity-card.white { background: #ffffff; color: #4c1d95; }
+.activity-card.pink { background: #fce7f3; color: #be185d; }
+.activity-card.blue { background: #dbeafe; color: #1e40af; }
+.activity-card.purple { background: #f3e8ff; color: #6b21a8; }
+.activity-card.green { background: #dcfce7; color: #15803d; }
+.activity-card.cyan { background: #cffafe; color: #155e75; }
+
+body.light-mode .activity-card.yellow { background: #FFF7E6; }
+body.light-mode .activity-card.white { background: #F7FAFC; }
+body.light-mode .activity-card.pink { background: #FFF5F7; }
+body.light-mode .activity-card.blue { background: #EBF8FF; }
+body.light-mode .activity-card.purple { background: #FAF5FF; }
+body.light-mode .activity-card.green { background: #F0FFF4; }
+body.light-mode .activity-card.cyan { background: #E6FFFA; }
+
+/* Cupid Feature */
+.cupid-feature {
+    padding: 5rem 0;
+    background: var(--dark);
+}
+
+.cupid-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+}
+
+.cupid-content h2 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.cupid-content > p {
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 2rem;
+}
+
+body.light-mode .cupid-content > p {
+    color: rgba(26, 32, 44, 0.7);
+}
+
+.cupid-features {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.cupid-feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.cupid-feature-item i {
+    color: var(--accent);
+}
+
+.cupid-card {
+    padding: 2rem;
+    border-radius: 1rem;
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+    position: relative;
+    z-index: 10;
+}
+
+body.light-mode .cupid-card {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.match-avatars {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 2rem 0;
+}
+
+.avatar {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+.avatar:first-child { background: #7C3AED; }
+.avatar:last-child { background: #0D9488; }
+
+.heart {
+    font-size: 1.5rem;
+}
+
+.match-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background: linear-gradient(to right, var(--primary), var(--accent));
+    color: var(--white);
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+body.light-mode .match-btn {
+    color: var(--dark);
+}
+
+.match-btn:hover {
+    opacity: 0.9;
+}
+
+.disclaimer {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+body.light-mode .disclaimer {
+    color: rgba(26, 32, 44, 0.5);
+}
+
+/* Gallery */
+.gallery {
+    padding: 5rem 0;
+    background: var(--dark-lighter);
+}
+
+.gallery-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 3rem;
+}
+
+.gallery-header h2 {
+    font-size: 1.5rem;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.gallery-item {
+    position: relative;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    aspect-ratio: 1;
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+}
+
+.gallery-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.gallery-item:hover img {
+    transform: scale(1.05);
+}
+
+.gallery-item:hover .gallery-overlay {
+    opacity: 1;
+}
+
+.gallery-stats {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+/* Footer */
+.footer {
+    padding: 3rem 0;
+    background: var(--dark-darker);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.light-mode .footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.footer-brand p {
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 1rem;
+}
+
+body.light-mode .footer-brand p {
+    color: rgba(26, 32, 44, 0.7);
+}
+
+.footer h3 {
+    color: var(--white);
+    margin-bottom: 1rem;
+}
+
+.footer-links ul {
+    list-style: none;
+}
+
+.footer-links a {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    line-height: 2;
+    transition: color 0.3s;
+}
+
+body.light-mode .footer-links a {
+    color: rgba(26, 32, 44, 0.7);
+}
+
+.footer-links a:hover {
+    color: var(--white);
+}
+
+.social-links {
+    display: flex;
+    gap: 1rem;
+}
+
+.social-links a {
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.3s;
+}
+
+body.light-mode .social-links a {
+    color: rgba(26, 32, 44, 0.7);
+}
+
+.social-links a:hover {
+    color: var(--white);
+}
+
+.footer-bottom {
+    padding-top: 2rem;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.light-mode .footer-bottom {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.footer-bottom p {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.875rem;
+}
+
+body.light-mode .footer-bottom p {
+    color: rgba(26, 32, 44, 0.5);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 2rem;
+    }
+    
+    .cupid-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .nav-links {
+        display: none;
+    }
+    
+    .footer-grid {
+        grid-template-columns: 1fr;
         text-align: center;
-        position: absolute;
-        top: 45%;
-        left: 0;
-        animation: 120ms infinite normal word;
     }
-
-    span {
-        animation: 1.5s infinite normal imleç;
+    
+    .social-links {
+        justify-content: center;
     }
+}
 
-    ::-moz-selection {
-        background: #7021d2;
-        color: #fff;
+@media (max-width: 480px) {
+    .container {
+        padding: 0 1rem;
     }
-
-    ::selection {
-        background: #7021d2;
-        color: #fff;
+    
+    .features-grid,
+    .activities-grid {
+        grid-template-columns: 1fr;
     }
-
-    @keyframes word {
-        0% {
-            opacity: 0;
-            left: 0;
-        }
-
-        40%,
-        80% {
-            opacity: 1;
-            left: -2px;
-        }
-    }
-
-    @keyframes cursor {
-        0% {
-            opacity: 0;
-            left: 0;
-        }
-
-        40% {
-            opacity: 0;
-            left: -2px;
-        }
-
-        80% {
-            opacity: 1;
-            left: -2px;
-        }
-    }
+}
 </style>
-
 <body>
-
-    <body oncontextmenu="return false" onselectstart="return false" ondragstart="return false">
-        <div id="word">█ █ █ <span style="color:black">█ █ █ █ █ █ █ █ █ █ </span>31%
-            <br>&gt;
-            Hello Visitor
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            &nbsp;&nbsp;&nbsp;<br>&gt;
-            We're Coming Soon <span id="cursor">█</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <span class="logo-text">DYMM</span>
+                    <span class="beta-badge">Beta</span>
+                </div>
+                <div class="nav-links">
+                    <a href="#about">About</a>
+                    <a href="#contact">Contact</a>
+                    <button class="download-btn">
+                        <i data-lucide="download"></i>
+                        Download App
+                    </button>
+                    <button class="theme-toggle-btn" onclick="toggleTheme()">
+                        <i data-lucide="sun"></i>
+                        Toggle Theme
+                    </button>
+                </div>
+            </nav>
         </div>
-    </body>
+    </header>
 
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="gradient-bg"></div>
+        <div class="pattern-overlay"></div>
+        <div class="container">
+            <h1>
+                <span>Did You Meet</span>
+                <span class="gradient-text">Me?</span>
+            </h1>
+            <p>Create and join activities that match your interests, connect with like-minded people, and make genuine connections IRL.</p>
+            <div class="scroll-indicator">
+                <i data-lucide="arrow-down"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <h2><span class="gradient-text">How DYMM Works</span></h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i data-lucide="calendar"></i>
+                    <h3>Host Activities</h3>
+                    <p>Create and host activities based on your interests, from coffee chats to sports games.</p>
+                </div>
+                <div class="feature-card">
+                    <i data-lucide="users"></i>
+                    <h3>Meet People</h3>
+                    <p>Join activities that match your interests and connect with like-minded people.</p>
+                </div>
+                <div class="feature-card">
+                    <i data-lucide="heart"></i>
+                    <h3>Dating</h3>
+                    <p>Connect beyond activities. Our dating features help you find meaningful relationships.</p>
+                </div>
+                <div class="feature-card">
+                    <i data-lucide="sparkles"></i>
+                    <h3>Cupid</h3>
+                    <p>Play matchmaker! Connect your friends through shared activities.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Activities Section -->
+    <section class="activities" id="activities">
+        <div class="container">
+            <h2>
+                <span class="gradient-text">Activities</span>
+                <span> for every interest</span>
+            </h2>
+            <p>Create or join activities based on your interests, meet new people, and make meaningful connections in your area.</p>
+            <div class="activities-grid">
+                <div class="activity-card yellow">
+                    <i data-lucide="palette"></i>
+                    <h3>Art Therapy</h3>
+                    <p>Enjoy painting, pottery, and more with art buffs</p>
+                </div>
+                <div class="activity-card white">
+                    <i data-lucide="utensils"></i>
+                    <h3>Dinner Club</h3>
+                    <p>Try new restaurants with foodies</p>
+                </div>
+                <div class="activity-card pink">
+                    <i data-lucide="coffee"></i>
+                    <h3>Coffee Dates</h3>
+                    <p>Connect over a cup of coffee</p>
+                </div>
+                <div class="activity-card blue">
+                    <i data-lucide="film"></i>
+                    <h3>Movie Nights</h3>
+                    <p>Watch the latest films with movie buffs</p>
+                </div>
+                <div class="activity-card purple">
+                    <i data-lucide="users"></i>
+                    <h3>Double Dates</h3>
+                    <p>Bring your date and meet another couple</p>
+                </div>
+                <div class="activity-card green">
+                    <i data-lucide="trophy"></i>
+                    <h3>Sports Events</h3>
+                    <p>Bring in people to enjoy your fav sports</p>
+                </div>
+                <div class="activity-card yellow">
+                    <i data-lucide="mountain"></i>
+                    <h3>Group Hikes</h3>
+                    <p>Explore nature trails with fellow hikers</p>
+                </div>
+                <div class="activity-card cyan">
+                    <i data-lucide="music"></i>
+                    <h3>Music Jams</h3>
+                    <p>Play or listen to live music sessions</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cupid Feature -->
+    <section class="cupid-feature">
+        <div class="container">
+            <div class="cupid-grid">
+                <div class="cupid-content">
+                    <h2>
+                        <span>Find Your Perfect</span>
+                        <span class="gradient-text">Match</span>
+                    </h2>
+                    <p>DYMM isn't just about activities. Connect with people you meet, or explore our dating features to find someone special.</p>
+                    <div class="cupid-features">
+                        <div class="cupid-feature-item">
+                            <i data-lucide="star"></i>
+                            <div>
+                                <h3>Genuine Connections</h3>
+                                <p>Meet through shared interests and activities</p>
+                            </div>
+                        </div>
+                        <div class="cupid-feature-item">
+                            <i data-lucide="star"></i>
+                            <div>
+                                <h3>Chill Socials</h3>
+                                <p>Get to know people in group settings</p>
+                            </div>
+                        </div>
+                        <div class="cupid-feature-item">
+                            <i data-lucide="star"></i>
+                            <div>
+                                <h3>Cupid Feature</h3>
+                                <p>Let friends play matchmaker and introduce you</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="cupid-card">
+                    <i data-lucide="star"></i>
+                    <h3>Cupid Mode</h3>
+                    <p>Play matchmaker! Think two friends would hit it off?</p>
+                    <div class="match-avatars">
+                        <div class="avatar">J</div>
+                        <div class="heart">❤️</div>
+                        <div class="avatar">K</div>
+                    </div>
+                    <button class="match-btn">Make a Match</button>
+                    <p class="disclaimer">Your identity stays anonymous</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery -->
+    <section class="gallery">
+        <div class="container">
+            <div class="gallery-header">
+                <span>📸</span>
+                <h2>Follow our journey</h2>
+            </div>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="https://images.unsplash.com/photo-1721322800607-8c38375eef04" alt="Brunch with friends">
+                    <div class="gallery-overlay">
+                        <p>Enjoying the perfect brunch with friends #weekendvibes</p>
+                        <div class="gallery-stats">
+                            <span>❤️ 142</span>
+                            <span>💭 32</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9" alt="Office cat">
+                    <div class="gallery-overlay">
+                        <p>Meet our new office cat! #officepet #cutecat</p>
+                        <div class="gallery-stats">
+                            <span>❤️ 297</span>
+                            <span>💭 34</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="https://images.unsplash.com/photo-1582562124811-c09040d0a901" alt="Office lounge">
+                    <div class="gallery-overlay">
+                        <p>New space, new energy. Our refreshed office lounge ✨</p>
+                        <div class="gallery-stats">
+                            <span>❤️ 195</span>
+                            <span>💭 21</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="logo">
+                        <span class="logo-text">DYMM</span>
+                        <span class="beta-badge">Beta</span>
+                    </div>
+                    <p>Connect with people through activities, dating, and our unique cupid feature.</p>
+                </div>
+                <div class="footer-links">
+                    <h3>Company</h3>
+                    <ul>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#careers">Careers</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h3>Legal</h3>
+                    <ul>
+                        <li><a href="#terms">Terms</a></li>
+                        <li><a href="#privacy">Privacy</a></li>
+                        <li><a href="#guidelines">Community Guidelines</a></li>
+                    </ul>
+                </div>
+                <div class="footer-social">
+                    <h3>Follow Us</h3>
+                    <div class="social-links">
+                        <a href="#"><i data-lucide="instagram"></i></a>
+                        <a href="#"><i data-lucide="twitter"></i></a>
+                        <a href="#"><i data-lucide="facebook"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2024 DYMM. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/lucide-icons"></script>
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            const themeBtn = document.querySelector('.theme-toggle-btn i');
+            if (document.body.classList.contains('light-mode')) {
+                themeBtn.setAttribute('data-lucide', 'moon');
+            } else {
+                themeBtn.setAttribute('data-lucide', 'sun');
+            }
+            lucide.createIcons();
+        }
+    </script>
+</body>
 </html>

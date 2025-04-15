@@ -730,7 +730,7 @@ public function useractivitys(Request $request)
 public function getActivitydetailes(Request $request)
 {
     $user = Auth::user();
-    
+
     if (!$user) {
         return response()->json(['message' => 'User not authenticated'], 401);
     }
@@ -769,7 +769,6 @@ public function getActivitydetailes(Request $request)
     $interestCount = OtherInterest::where('activity_id', $mainActivity->id)->count();
 
     $mainActivityData = [
-        'id' => $mainActivity->id,
         'user_name' => $mainActivity->user->name ?? '',
         'profile_image' => $profileImageUrl,
         'title' => $mainActivity->title,
@@ -778,8 +777,8 @@ public function getActivitydetailes(Request $request)
         'when_time' => date('h:i a', strtotime($mainActivity->when_time)),
         'how_many' => $mainActivity->how_many,
         'interestCount' => $interestCount,
-        'vibe_name' => $mainActivity->vibe->name ?? '',  
-        'vibe_icon' => $mainActivity->vibe->icon ?? '',  
+        'vibe_name' => $mainActivity->vibe->name ?? '',
+        'vibe_icon' => $mainActivity->vibe->icon ?? '',
         'like_user' => $like_user,
         'expense_name' => $firstExpenseName,
         'status' => $mainActivity->status,
@@ -801,43 +800,52 @@ public function getActivitydetailes(Request $request)
         ];
     });
 
-    $allActivities = Activity::with('user', 'vibe')->orderBy('id', 'desc')->where('user_id','!=',$user->id)->get()->map(function ($act) {
-        $images = json_decode($act->user->profile_image ?? '[]', true);
-        $img = isset($images[1]) ? asset('uploads/app/profile_images/' . $images[1]) : null;
+    $allActivities = Activity::with('user', 'vibe')
+        ->orderBy('id', 'desc')
+        ->where('user_id', '!=', $user->id)
+        ->get()
+        ->map(function ($act) {
+            $images = json_decode($act->user->profile_image ?? '[]', true);
+            $img = isset($images[1]) ? asset('uploads/app/profile_images/' . $images[1]) : null;
 
-        $expenseIds = json_decode($act->expense_id, true);
-        $expense = is_array($expenseIds) && count($expenseIds) > 0
-            ? Expense::find($expenseIds[0])->name ?? null
-            : null;
+            $expenseIds = json_decode($act->expense_id, true);
+            $expense = is_array($expenseIds) && count($expenseIds) > 0
+                ? Expense::find($expenseIds[0])->name ?? null
+                : null;
 
-        return [
-            'user_name' => $act->user->name ?? '',
-            'profile_image' => $img,
-            'title' => $act->title,
-            'description' => $act->description,
-            'location' => $act->location,
-            'when_time' => date('h:i a', strtotime($act->when_time)),
-            'how_many' => $act->how_many,
-            'vibe_name' => $act->vibe->name ?? '',
-            'vibe_icon' => $act->vibe->icon ?? '',
-            'expense_name' => $expense,
-            'status' => $act->status,
-        ];
-    });
+            return [
+                'user_name' => $act->user->name ?? '',
+                'profile_image' => $img,
+                'title' => $act->title,
+                'description' => $act->description,
+                'location' => $act->location,
+                'when_time' => date('h:i a', strtotime($act->when_time)),
+                'how_many' => $act->how_many,
+                'vibe_name' => $act->vibe->name ?? '',
+                'vibe_icon' => $act->vibe->icon ?? '',
+                'expense_name' => $expense,
+                'status' => $act->status,
+            ];
+        });
 
     $mainActivityData['attendees_count'] = $attendeeList->count();
     $mainActivityData['attendees'] = $attendeeList->values();
-    
+
     // Merge into one flat data array
     $mergedData = array_merge([$mainActivityData], $allActivities->toArray());
-    
+
+    // 🔢 Add serial_number to each entry
+    $mergedData = array_map(function ($item, $index) {
+        $item['serial_number'] = $index + 1;
+        return $item;
+    }, $mergedData, array_keys($mergedData));
+
     return response()->json([
         'message' => 'Activity details fetched',
         'status' => 200,
-        'data' => $mergedData
+        'data' => $mergedData,
     ]);
 }
-
 
 
     

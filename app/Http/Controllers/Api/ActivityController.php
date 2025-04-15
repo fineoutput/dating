@@ -984,7 +984,7 @@ public function getActivitydetailes(Request $request)
     $currentTime = Carbon::now('Asia/Kolkata');
     $todayDate = Carbon::today('Asia/Kolkata');
 
-    $matchingActivities = Activity::where('user_id', '!=', $user->id)
+    $matchingActivities = Activity::orderBy('id','DESC')->where('user_id', '!=', $user->id)
     ->where('status', 2)
     ->whereDate('when_time', '>=', $todayDate)
     ->where(function ($query) use ($interestIds) {

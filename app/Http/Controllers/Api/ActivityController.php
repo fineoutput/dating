@@ -769,6 +769,7 @@ public function getActivitydetailes(Request $request)
     $interestCount = OtherInterest::where('activity_id', $mainActivity->id)->count();
 
     $mainActivityData = [
+        'id' => $mainActivity->id,
         'user_name' => $mainActivity->user->name ?? '',
         'profile_image' => $profileImageUrl,
         'title' => $mainActivity->title,

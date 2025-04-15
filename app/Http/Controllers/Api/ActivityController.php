@@ -1260,8 +1260,8 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             }
         }
 
-        $chat = Chat::where('sender_id',Auth::id())->where('receiver_id',$user->id)->first();
-        
+        $chat = Chat::where('sender_id',Auth::id())->where('receiver_id',$user->id)->orderBy('id','DESC')->first();
+
         return [
             'id' => $user->id,
             'rendom' => $user->rendom,
@@ -1282,7 +1282,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                 $imagePath = reset($images);
             }
         }
-        $chat = Chat::where('sender_id',Auth::id())->where('receiver_id',$user->id)->first();
+        $chat = Chat::where('sender_id',Auth::id())->where('receiver_id',$user->id)->orderBy('id','DESC')->first();
 
         return [
             'id' => $user->id,
@@ -1308,7 +1308,8 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
         $images = json_decode($matchedUser->profile_image, true);
         $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
-        $chat = Chat::where('sender_id',Auth::id())->where('receiver_id',$matchedUser->id)->first();
+        $chat = Chat::where('sender_id',Auth::id())->where('receiver_id',$matchedUser->id)
+        ->orderBy('id','DESC')->first();
         return [
             'id' => $matchedUser->id,
             'rendom' => $matchedUser->rendom,

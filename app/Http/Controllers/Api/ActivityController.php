@@ -770,6 +770,7 @@ public function getActivitydetailes(Request $request)
 
     $mainActivityData = [
         'user_name' => $mainActivity->user->name ?? '',
+        'rendom' => $mainActivity->rendom ?? '',
         'profile_image' => $profileImageUrl,
         'title' => $mainActivity->title,
         'description' => $mainActivity->description,
@@ -815,6 +816,7 @@ public function getActivitydetailes(Request $request)
 
             return [
                 'user_name' => $act->user->name ?? '',
+                'rendom' => $act->rendom ?? '',
                 'profile_image' => $img,
                 'title' => $act->title,
                 'description' => $act->description,

@@ -1264,7 +1264,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
         return [
             'id' => $user->id,
-            'rendom' => $user->rendom,
+            'user_rendom' => $user->rendom,
             'name' => $user->name,
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
             'form' => 'match',
@@ -1286,7 +1286,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
         return [
             'id' => $user->id,
-            'rendom' => $user->rendom,
+            'user_rendom' => $user->rendom,
             'name' => $user->name,
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
             'form' => 'activity',
@@ -1312,7 +1312,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
         ->orderBy('id','DESC')->first();
         return [
             'id' => $matchedUser->id,
-            'rendom' => $matchedUser->rendom,
+            'user_rendom' => $matchedUser->rendom,
             'name' => $matchedUser->name,
             'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
             'form' => 'match',

@@ -768,7 +768,6 @@ public function getActivitydetailes(Request $request)
     // Count confirmed users
     $interestCount = OtherInterest::where('activity_id', $mainActivity->id)->count();
 
-    // 🟢 Build main activity data
     $mainActivityData = [
         'user_name' => $mainActivity->user->name ?? '',
         'profile_image' => $profileImageUrl,
@@ -785,7 +784,6 @@ public function getActivitydetailes(Request $request)
         'status' => $mainActivity->status,
     ];
 
-    // 🔵 Confirmed attendees
     $attendees = OtherInterest::where('activity_id', $mainActivity->id)
         ->where('confirm', 1)
         ->with('user')
@@ -802,8 +800,7 @@ public function getActivitydetailes(Request $request)
         ];
     });
 
-    // 🔹 2. All other activities (optional: exclude this activity)
-    $allActivities = Activity::with('user', 'vibe')->orderBy('id', 'desc')->get()->map(function ($act) {
+    $allActivities = Activity::with('user', 'vibe')->orderBy('id', 'desc')->where('user_id','!=',$user->id)->get()->map(function ($act) {
         $images = json_decode($act->user->profile_image ?? '[]', true);
         $img = isset($images[1]) ? asset('uploads/app/profile_images/' . $images[1]) : null;
 

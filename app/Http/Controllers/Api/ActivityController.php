@@ -1331,7 +1331,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
         'message' => 'Friend and Cupid data fetched successfully',
         'status' => 200,
         'data' => [
-            'match_users' => $matchUsers->unique('rendom'), 
+            'match_users' => $matchUsers, 
             'friend_count' => $userList->count() + $likeUserList->count() + $matchedUsers->count(),
             'like_count' => $interestIds->count(),
         ]

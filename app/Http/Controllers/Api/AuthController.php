@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log; 
+use Illuminate\Support\Facades\Http;
 
 
 
@@ -737,205 +738,174 @@ class AuthController extends Controller
 
    
  
-    public function userprofile(Request $request)
-        {
-            $user = Auth::user();
+    // public function userprofile(Request $request)
+    //     {
+    //         $user = Auth::user();
             
-            if (!$user) {
+    //         if (!$user) {
 
-                return response()->json([
-                    'status' => false,
-                    'message' => 'User not authenticated',
-                ], 401);
-            }
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'User not authenticated',
+    //             ], 401);
+    //         }
             
-            $interestField = $user->interest;
+    //         $interestField = $user->interest;
 
-            $interestFieldDecoded = json_decode($interestField, true);
+    //         $interestFieldDecoded = json_decode($interestField, true);
 
-            if (!is_array($interestFieldDecoded)) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Invalid interest data',
-                ], 400);
-            }
+    //         if (!is_array($interestFieldDecoded)) {
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Invalid interest data',
+    //             ], 400);
+    //         }
 
-            $interestIds = [];
-            foreach ($interestFieldDecoded as $item) {
-                $interestIds = array_merge($interestIds, explode(',', $item));
-            }
+    //         $interestIds = [];
+    //         foreach ($interestFieldDecoded as $item) {
+    //             $interestIds = array_merge($interestIds, explode(',', $item));
+    //         }
 
-            $interestIds = array_map('trim', $interestIds);
+    //         $interestIds = array_map('trim', $interestIds);
 
-            $interests = Interest::whereIn('id', $interestIds)->get(['name', 'icon']);
+    //         $interests = Interest::whereIn('id', $interestIds)->get(['id','name', 'icon']);
 
-            \Log::info("Interest IDs: ", $interestIds);
-            \Log::info("Fetched Interests: ", $interests->toArray());
+    //         \Log::info("Interest IDs: ", $interestIds);
+    //         \Log::info("Fetched Interests: ", $interests->toArray());
 
-            $profileImages = json_decode($user->profile_image, true);
-            $imageUrls = [];
-            foreach ($profileImages as $image) {
-                $imageUrls[] = asset('uploads/app/profile_images/' . $image);
-            }
+    //         $profileImages = json_decode($user->profile_image, true);
+    //         $imageUrls = [];
+    //         foreach ($profileImages as $image) {
+    //             $imageUrls[] = asset('uploads/app/profile_images/' . $image);
+    //         }
  
-            $userData = [
-                // 'id' => $user->id,
-                'number' => $user->number,
-                'name' => $user->name,
-                'email' => $user->email,
-                'age' => $user->age,
-                'gender' => $user->gender,
-                'looking_for' => $user->looking_for,
-                'interest' => $interests,  
-                'status' => $user->status,
-                'profile_images' => $imageUrls,
-                'about' => $user->about ?? '',
-                'address' => $user->address ?? '',
-            ];
+    //         $userData = [
+    //             // 'id' => $user->id,
+    //             'number' => $user->number,
+    //             'name' => $user->name,
+    //             'email' => $user->email,
+    //             'age' => $user->age,
+    //             'gender' => $user->gender,
+    //             'looking_for' => $user->looking_for,
+    //             'interest' => $interests,  
+    //             'status' => $user->status,
+    //             'profile_images' => $imageUrls,
+    //             'about' => $user->about ?? '',
+    //             'address' => $user->address ?? '',
+    //         ];
 
-            return response()->json([
-                'status' => 200,
-                'message' => 'User profile fetched successfully',
-                'data' => $userData,
-            ], 200);
-        }
+    //         return response()->json([
+    //             'status' => 200,
+    //             'message' => 'User profile fetched successfully',
+    //             'data' => $userData,
+    //         ], 200);
+    //     }
 
 
+    public function userprofile(Request $request)
+{
+    $user = Auth::user();
+    
+    if (!$user) {
+        return response()->json([
+            'status' => false,
+            'message' => 'User not authenticated',
+        ], 401);
+    }
 
-        public function updateProfile(Request $request)
-        {
-            $user = Auth::user();
+    // Decode interest field
+    $interestFieldDecoded = json_decode($user->interest, true);
 
-            if (!$user) {
-                return response()->json(['message' => 'User not authenticated'], 401);
-            }
+    if (!is_array($interestFieldDecoded)) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Invalid interest data',
+        ], 400);
+    }
 
-            // Validate the incoming request data
-            $validator = Validator::make($request->all(), [
-                'name' => 'nullable|string|max:255',
-                'age' => 'nullable|integer|min:18|max:100',
-                'gender' => 'nullable|string',
-                'looking_for' => 'nullable|string|max:255',
-                'interest' => 'nullable|array',  // Array of interests (only updated for subscribed users)
-                'profile_image' => 'nullable|array',  // Array of images
-                'about' => 'nullable|string|max:1000',  // New field for "about" text (can be updated by any user)
+    $interestIds = [];
+    foreach ($interestFieldDecoded as $item) {
+        $interestIds = array_merge($interestIds, explode(',', $item));
+    }
+
+    $interestIds = array_map('trim', $interestIds);
+    $interests = Interest::whereIn('id', $interestIds)->get(['id','name', 'icon']);
+
+    // Profile images
+    $profileImages = json_decode($user->profile_image, true);
+    $imageUrls = [];
+    foreach ($profileImages as $image) {
+        $imageUrls[] = asset('uploads/app/profile_images/' . $image);
+    }
+
+    // 🗺️ Reverse geocoding (if lat/lng available)
+    $locationString = null;
+
+    if ($user->latitude && $user->longitude) {
+        try {
+            $response = Http::get("https://nominatim.openstreetmap.org/reverse", [
+                'lat' => $user->latitude,
+                'lon' => $user->longitude,
+                'format' => 'json'
             ]);
 
-            // If validation fails, return error messages
-            if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()], 400);
+            if ($response->successful()) {
+                $locationString = $response['display_name'] ?? null;
             }
-
-            // Prepare data to be updated
-            $updateData = [
-                'name' => $request->name,
-                'age' => $request->age,
-                'gender' => $request->gender,
-                'looking_for' => $request->looking_for,
-            ];
-
-            // Handle 'interest' field if provided and if the user has an active subscription
-            if ($user->subscription == 1 && $request->has('interest') && is_array($request->interest)) {
-                $updateData['interest'] = json_encode($request->interest);  // Store interests as JSON
-            }
-
-            if ($request->has('about')) {
-                $updateData['about'] = $request->about;
-            }
-            if ($request->has('address')) {
-                $updateData['address'] = $request->address;
-            }
-
-            if ($request->hasFile('profile_image') && is_array($request->profile_image)) {
-                $imagePaths = [];
-
-                foreach ($request->profile_image as $image) {
-                    $imageValidator = Validator::make(['image' => $image], [
-                        'image' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048', 
-                    ]);
-
-                    if ($imageValidator->fails()) {
-                        return response()->json(['errors' => $imageValidator->errors()], 400);
-                    }
-
-                    $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-
-                    $image->move(public_path('uploads/app/profile_images/'), $imageName);  
-                    $imagePaths[] = $imageName;  
-                }
-
-                $updateData['profile_image'] = json_encode($imagePaths);
-            }
-
-            // Update the user with new data
-            $user->update($updateData);
-
-            // Handle 'interest' names and icons (only for subscribed users)
-            $interestNamesWithIcons = [];
-            if ($user->subscription == 1 && $request->has('interest') && is_array($request->interest)) {
-                $interestIds = $request->interest;
-                $interests = Interest::whereIn('id', $interestIds)->get();
-
-                foreach ($interests as $interest) {
-                    $interestNamesWithIcons[] = [
-                        'name' => $interest->name,
-                        'icon' => $interest->icon, 
-                    ];
-                }
-            }
-
-            // Handle image URLs
-            $imageUrls = [];
-            if ($user->profile_image) {
-                $imagePaths = json_decode($user->profile_image, true);
-                foreach ($imagePaths as $imageName) {
-                    $imageUrls[] = url('uploads/app/profile_images/' . $imageName); 
-                }
-            }
-
-            return response()->json([
-                'message' => 'Profile updated successfully',
-                'data' => [
-                    [
-                        'rendom' => $user->rendom,
-                        'name' => $user->name,
-                        'age' => $user->age,
-                        'gender' => $user->gender,
-                        'looking_for' => $user->looking_for,
-                        'interest' => $interestNamesWithIcons, 
-                        'profile_image' => $imageUrls,
-                        'about' => $user->about, 
-                        'address' => $user->address, 
-                    ]
-                ],
-                'status' => 200,
-            ], 200);
+        } catch (\Exception $e) {
+            \Log::error("Reverse geocoding failed: " . $e->getMessage());
         }
+    }
+
+    // Final response
+    $userData = [
+        'number' => $user->number,
+        'name' => $user->name,
+        'email' => $user->email,
+        'age' => $user->age,
+        'gender' => $user->gender,
+        'looking_for' => $user->looking_for,
+        'interest' => $interests,
+        'status' => $user->status,
+        'profile_images' => $imageUrls,
+        'about' => $user->about ?? '',
+        'address' => $user->address ?? '',
+        'location' => $locationString,
+    ];
+
+    return response()->json([
+        'status' => 200,
+        'message' => 'User profile fetched successfully',
+        'data' => $userData,
+    ], 200);
+}
+
 
 
         // public function updateProfile(Request $request)
         // {
         //     $user = Auth::user();
-        
+
         //     if (!$user) {
         //         return response()->json(['message' => 'User not authenticated'], 401);
         //     }
-        
+
         //     // Validate the incoming request data
         //     $validator = Validator::make($request->all(), [
         //         'name' => 'nullable|string|max:255',
         //         'age' => 'nullable|integer|min:18|max:100',
         //         'gender' => 'nullable|string',
         //         'looking_for' => 'nullable|string|max:255',
-        //         'interest' => 'nullable|array',  // Array of interests
-        //         'profile_image' => 'nullable|array',  // Array of images
+        //         'interest' => 'nullable|array',  // Array of interests (only updated for subscribed users)
+        //         'profile_image' => 'nullable',  // Array of images
+        //         'about' => 'nullable|string|max:1000',  // New field for "about" text (can be updated by any user)
         //     ]);
-        
+
         //     // If validation fails, return error messages
         //     if ($validator->fails()) {
         //         return response()->json(['errors' => $validator->errors()], 400);
         //     }
-        
+
         //     // Prepare data to be updated
         //     $updateData = [
         //         'name' => $request->name,
@@ -943,41 +913,49 @@ class AuthController extends Controller
         //         'gender' => $request->gender,
         //         'looking_for' => $request->looking_for,
         //     ];
-        
-        //     // Handle 'interest' field if provided
-        //     if ($request->has('interest') && is_array($request->interest)) {
-        //         $updateData['interest'] = json_encode($request->interest);  // Store as JSON
-        //     }
-        
-        //     if ($request->hasFile('profile_image') && is_array($request->profile_image)) {
-        //         $imagePaths = [];
 
-        //         foreach ($request->profile_image as $image) {
+        //     // Handle 'interest' field if provided and if the user has an active subscription
+        //     if ($user->subscription == 1 && $request->has('interest') && is_array($request->interest)) {
+        //         $updateData['interest'] = json_encode($request->interest);  // Store interests as JSON
+        //     }
+
+        //     if ($request->has('about')) {
+        //         $updateData['about'] = $request->about;
+        //     }
+        //     if ($request->has('address')) {
+        //         $updateData['address'] = $request->address;
+        //     }
+
+        //     if ($request->hasFile('profile_image')) {
+        //         $imagePaths = [];
+            
+        //         foreach ($request->file('profile_image') as $image) {
         //             $imageValidator = Validator::make(['image' => $image], [
-        //                 'image' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048', 
+        //                 'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120', // Max 5MB
         //             ]);
-        
+            
         //             if ($imageValidator->fails()) {
         //                 return response()->json(['errors' => $imageValidator->errors()], 400);
         //             }
-        
-
+            
         //             $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-        
-        //             $image->move(public_path('uploads/app/profile_images/'), $imageName);  
-        //             $imagePaths[] = $imageName;  
+        //             $image->move(public_path('uploads/app/profile_images/'), $imageName);
+        //             $imagePaths[] = $imageName;
         //         }
-
+            
         //         $updateData['profile_image'] = json_encode($imagePaths);
         //     }
+            
 
+        //     // Update the user with new data
         //     $user->update($updateData);
 
+        //     // Handle 'interest' names and icons (only for subscribed users)
         //     $interestNamesWithIcons = [];
-        //     if ($request->has('interest') && is_array($request->interest)) {
+        //     if ($user->subscription == 1 && $request->has('interest') && is_array($request->interest)) {
         //         $interestIds = $request->interest;
         //         $interests = Interest::whereIn('id', $interestIds)->get();
-        
+
         //         foreach ($interests as $interest) {
         //             $interestNamesWithIcons[] = [
         //                 'name' => $interest->name,
@@ -985,7 +963,8 @@ class AuthController extends Controller
         //             ];
         //         }
         //     }
-        
+
+        //     // Handle image URLs
         //     $imageUrls = [];
         //     if ($user->profile_image) {
         //         $imagePaths = json_decode($user->profile_image, true);
@@ -997,20 +976,145 @@ class AuthController extends Controller
         //     return response()->json([
         //         'message' => 'Profile updated successfully',
         //         'data' => [
-        //     [
-        //         'rendom' => $user->rendom,
-        //         'name' => $user->name,
-        //         'age' => $user->age,
-        //         'gender' => $user->gender,
-        //         'looking_for' => $user->looking_for,
-        //         'interest' => $interestNamesWithIcons,  // Send interests with names and icons
-        //         'profile_image' => $imageUrls,  // Include full image URLs as an array
-        //     ]
-        // ],
+        //             [
+        //                 'rendom' => $user->rendom,
+        //                 'name' => $user->name,
+        //                 'age' => $user->age,
+        //                 'gender' => $user->gender,
+        //                 'looking_for' => $user->looking_for,
+        //                 'interest' => $interestNamesWithIcons, 
+        //                 'profile_image' => $imageUrls,
+        //                 'about' => $user->about, 
+        //                 'address' => $user->address, 
+        //             ]
+        //         ],
         //         'status' => 200,
         //     ], 200);
         // }
+
+
+        public function updateProfile(Request $request)
+{
+    $user = Auth::user();
+
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], 401);
+    }
+
+    // Validate the incoming request data
+    $validator = Validator::make($request->all(), [
+        'name' => 'nullable|string|max:255',
+        'age' => 'nullable|integer|min:18|max:100',
+        'gender' => 'nullable|string',
+        'looking_for' => 'nullable|string|max:255',
+        'interest' => 'nullable|array',  // Array of interests (only updated for subscribed users)
+        'about' => 'nullable|string|max:1000',  // New field for "about" text (can be updated by any user)
+        'address' => 'nullable|string|max:255',  // Address field if applicable
+        'profile_image' => 'nullable|array', // Add validation for multiple images
+    ]);
+
+    // If validation fails, return error messages
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 400);
+    }
+
+    // Prepare data to be updated
+    $updateData = [
+        'name' => $request->name,
+        'age' => $request->age,
+        'gender' => $request->gender,
+        'looking_for' => $request->looking_for,
+    ];
+
+    // Handle 'interest' field if provided and if the user has an active subscription
+    if ($user->subscription == 1 && $request->has('interest') && is_array($request->interest)) {
+        $updateData['interest'] = json_encode($request->interest);  // Store interests as JSON
+    }
+
+    if ($request->has('about')) {
+        $updateData['about'] = $request->about;
+    }
+    if ($request->has('address')) {
+        $updateData['address'] = $request->address;
+    }
+
+    // Handle profile images (if any)
+    if ($request->hasFile('profile_image')) {
+        $imagePaths = [];
+
+        foreach ($request->file('profile_image') as $image) {
+            // Validate each image
+            $imageValidator = Validator::make(['image' => $image], [
+                'image' => 'required', // Max 5MB for each image
+            ]);
+
+            if ($imageValidator->fails()) {
+                return response()->json(['errors' => $imageValidator->errors()], 400);
+            }
+
+            // Generate a unique file name for each image
+            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('uploads/app/profile_images/'), $imageName);
+
+            // Store the image paths in the array
+            $imagePaths[] = $imageName;
+        }
+
+        // Convert image paths to JSON and add to update data
+        $updateData['profile_image'] = json_encode($imagePaths);
+    }
+
+    // Update the user with new data (including image data if present)
+    $user->update($updateData);
+
+    // Handle 'interest' names and icons (only for subscribed users)
+    $interestNamesWithIcons = [];
+    if ($user->subscription == 1 && $request->has('interest') && is_array($request->interest)) {
+        $interestIds = $request->interest;
+        $interests = Interest::whereIn('id', $interestIds)->get();
+
+        foreach ($interests as $interest) {
+            $interestNamesWithIcons[] = [
+                'name' => $interest->name,
+                'icon' => $interest->icon,
+            ];
+        }
+    }
+
+    // Return all the current profile image URLs if exists
+    $imageUrls = [];
+    if ($user->profile_image) {
+        $imagePaths = json_decode($user->profile_image, true);
+
+        // Check if $imagePaths is an array and loop through it
+        if (is_array($imagePaths)) {
+            foreach ($imagePaths as $imageName) {
+                $imageUrls[] = url('uploads/app/profile_images/' . $imageName);
+            }
+        }
+    }
+
+    return response()->json([
+        'message' => 'Profile updated successfully',
+        'data' => [
+            [
+                'rendom' => $user->rendom,
+                'name' => $user->name,
+                'age' => $user->age,
+                'gender' => $user->gender,
+                'looking_for' => $user->looking_for,
+                'interest' => $interestNamesWithIcons,
+                'profile_image' => $imageUrls, // Returning the image URLs (multiple if applicable)
+                'about' => $user->about,
+                'address' => $user->address,
+            ]
+        ],
+        'status' => 200,
+    ], 200);
+}
+
         
+
         
         
         

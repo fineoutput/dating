@@ -94,6 +94,7 @@ class ChatController extends Controller
         'receiver_rendom' => 'required',
         'message' => 'required|string|max:255',
         'type' => 'required',
+        'chat_type' => 'required',
     ]);
 
     // Get the current user
@@ -177,6 +178,7 @@ else{
         'message' => $request->message,
         'status' => 'sent',
         'rendom' => $code,
+        'chat_type' => $request->chat_type,
     ]);
 
     // Format the created_at time into a human-readable format
@@ -190,6 +192,7 @@ else{
         'receiver_rendom' => $rendom_2->rendom,
         'message' => $chat->message,
         'rendom' => $chat->rendom,
+        'chat_type' => $chat->chat_type,
         'status' => $chat->status,
         'sent_time' => $timeAgo,
     ];
@@ -205,15 +208,12 @@ else{
 
    public function getMessages(Request $request)
     {
-        $receiverId = $request->header('receiver_rendom');
+        $userss = Auth::user();
 
-        if (!$receiverId) {
-            return response()->json([
-                'message' => 'Receiver ID is required.',
-            ]);
-        }
-
+        $receiverId = $request->input('receiver_rendom'); 
+        // return $receiverId;
         $receiverExists = User::where('rendom',$receiverId)->first();
+        
         if (!$receiverExists) {
             return response()->json([
                 'message' => 'Data Not Found',
@@ -250,6 +250,7 @@ else{
             $rendom_2 = User::where('id',$message->receiver_id)->first();
             return [
                 'rendom' => $message->rendom,
+                'chat_type' => $message->chat_type,
                 'sender_rendom' => $rendom_1->rendom,
                 'receiver_rendom' => $rendom_2->rendom,
                 'message' => $message->message,

@@ -36,10 +36,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('interest-activity', [ActivityController::class, 'interestactivity']);
     Route::get('vibe-activity-count', [ActivityController::class, 'vibeactivitycount']);
     Route::post('vibe-activity-details', [ActivityController::class, 'vibeactivitydetails']);
-    Route::get('filter-activity', [ActivityController::class, 'filteractivity']);
+    Route::post('filter-activity', [ActivityController::class, 'filteractivity']);
 
     Route::get('friend-count', [ActivityController::class, 'friendcount']);
-
 
     Route::post('add-interest', [InterestController::class, 'addinterest']);
     Route::post('get-user-interest', [InterestController::class, 'getuserinterest']);
@@ -47,7 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('add-confirm-user-interest', [InterestController::class, 'confirm_user_interest']);
 
     Route::post('chat-send', [ChatController::class, 'sendMessage']);
-    Route::get('chat-messages', [ChatController::class, 'getMessages']);
+    Route::post('chat-messages', [ChatController::class, 'getMessages']);
     Route::post('chat-update-status', [ChatController::class, 'updateMessageStatus']);
 
     Route::get('user-profile', [AuthController::class, 'userprofile']);

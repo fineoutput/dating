@@ -692,16 +692,16 @@ body.light-mode .footer-bottom p {
                     </div>
                 </a>
                 <div class="nav-links">
-                    <a href="#about">About</a>
+                    <a href="{{route('about')}}">About</a>
                     <a href="{{route('contact')}}">Contact</a>
                     <button class="download-btn">
                         <i data-lucide="download"></i>
                         Download App
                     </button>
-                    <button class="theme-toggle-btn" onclick="toggleTheme()">
+                    {{-- <button class="theme-toggle-btn" onclick="toggleTheme()">
                         <i data-lucide="sun"></i>
                         Toggle Theme
-                    </button>
+                    </button> --}}
                 </div>
             </nav>
         </div>
@@ -860,7 +860,7 @@ body.light-mode .footer-bottom p {
     </section>
 
     <!-- Gallery -->
-    <section class="gallery">
+    {{-- <section class="gallery">
         <div class="container">
             <div class="gallery-header">
                 <span>📸</span>
@@ -899,7 +899,7 @@ body.light-mode .footer-bottom p {
                 </div>
             </div>
         </div>
-    </section>
+    </section> --}}
 
     <!-- Footer -->
     <footer class="footer">

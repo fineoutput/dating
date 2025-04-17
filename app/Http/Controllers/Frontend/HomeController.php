@@ -23,5 +23,10 @@ class HomeController extends Controller
      
         return view('contact');
     }
+    public function about(Request $req)
+    {
+     
+        return view('about');
+    }
     
 }

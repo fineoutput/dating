@@ -813,22 +813,22 @@ body.light-mode .contact-form button {
                     </div>
                 </a>
                 <div class="nav-links">
-                    <a href="#about">About</a>
+                    <a href="{{route('about')}}">About</a>
                     <a href="{{route('contact')}}">Contact</a>
                     <button class="download-btn">
                         <i data-lucide="download"></i>
                         Download App
                     </button>
-                    <button class="theme-toggle-btn" onclick="toggleTheme()">
+                    {{-- <button class="theme-toggle-btn" onclick="toggleTheme()">
                         <i data-lucide="sun"></i>
                         Toggle Theme
-                    </button>
+                    </button> --}}
                 </div>
             </nav>
         </div>
     </header>
     <div class="gradient-overlay"></div>
-    <div class="doodle-container" id="doodleContainer"></div>
+    <div class="doodle-container" id="doodleContainer"></div>   
   
     <!-- Hero Section -->
     <section class="contact" id="contact">

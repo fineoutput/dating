@@ -459,9 +459,9 @@ body.light-mode .footer-bottom p {
                 <div class="footer-links">
                     <h3>Company</h3>
                     <ul>
-                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="{{route('about')}}">About Us</a></li>
                         <li><a href="#careers">Careers</a></li>
-                        <li><a href="index.html#contact">Contact</a></li>
+                        <li><a href="{{route('contact')}}">Contact</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">
@@ -487,60 +487,6 @@ body.light-mode .footer-bottom p {
         </div>
     </footer>
 
-    <script>
-        const doodles = [
-            { svg: '<svg viewBox="0 0 24 24"><path d="M19 5h-2V3h-2v2h-2V3H9v2H7c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 12H7V9h12v8z" fill="#d946ef2e"/></svg>', top: '10%', left: '5%', delay: '0s', rotate: '0deg' },
-            { svg: '<svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#FF6B6B"/></svg>', top: '15%', right: '10%', delay: '0.2s', rotate: '10deg' },
-            { svg: '<svg viewBox="0 0 24 24"><path d="M19 5h-2V3h-2v2h-2V3H9v2H7c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 12H7V9h12v8z" fill="#9b87f5"/></svg>', top: '20%', left: '15%', delay: '0.4s', rotate: '-5deg' },
-            { svg: '<svg viewBox="0 0 24 24"><path d="M12 5.69l-1.5-1.19C8.56 3.26 6.61 2 4.5 2 2.58 2 1 3.58 1 5.5c0 2.89 2.71 5.58 6.68 9.15L12 18.35l4.32-3.7C20.29 11.08 23 8.39 23 5.5c0-1.92-1.58-3.5-3.5-3.5-2.11 0-4.06 1.26-5 2.19z" fill="#4ECDC4"/></svg>', top: '25%', right: '5%', delay: '0.6s', rotate: '5deg' },
-            { svg: '<svg viewBox="0 0 24 24"><path d="M7 14c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zm0 4c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm12-6h-8v7H3V7H1v10h22v-6c0-2.21-1.79-4-4-4z" fill="#F7D794"/></svg>', bottom: '20%', left: '10%', delay: '0.8s', rotate: '-10deg' },
-            { svg: '<svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.2-.07.47.12.61l2.05 1.58c-.03.3-.06.63-.06.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.2.07-.47-.12-.61l-2.03-1.58zm-5.14 1.06c-.7 0-1.26.56-1.26 1.26s.56 1.26 1.26 1.26 1.26-.56 1.26-1.26-.56-1.26-1.26-1.26z" fill="#A3BFFA"/></svg>', bottom: '15%', right: '15%', delay: '1.0s', rotate: '8deg' },
-            { svg: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" fill="#E5989B"/></svg>', top: '30%', left: '20%', delay: '1.2s', rotate: '-3deg' },
-            { svg: '<svg viewBox="0 0 24 24"><path d="M12 5.69l-1.5-1.19C8.56 3.26 6.61 2 4.5 2 2.58 2 1 3.58 1 5.5c0 2.89 2.71 5.58 6.68 9.15L12 18.35l4.32-3.7C20.29 11.08 23 8.39 23 5.5c0-1.92-1.58-3.5-3.5-3.5-2.11 0-4.06 1.26-5 2.19z" fill="#6B7280"/></svg>', top: '40%', right: '10%', delay: '1.4s', rotate: '6deg' },
-            { svg: '<svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 16H6c-.55 0-1-.45-1-1V6c0-.55.45-1 1-1h12c.55 0 1 .45 1 1v12c0 .55-.45 1-1 1z" fill="#FACC15"/></svg>', bottom: '25%', left: '25%', delay: '1.6s', rotate: '-7deg' },
-            { svg: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" fill="#34D399"/></svg>', bottom: '30%', right: '20%', delay: '1.8s', rotate: '4deg' },
-            { svg: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" fill="#F472B6"/></svg>', top: '50%', left: '30%', delay: '2.0s', rotate: '-2deg' },
-            { svg: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" fill="#60A5FA"/></svg>', top: '60%', right: '15%', delay: '2.2s', rotate: '3deg' }
-        ];
-
-        const containers = [
-            { id: 'doodleContainerAbout', section: '.about' },
-            { id: 'doodleContainerFooter', section: '.footer' }
-        ];
-
-        containers.forEach(container => {
-            const el = document.getElementById(container.id);
-            doodles.forEach(d => {
-                const icon = document.createElement('div');
-                icon.classList.add('icon');
-                icon.innerHTML = d.svg;
-
-                // Randomize position within the section
-                const sectionRect = document.querySelector(container.section).getBoundingClientRect();
-                const top = Math.random() * (sectionRect.height - 40) + sectionRect.top;
-                const left = Math.random() * (sectionRect.width - 40) + sectionRect.left;
-
-                icon.style.top = `${top}px`;
-                icon.style.left = `${left}px`;
-                icon.style.animationDelay = d.delay;
-                icon.style.transform = `rotate(${d.rotate})`;
-
-                el.appendChild(icon);
-            });
-        });
-    </script>
-    <script src="https://unpkg.com/lucide-icons"></script>
-    <script>
-        function toggleTheme() {
-            document.body.classList.toggle('light-mode');
-            const themeBtn = document.querySelector('.theme-toggle-btn i');
-            if (document.body.classList.contains('light-mode')) {
-                themeBtn.setAttribute('data-lucide', 'moon');
-            } else {
-                themeBtn.setAttribute('data-lucide', 'sun');
-            }
-            lucide.createIcons();
-        }
-    </script>
+ 
 </body>
 </html>

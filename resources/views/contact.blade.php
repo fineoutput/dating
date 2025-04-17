@@ -175,352 +175,45 @@ body.light-mode .theme-toggle-btn:hover {
     color: var(--white);
 }
 
-/* Hero Section */
-.hero {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-    padding: 4rem 0;
-}
+.contact-info,
+    .contact-form {
+      flex: 1 1 45%;
+      box-sizing: border-box;
+    }
 
-.hero .container {
-    text-align: center;
-    position: relative;
-    z-index: 10;
-}
+    .contact-info-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
 
-.hero h1 {
-    font-size: 3rem;
-    margin-bottom: 1.5rem;
-}
+    .contact-form input,
+    .contact-form textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      box-sizing: border-box;
+    }
 
-.hero p {
-    font-size: 1.125rem;
-    color: rgba(255, 255, 255, 0.7);
-    max-width: 36rem;
-    margin: 0 auto;
-}
+    .contact-form button {
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
 
-body.light-mode .hero p {
-    color: rgba(26, 32, 44, 0.7);
-}
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
 
-.gradient-bg {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background: linear-gradient(to bottom right, var(--dark), var(--dark-darker));
-}
-
-.pattern-overlay {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background-image: url('/public/pattern.svg');
-    opacity: 0.02;
-}
-
-body.light-mode .pattern-overlay {
-    opacity: 0.1;
-}
-
-.scroll-indicator {
-    margin-top: 3rem;
-    animation: bounce 2s infinite;
-}
-
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-
-/* Features Section */
-.features {
-    padding: 5rem 0;
-    background: var(--dark-lighter);
-}
-
-.features h2 {
-    text-align: center;
-    font-size: 2rem;
-    margin-bottom: 3rem;
-}
-
-.features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
-}
-
-.feature-card {
-    padding: 1.5rem;
-    border-radius: 0.75rem;
-    backdrop-filter: blur(12px);
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: transform 0.3s;
-}
-
-body.light-mode .feature-card {
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.feature-card:hover {
-    transform: translateY(-5px);
-}
-
-.feature-card i {
-    color: var(--accent);
-    font-size: 2rem;
-    margin-bottom: 1rem;
-}
-
-.feature-card h3 {
-    margin-bottom: 0.5rem;
-}
-
-/* Activities Section */
-.activities {
-    padding: 5rem 0;
-    background: var(--dark);
-}
-
-.activities h2 {
-    text-align: center;
-    font-size: 2rem;
-    margin-bottom: 1rem;
-}
-
-.activities > p {
-    text-align: center;
-    color: rgba(255, 255, 255, 0.7);
-    max-width: 36rem;
-    margin: 0 auto 3rem;
-}
-
-body.light-mode .activities > p {
-    color: rgba(26, 32, 44, 0.7);
-}
-
-.activities-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-}
-
-.activity-card {
-    padding: 1.5rem;
-    border-radius: 0.75rem;
-    transition: transform 0.3s;
-}
-
-.activity-card:hover {
-    transform: scale(1.05);
-}
-
-.activity-card.yellow { background: #fef3c7; color: #92400e; }
-.activity-card.white { background: #ffffff; color: #4c1d95; }
-.activity-card.pink { background: #fce7f3; color: #be185d; }
-.activity-card.blue { background: #dbeafe; color: #1e40af; }
-.activity-card.purple { background: #f3e8ff; color: #6b21a8; }
-.activity-card.green { background: #dcfce7; color: #15803d; }
-.activity-card.cyan { background: #cffafe; color: #155e75; }
-
-body.light-mode .activity-card.yellow { background: #FFF7E6; }
-body.light-mode .activity-card.white { background: #F7FAFC; }
-body.light-mode .activity-card.pink { background: #FFF5F7; }
-body.light-mode .activity-card.blue { background: #EBF8FF; }
-body.light-mode .activity-card.purple { background: #FAF5FF; }
-body.light-mode .activity-card.green { background: #F0FFF4; }
-body.light-mode .activity-card.cyan { background: #E6FFFA; }
-
-/* Cupid Feature */
-.cupid-feature {
-    padding: 5rem 0;
-    background: var(--dark);
-}
-
-.cupid-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3rem;
-    align-items: center;
-}
-
-.cupid-content h2 {
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
-}
-
-.cupid-content > p {
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 2rem;
-}
-
-body.light-mode .cupid-content > p {
-    color: rgba(26, 32, 44, 0.7);
-}
-
-.cupid-features {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.cupid-feature-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-}
-
-.cupid-feature-item i {
-    color: var(--accent);
-}
-
-.cupid-card {
-    padding: 2rem;
-    border-radius: 1rem;
-    backdrop-filter: blur(12px);
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    text-align: center;
-    position: relative;
-    z-index: 10;
-}
-
-body.light-mode .cupid-card {
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.match-avatars {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 2rem 0;
-}
-
-.avatar {
-    width: 3rem;
-    height: 3rem;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-}
-
-.avatar:first-child { background: #7C3AED; }
-.avatar:last-child { background: #0D9488; }
-
-.heart {
-    font-size: 1.5rem;
-}
-
-.match-btn {
-    width: 100%;
-    padding: 0.75rem;
-    background: linear-gradient(to right, var(--primary), #d946ef);
-    color: var(--white);
-    border: none;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: opacity 0.3s;
-}
-
-body.light-mode .match-btn {
-    color: var(--dark);
-}
-
-.match-btn:hover {
-    opacity: 0.9;
-}
-
-.disclaimer {
-    margin-top: 1rem;
-    font-size: 0.875rem;
-    color: rgba(255, 255, 255, 0.5);
-}
-
-body.light-mode .disclaimer {
-    color: rgba(26, 32, 44, 0.5);
-}
-
-/* Gallery */
-.gallery {
-    padding: 5rem 0;
-    background: var(--dark-lighter);
-}
-
-.gallery-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-bottom: 3rem;
-}
-
-.gallery-header h2 {
-    font-size: 1.5rem;
-}
-
-.gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1rem;
-}
-
-.gallery-item {
-    position: relative;
-    border-radius: 0.75rem;
-    overflow: hidden;
-    aspect-ratio: 1;
-}
-
-.gallery-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s;
-}
-
-.gallery-overlay {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-    opacity: 0;
-    transition: opacity 0.3s;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-}
-
-.gallery-item:hover img {
-    transform: scale(1.05);
-}
-
-.gallery-item:hover .gallery-overlay {
-    opacity: 1;
-}
-
-.gallery-stats {
-    display: flex;
-    gap: 1rem;
-    margin-top: 0.5rem;
-}
+      .contact-info,
+      .contact-form {
+        flex: 1 1 100%;
+      }
+    }
 
 /* Footer */
 .footer {
@@ -875,9 +568,9 @@ body.light-mode .contact-form button {
                 <div class="footer-links">
                     <h3>Company</h3>
                     <ul>
-                        <li><a href="#about">About Us</a></li>
+                        <li><a href="{{route('about')}}">About Us</a></li>
                         <li><a href="#careers">Careers</a></li>
-                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="{{route('contact')}}">Contact</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">

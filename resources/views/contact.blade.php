@@ -644,7 +644,7 @@ body.light-mode .footer-bottom p {
     .gradient-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to bottom, rgba(26, 31, 44, 0.8), rgba(22, 25, 34, 0.9));
+      /* background: linear-gradient(to bottom, rgba(26, 31, 44, 0.8), rgba(22, 25, 34, 0.9)); */
       z-index: 0;
     }
 
@@ -679,6 +679,127 @@ body.light-mode .footer-bottom p {
         grid-template-columns: 1fr;
     }
 }
+.contact {
+    padding: 5rem 0;
+    background: var(--dark);
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.contact .container {
+    display: flex;
+    gap: 2rem;
+    max-width: 1000px;
+}
+
+.contact-info {
+    flex: 1;
+    padding: 2rem;
+    background: rgba(155, 135, 245, 0.1);
+    border-radius: 1rem;
+    border: 1px solid rgba(155, 135, 245, 0.3);
+}
+
+.contact-info h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--white);
+}
+
+.contact-info p {
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 1.5rem;
+}
+
+.contact-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.contact-info-item i {
+    color: var(--primary);
+}
+
+.contact-info-item a {
+    color: var(--white);
+    text-decoration: none;
+}
+
+.contact-form {
+    flex: 1;
+    padding: 2rem;
+    background: rgba(217, 70, 239, 0.1);
+    border-radius: 1rem;
+    border: 1px solid rgba(217, 70, 239, 0.3);
+}
+
+.contact-form h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--white);
+}
+
+.contact-form p {
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 1.5rem;
+}
+
+.contact-form input,
+.contact-form textarea {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    color: var(--white);
+    font-size: 1rem;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.contact-form button {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+.contact-form button:hover {
+    opacity: 0.9;
+}
+
+body.light-mode .contact-info {
+    background: rgba(107, 70, 193, 0.1);
+    border-color: rgba(107, 70, 193, 0.3);
+}
+
+body.light-mode .contact-form {
+    background: rgba(237, 100, 166, 0.1);
+    border-color: rgba(237, 100, 166, 0.3);
+}
+
+body.light-mode .contact-form input,
+body.light-mode .contact-form textarea {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--dark);
+}
+
+body.light-mode .contact-form button {
+    color: var(--dark);
+}
 </style>
 <body>
     <!-- Header -->
@@ -710,193 +831,30 @@ body.light-mode .footer-bottom p {
     <div class="doodle-container" id="doodleContainer"></div>
   
     <!-- Hero Section -->
-    <section class="hero">
-        <div class="gradient-bg"></div>
-        <div class="pattern-overlay"></div>
+    <section class="contact" id="contact">
+        {{-- <div class="gradient-overlay"></div> --}}
+        <div class="doodle-container" id="doodleContainerContact"></div>
         <div class="container">
-            <h1>
-                <span>Did You Meet</span>
-                <span class="gradient-text">Me?</span>
-            </h1>
-            <p>Create and join activities that match your interests, connect with like-minded people, and make genuine connections IRL.</p>
-            <div class="scroll-indicator">
-                <i data-lucide="arrow-down"></i>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Section -->
-    <section class="features" id="features">
-        <div class="container">
-            <h2><span class="gradient-text">How DYMM Works</span></h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <i data-lucide="calendar"></i>
-                    <h3>Host Activities</h3>
-                    <p>Create and host activities based on your interests, from coffee chats to sports games.</p>
+            <div class="contact-info">
+                <h2>Get in Touch</h2>
+                <p>We’d love to hear from you! Whether you have questions about DYMM, need support, or want to share your feedback, our team is here to help.</p>
+                <div class="contact-info-item">
+                    <i data-lucide="phone"></i>
+                    <span>Contact Information</span>
                 </div>
-                <div class="feature-card">
-                    <i data-lucide="users"></i>
-                    <h3>Meet People</h3>
-                    <p>Join activities that match your interests and connect with like-minded people.</p>
-                </div>
-                <div class="feature-card">
-                    <i data-lucide="heart"></i>
-                    <h3>Dating</h3>
-                    <p>Connect beyond activities. Our dating features help you find meaningful relationships.</p>
-                </div>
-                <div class="feature-card">
-                    <i data-lucide="sparkles"></i>
-                    <h3>Cupid</h3>
-                    <p>Play matchmaker! Connect your friends through shared activities.</p>
+                <div class="contact-info-item">
+                    <i data-lucide="mail"></i>
+                    <a href="mailto:support@dymm.app">support@dymm.app</a>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <!-- Activities Section -->
-    <section class="activities" id="activities">
-        <div class="container">
-            <h2>
-                <span class="gradient-text">Activities</span>
-                <span> for every interest</span>
-            </h2>
-            <p>Create or join activities based on your interests, meet new people, and make meaningful connections in your area.</p>
-            <div class="activities-grid">
-                <div class="activity-card yellow">
-                    <i data-lucide="palette"></i>
-                    <h3>Art Therapy</h3>
-                    <p>Enjoy painting, pottery, and more with art buffs</p>
-                </div>
-                <div class="activity-card white">
-                    <i data-lucide="utensils"></i>
-                    <h3>Dinner Club</h3>
-                    <p>Try new restaurants with foodies</p>
-                </div>
-                <div class="activity-card pink">
-                    <i data-lucide="coffee"></i>
-                    <h3>Coffee Dates</h3>
-                    <p>Connect over a cup of coffee</p>
-                </div>
-                <div class="activity-card blue">
-                    <i data-lucide="film"></i>
-                    <h3>Movie Nights</h3>
-                    <p>Watch the latest films with movie buffs</p>
-                </div>
-                <div class="activity-card purple">
-                    <i data-lucide="users"></i>
-                    <h3>Double Dates</h3>
-                    <p>Bring your date and meet another couple</p>
-                </div>
-                <div class="activity-card green">
-                    <i data-lucide="trophy"></i>
-                    <h3>Sports Events</h3>
-                    <p>Bring in people to enjoy your fav sports</p>
-                </div>
-                <div class="activity-card yellow">
-                    <i data-lucide="mountain"></i>
-                    <h3>Group Hikes</h3>
-                    <p>Explore nature trails with fellow hikers</p>
-                </div>
-                <div class="activity-card cyan">
-                    <i data-lucide="music"></i>
-                    <h3>Music Jams</h3>
-                    <p>Play or listen to live music sessions</p>
-                </div>
-            </div>
-        </div>
-    </section>
-    <div class="gradient-overlay"></div>
-    <div class="doodle-container" id="doodleContainer"></div>
-  
-    <!-- Cupid Feature -->
-    <section class="cupid-feature">
-        <div class="container">
-            <div class="cupid-grid">
-                <div class="cupid-content">
-                    <h2>
-                        <span>Find Your Perfect</span>
-                        <span class="gradient-text">Match</span>
-                    </h2>
-                    <p>DYMM isn't just about activities. Connect with people you meet, or explore our dating features to find someone special.</p>
-                    <div class="cupid-features">
-                        <div class="cupid-feature-item">
-                            <i data-lucide="star"></i>
-                            <div>
-                                <h3>Genuine Connections</h3>
-                                <p>Meet through shared interests and activities</p>
-                            </div>
-                        </div>
-                        <div class="cupid-feature-item">
-                            <i data-lucide="star"></i>
-                            <div>
-                                <h3>Chill Socials</h3>
-                                <p>Get to know people in group settings</p>
-                            </div>
-                        </div>
-                        <div class="cupid-feature-item">
-                            <i data-lucide="star"></i>
-                            <div>
-                                <h3>Cupid Feature</h3>
-                                <p>Let friends play matchmaker and introduce you</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="cupid-card">
-                    <i data-lucide="star"></i>
-                    <h3>Cupid Mode</h3>
-                    <p>Play matchmaker! Think two friends would hit it off?</p>
-                    <div class="match-avatars">
-                        <div class="avatar">J</div>
-                        <div class="heart">❤️</div>
-                        <div class="avatar">K</div>
-                    </div>
-                    <button class="match-btn">Make a Match</button>
-                    <p class="disclaimer">Your identity stays anonymous</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Gallery -->
-    <section class="gallery">
-        <div class="container">
-            <div class="gallery-header">
-                <span>📸</span>
-                <h2>Follow our journey</h2>
-            </div>
-            <div class="gallery-grid">
-                <div class="gallery-item">
-                    <img src="https://images.unsplash.com/photo-1721322800607-8c38375eef04" alt="Brunch with friends">
-                    <div class="gallery-overlay">
-                        <p>Enjoying the perfect brunch with friends #weekendvibes</p>
-                        <div class="gallery-stats">
-                            <span>❤️ 142</span>
-                            <span>💭 32</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="gallery-item">
-                    <img src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9" alt="Office cat">
-                    <div class="gallery-overlay">
-                        <p>Meet our new office cat! #officepet #cutecat</p>
-                        <div class="gallery-stats">
-                            <span>❤️ 297</span>
-                            <span>💭 34</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="gallery-item">
-                    <img src="https://images.unsplash.com/photo-1582562124811-c09040d0a901" alt="Office lounge">
-                    <div class="gallery-overlay">
-                        <p>New space, new energy. Our refreshed office lounge ✨</p>
-                        <div class="gallery-stats">
-                            <span>❤️ 195</span>
-                            <span>💭 21</span>
-                        </div>
-                    </div>
-                </div>
+            <div class="contact-form">
+                <h2>Send Us a Message</h2>
+                <p>Tell us what you’d like to know.</p>
+                <input type="text" placeholder="Your name" required>
+                <input type="email" placeholder="Your email@example.com" required>
+                <input type="text" placeholder="Subject" required>
+                <textarea placeholder="What’s this about?" rows="4" required></textarea>
+                <button type="submit">Send Message</button>
             </div>
         </div>
     </section>
@@ -906,10 +864,12 @@ body.light-mode .footer-bottom p {
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <div class="logo">
-                        <span class="logo-text">DYMM</span>
-                        <span class="beta-badge">Beta</span>
-                    </div>
+                    <a href="{{route('/')}}">
+                        <div class="logo">
+                            <span class="logo-text">DYMM</span>
+                            <span class="beta-badge">Beta</span>
+                        </div>
+                    </a>
                     <p>Connect with people through activities, dating, and our unique cupid feature.</p>
                 </div>
                 <div class="footer-links">

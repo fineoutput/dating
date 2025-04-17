@@ -43,6 +43,9 @@ use App\Http\Controllers\Admin\ExpenseController;
 Route::group(['prefix' => '/'], function () {
     Route::get('/', [HomeController::class, 'index'])->name('/');
 });
+Route::group(['prefix' => 'contact'], function () {
+    Route::get('contact', [HomeController::class, 'contact'])->name('contact');
+});
 
 //======================================= ADMIN ===================================================
 Route::group(['prifix' => 'admin'], function () {

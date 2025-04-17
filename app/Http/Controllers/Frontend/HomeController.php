@@ -18,5 +18,10 @@ class HomeController extends Controller
      
         return view('welcome')->withTitle('');
     }
+    public function contact(Request $req)
+    {
+     
+        return view('contact');
+    }
     
 }

@@ -57,6 +57,7 @@ body {
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+    font-size: 4.5rem;
 }
 
 .gradient-bg {
@@ -70,7 +71,7 @@ body {
     width: 100%;
     z-index: 50;
     backdrop-filter: blur(12px);
-    background: rgba(26, 31, 44, 0.5);
+    background: #131019;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -198,9 +199,9 @@ body.light-mode .theme-toggle-btn:hover {
 }
 
 .hero p {
-    font-size: 1.125rem;
+    font-size: 1.5rem;
     color: rgba(255, 255, 255, 0.7);
-    max-width: 36rem;
+    max-width: 46rem;
     margin: 0 auto;
 }
 
@@ -641,12 +642,12 @@ body.light-mode .footer-bottom p {
     opacity: 0.1;
 }
 
-    .gradient-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to bottom, rgba(26, 31, 44, 0.8), rgba(22, 25, 34, 0.9));
-      z-index: 0;
-    }
+.gradient-overlay {
+    position: absolute;
+    inset: 0;
+    background: #131019;
+    z-index: 0;
+}
 
     .icon {
       position: absolute;
@@ -715,8 +716,8 @@ body.light-mode .footer-bottom p {
         <div class="pattern-overlay"></div>
         <div class="container">
             <h1>
-                <span>Did You Meet</span>
-                <span class="gradient-text">Me?</span>
+                <span></span>
+                <span class="gradient-text">Did You Meet Me?</span>
             </h1>
             <p>Create and join activities that match your interests, connect with like-minded people, and make genuine connections IRL.</p>
             <div class="scroll-indicator">

@@ -15,12 +15,89 @@
     --primary: #9b87f5;
     --primary-dark: #7E69AB;
     --accent: #d946ef2e;
-    --dark: #1A1F2C;
+    --dark: #131019;
     --dark-lighter: #2a2f3c;
     --dark-darker: #161922;
     --white: #ffffff;
 }
+.switch {
+  display: block;
+  --width-of-switch: 3.5em;
+  --height-of-switch: 2em;
+  /* size of sliding icon -- sun and moon */
+  --size-of-icon: 1.4em;
+  /* it is like a inline-padding of switch */
+  --slider-offset: 0.3em;
+  position: relative;
+  width: var(--width-of-switch);
+  height: var(--height-of-switch);
+}
+.text-dymm-purple {
+    --tw-text-opacity: 1;
+    color: rgb(138 43 226 / var(--tw-text-opacity, 1));
+}
+.text-dymm-pink {
+    --tw-text-opacity: 1;
+    color: rgb(255 105 180 / var(--tw-text-opacity, 1));
+}
+.text-dymm-teal {
+    --tw-text-opacity: 1;
+    color: rgb(32 178 170 / var(--tw-text-opacity, 1));
+}
+.dedssd p {
+    color: #e5e3e8cc;
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 10px;
+}
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
 
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #f4f4f5;
+  transition: .4s;
+  border-radius: 30px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: var(--size-of-icon,1.4em);
+  width: var(--size-of-icon,1.4em);
+  border-radius: 20px;
+  left: var(--slider-offset,0.3em);
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(40deg,#ff0080,#ff8c00 70%);
+  ;
+ transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #303136;
+}
+
+input:checked + .slider:before {
+  left: calc(100% - (var(--size-of-icon,1.4em) + var(--slider-offset,0.3em)));
+  background: #303136;
+  /* change the value of second inset in box-shadow to change the angle and direction of the moon  */
+  box-shadow: inset -3px -2px 5px -2px #8983f7, inset -10px -4px 0 0 #a3dafb;
+}
 body.light-mode {
     --primary: #6B46C1;
     --primary-dark: #553C9A;
@@ -58,7 +135,7 @@ body {
     width: 100%;
     z-index: 50;
     backdrop-filter: blur(12px);
-    background: rgba(26, 31, 44, 0.5);
+    background: #131019;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -92,9 +169,10 @@ body.light-mode .header {
 .beta-badge {
     padding: 0.25rem 0.5rem;
     font-size: 0.75rem;
-    font-weight: 500;
-    background: rgba(107, 70, 193, 0.2);
+    font-weight: bold;
+    background: #ffd700;
     color: var(--primary);
+    text-decoration: none;
     border-radius: 9999px;
 }
 
@@ -123,10 +201,10 @@ body.light-mode .nav-links a {
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: var(--accent);
+    background: #8a2be2;
     color: var(--white);
     border: none;
-    border-radius: 0.375rem;
+    border-radius: 20px;
     font-weight: 500;
     cursor: pointer;
     transition: opacity 0.3s;
@@ -378,12 +456,24 @@ body.light-mode .footer-bottom p {
     <header class="header">
         <div class="container">
             <nav>
-                <a href="{{route('/')}}">
+                
                     <div class="logo">
+                        <a href="{{route('/')}}">
                         <span class="logo-text">DYMM</span>
                         <span class="beta-badge">Beta</span>
+                    </a>
+                        {{-- <button class="theme-toggle-btn">
+                            <i data-lucide="sun"></i>
+                            Toggle Theme
+                        </button> --}}
+                        <!-- From Uiverse.io by satyamchaudharydev --> 
+<label class="switch"  onclick="toggleTheme()">
+    <input type="checkbox">
+    <span class="slider"></span>
+</label>
                     </div>
-                </a>
+              
+                
                 <div class="nav-links">
                     <a href="{{route('about')}}">About</a>
                     <a href="{{route('contact')}}">Contact</a>

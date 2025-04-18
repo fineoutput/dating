@@ -20,6 +20,9 @@
     --dark-darker: #161922;
     --white: #ffffff;
 }
+.value-card h3 {
+    color: #8a2be2;
+}
 .switch {
   display: block;
   --width-of-switch: 3.5em;
@@ -252,7 +255,7 @@ body.light-mode .theme-toggle-btn:hover {
 }
 
 .about .container {
-    max-width: 800px;
+    max-width: 1000px;
 }
 
 .about h1 {
@@ -263,11 +266,11 @@ body.light-mode .theme-toggle-btn:hover {
 }
 
 .about-section {
-    background: rgba(155, 135, 245, 0.1);
+    /* background: rgba(155, 135, 245, 0.1); */
     border-radius: 1rem;
     padding: 2rem;
     margin-bottom: 2rem;
-    border: 1px solid rgba(155, 135, 245, 0.3);
+    /* border: 1px solid rgba(155, 135, 245, 0.3); */
 }
 
 .about-section h2 {
@@ -283,16 +286,16 @@ body.light-mode .theme-toggle-btn:hover {
 
 .values-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1rem;
     margin-top: 1rem;
 }
 
 .value-card {
-    background: rgba(217, 70, 239, 0.1);
+    background: #1d1825;
     padding: 1.5rem;
     border-radius: 0.75rem;
-    border: 1px solid rgba(217, 70, 239, 0.3);
+    /* border: 1px solid rgba(217, 70, 239, 0.3); */
 }
 
 body.light-mode .about-section {
@@ -421,12 +424,12 @@ body.light-mode .footer-bottom p {
     height: 40px;
 }
 
-@keyframes pulse {
+@keyframes  pulse {
     0%, 100% { filter: brightness(1); }
     50% { filter: brightness(1.3); }
 }
 
-@keyframes float {
+@keyframes  float {
     0% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
     100% { transform: translateY(0); }
@@ -458,14 +461,11 @@ body.light-mode .footer-bottom p {
             <nav>
                 
                     <div class="logo">
-                        <a href="{{route('/')}}">
+                        <a href="http://127.0.0.1:8000">
                         <span class="logo-text">DYMM</span>
                         <span class="beta-badge">Beta</span>
                     </a>
-                        {{-- <button class="theme-toggle-btn">
-                            <i data-lucide="sun"></i>
-                            Toggle Theme
-                        </button> --}}
+                        
                         <!-- From Uiverse.io by satyamchaudharydev --> 
 <label class="switch"  onclick="toggleTheme()">
     <input type="checkbox">
@@ -475,16 +475,13 @@ body.light-mode .footer-bottom p {
               
                 
                 <div class="nav-links">
-                    <a href="{{route('about')}}">About</a>
-                    <a href="{{route('contact')}}">Contact</a>
+                    <a href="http://127.0.0.1:8000/about/about">About</a>
+                    <a href="http://127.0.0.1:8000/contact/contact">Contact</a>
                     <button class="download-btn">
                         <i data-lucide="download"></i>
                         Download App
                     </button>
-                    {{-- <button class="theme-toggle-btn" onclick="toggleTheme()">
-                        <i data-lucide="sun"></i>
-                        Toggle Theme
-                    </button> --}}
+                    
                 </div>
             </nav>
         </div>
@@ -500,7 +497,7 @@ body.light-mode .footer-bottom p {
                 <p>At DYMM, we’re imagining how people connect in the digital age. Our platform brings together the best elements of social activities, dating, and matchmaking to create a holistic approach to building meaningful relationships.</p>
                 <p>What you can do is only limited by your imagination — your social world is waiting to unfold with DYMM.</p>
             </div>
-            <div class="about-section">
+            <div class="about-section" style="background-color:#1d1825;">
                 <h2>Our Mission</h2>
                 <p>To empower people to form genuine connections through shared experiences, whether that’s finding romance, making friends, or building community.</p>
             </div>
@@ -535,7 +532,7 @@ body.light-mode .footer-bottom p {
 
     <!-- Footer -->
     <footer class="footer">
-        {{-- <div class="gradient-overlay"></div> --}}
+        
         <div class="doodle-container" id="doodleContainerFooter"></div>
         <div class="container">
             <div class="footer-grid">
@@ -549,9 +546,9 @@ body.light-mode .footer-bottom p {
                 <div class="footer-links">
                     <h3>Company</h3>
                     <ul>
-                        <li><a href="{{route('about')}}">About Us</a></li>
+                        <li><a href="http://127.0.0.1:8000/about/about">About Us</a></li>
                         <li><a href="#careers">Careers</a></li>
-                        <li><a href="{{route('contact')}}">Contact</a></li>
+                        <li><a href="http://127.0.0.1:8000/contact/contact">Contact</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">

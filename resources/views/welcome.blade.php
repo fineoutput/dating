@@ -805,6 +805,106 @@ body.light-mode .footer-bottom p {
         grid-template-columns: 1fr;
     }
 }
+/* Section Container */
+.activities-section {
+  position: relative;
+  min-height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+ 
+  overflow: hidden;
+}
+
+/* Glowing Box */
+.activities-box {
+  background-color: #0e0e1a;
+  border-radius: 1rem;
+  padding: 2.5rem 3rem;
+  /* max-width: 500px; */
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+/* Heading */
+.activities-box h2 {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.highlight {
+  background: linear-gradient(to right, #a35aff, #ff66c4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Text Content */
+.description {
+  margin-top: 1rem;
+  color: #ccc;
+}
+
+.coming-soon {
+  color: #ff66c4;
+  font-weight: bold;
+  margin-top: 1.5rem;
+}
+
+.waitlist-info {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #aaa;
+}
+
+/* Button */
+.waitlist-btn {
+  margin-top: 1.5rem;
+  background: linear-gradient(to right, #8b5cf6, #ec4899);
+  border: none;
+  padding: 0.75rem 2rem;
+  color: #fff;
+  font-size: 1rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.waitlist-btn:hover {
+  transform: scale(1.05);
+}
+
+.icon {
+  margin-left: 0.5rem;
+}
+
+/* Footer Text */
+.footer-text {
+  margin-top: 2rem;
+  font-size: 0.85rem;
+  color: #777;
+}
+
+/* Optional: Animated floating icons */
+.activities-section::before {
+  content: "";
+  position: absolute;
+  top: -100px;
+  left: -100px;
+  width: 1000px;
+  height: 1000px;
+  background: url('your-icons-background.png') no-repeat center center;
+  background-size: cover;
+  opacity: 0.05;
+  z-index: 0;
+  pointer-events: none;
+}
+.activities-box:hover {
+    transition: box-shadow 0.3s ease-in-out;
+    box-shadow: 0 0 50px 10px rgba(163, 90, 255, 0.3);
+}
+
 </style>
 <body>
     <!-- Header -->
@@ -1079,7 +1179,20 @@ body.light-mode .footer-bottom p {
             </div>
         </div>
     </section> --}}
-
+    <section class="activities-section">
+        <div class="activities-box">
+          <h2>Ready to Join <span class="highlight">Activities</span>?</h2>
+          <p class="description">Join DYMM today and start creating or joining activities with people who share your interests.</p>
+          <p class="coming-soon">Coming Soon</p>
+          <p class="waitlist-info">Join our waitlist to be notified when we launch our activities platform!</p>
+          <button class="waitlist-btn">
+            Join Waitlist
+            <span class="icon">↗</span>
+          </button>
+          <p class="footer-text">Find your community through activities you love.</p>
+        </div>
+      </section>
+      
     <!-- Footer -->
     <footer class="footer">
         <div class="container">

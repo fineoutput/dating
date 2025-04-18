@@ -8,16 +8,105 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" type="image/svg+xml" href="/lovable-Uploads/645829d6-708c-4ab2-9a74-b01a81d3b93b.png">
     <link href="https://unpkg.com/lucide-icons/dist/umd/lucide-icons.js" rel="stylesheet">
+    <style>
+        @import ('~lucide-static/font/Lucide.css');
+        </style>
 </head>
 <style>
+    .snow {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    gap: 10px;
+}
+    /* From Uiverse.io by satyamchaudharydev */ 
+/* The switch - the box around the slider */
+.switch {
+  display: block;
+  --width-of-switch: 3.5em;
+  --height-of-switch: 2em;
+  /* size of sliding icon -- sun and moon */
+  --size-of-icon: 1.4em;
+  /* it is like a inline-padding of switch */
+  --slider-offset: 0.3em;
+  position: relative;
+  width: var(--width-of-switch);
+  height: var(--height-of-switch);
+}
+.text-dymm-purple {
+    --tw-text-opacity: 1;
+    color: rgb(138 43 226 / var(--tw-text-opacity, 1));
+}
+.text-dymm-pink {
+    --tw-text-opacity: 1;
+    color: rgb(255 105 180 / var(--tw-text-opacity, 1));
+}
+.text-dymm-teal {
+    --tw-text-opacity: 1;
+    color: rgb(32 178 170 / var(--tw-text-opacity, 1));
+}
+.dedssd p {
+    color: #e5e3e8cc;
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 10px;
+}
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #f4f4f5;
+  transition: .4s;
+  border-radius: 30px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: var(--size-of-icon,1.4em);
+  width: var(--size-of-icon,1.4em);
+  border-radius: 20px;
+  left: var(--slider-offset,0.3em);
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(40deg,#ff0080,#ff8c00 70%);
+  ;
+ transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #303136;
+}
+
+input:checked + .slider:before {
+  left: calc(100% - (var(--size-of-icon,1.4em) + var(--slider-offset,0.3em)));
+  background: #303136;
+  /* change the value of second inset in box-shadow to change the angle and direction of the moon  */
+  box-shadow: inset -3px -2px 5px -2px #8983f7, inset -10px -4px 0 0 #a3dafb;
+}
 /* Base Styles */
 :root {
     --primary: #9b87f5;
     --primary-dark: #7E69AB;
     --accent: #d946ef2e;
-    --dark: #1A1F2C;
-    --dark-lighter: #2a2f3c;
-    --dark-darker: #161922;
+    --dark: #131019;
+    /* --dark-lighter: #2a2f3c; */
+    /* --dark-darker: #161922; */
     --white: #ffffff;
 }
 
@@ -53,7 +142,7 @@ body {
 
 /* Utility Classes */
 .gradient-text {
-    background: linear-gradient(to right, var(--primary), #d946ef);
+    background: linear-gradient(to right, #8a4de1, #e84cff);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -86,7 +175,9 @@ body.light-mode .header {
     align-items: center;
     padding: 1rem 0;
 }
-
+a{
+    text-decoration: none;
+}
 .logo {
     display: flex;
     align-items: center;
@@ -105,9 +196,10 @@ body.light-mode .header {
 .beta-badge {
     padding: 0.25rem 0.5rem;
     font-size: 0.75rem;
-    font-weight: 500;
-    background: rgba(107, 70, 193, 0.2);
+    font-weight: bold;
+    background: #ffd700;
     color: var(--primary);
+    text-decoration: none;
     border-radius: 9999px;
 }
 
@@ -136,10 +228,10 @@ body.light-mode .nav-links a {
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: var(--accent);
+    background: #8a2be2;
     color: var(--white);
     border: none;
-    border-radius: 0.375rem;
+    border-radius: 20px;
     font-weight: 500;
     cursor: pointer;
     transition: opacity 0.3s;
@@ -264,9 +356,10 @@ body.light-mode .pattern-overlay {
     padding: 1.5rem;
     border-radius: 0.75rem;
     backdrop-filter: blur(12px);
-    background: rgba(255, 255, 255, 0.05);
+    background: rgb(255 255 255);
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: transform 0.3s;
+    color: #000;
 }
 
 body.light-mode .feature-card {
@@ -294,9 +387,9 @@ body.light-mode .feature-card {
     background: var(--dark);
 }
 
-.activities h2 {
+.activities span {
     text-align: center;
-    font-size: 2rem;
+    font-size: 3.5rem;
     margin-bottom: 1rem;
 }
 
@@ -686,12 +779,24 @@ body.light-mode .footer-bottom p {
     <header class="header">
         <div class="container">
             <nav>
-                <a href="{{route('/')}}">
+                
                     <div class="logo">
+                        <a href="{{route('/')}}">
                         <span class="logo-text">DYMM</span>
                         <span class="beta-badge">Beta</span>
+                    </a>
+                        {{-- <button class="theme-toggle-btn">
+                            <i data-lucide="sun"></i>
+                            Toggle Theme
+                        </button> --}}
+                        <!-- From Uiverse.io by satyamchaudharydev --> 
+<label class="switch"  onclick="toggleTheme()">
+    <input type="checkbox">
+    <span class="slider"></span>
+</label>
                     </div>
-                </a>
+              
+                
                 <div class="nav-links">
                     <a href="{{route('about')}}">About</a>
                     <a href="{{route('contact')}}">Contact</a>
@@ -729,27 +834,33 @@ body.light-mode .footer-bottom p {
     <!-- Features Section -->
     <section class="features" id="features">
         <div class="container">
-            <h2><span class="gradient-text">How DYMM Works</span></h2>
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles h-7 w-7 text-dymm-purple"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path><path d="M20 3v4"></path><path d="M22 5h-4"></path><path d="M4 17v2"></path><path d="M5 18H3"></path></svg>
+                <span class="gradient-text" style="font-size: 2rem">How DYMM Works</span></h2>
             <div class="features-grid">
                 <div class="feature-card">
-                    <i data-lucide="calendar"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar h-12 w-12 text-dymm-purple mb-4"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
                     <h3>Host Activities</h3>
                     <p>Create and host activities based on your interests, from coffee chats to sports games.</p>
+                    <div class="snow"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users h-4 w-4"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span>Up to 9 attendees</span></div>
                 </div>
                 <div class="feature-card">
-                    <i data-lucide="users"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users-round h-7 w-7 text-dymm-purple"><path d="M18 21a8 8 0 0 0-16 0"></path><circle cx="10" cy="8" r="5"></circle><path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"></path></svg>
                     <h3>Meet People</h3>
                     <p>Join activities that match your interests and connect with like-minded people.</p>
+                    <div class="snow"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users h-4 w-4"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span>Up to 9 attendees</span></div>
                 </div>
                 <div class="feature-card">
-                    <i data-lucide="heart"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart h-12 w-12 text-dymm-pink mb-4"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
                     <h3>Dating</h3>
                     <p>Connect beyond activities. Our dating features help you find meaningful relationships.</p>
+                    <div class="snow"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users h-4 w-4"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span>Up to 9 attendees</span></div>
                 </div>
                 <div class="feature-card">
-                    <i data-lucide="sparkles"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles h-12 w-12 text-dymm-teal mb-4"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path><path d="M20 3v4"></path><path d="M22 5h-4"></path><path d="M4 17v2"></path><path d="M5 18H3"></path></svg>
                     <h3>Cupid</h3>
                     <p>Play matchmaker! Connect your friends through shared activities.</p>
+                    <div class="snow"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users h-4 w-4"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span>Up to 9 attendees</span></div>
                 </div>
             </div>
         </div>
@@ -759,48 +870,64 @@ body.light-mode .footer-bottom p {
     <section class="activities" id="activities">
         <div class="container">
             <h2>
-                <span class="gradient-text">Activities</span>
-                <span> for every interest</span>
+                <div style="
+                width: 100%;
+                margin-left: auto;
+                margin-right: auto;
+                max-width: 48rem;
+            ">
+            
+                                <span class="gradient-text">Activities</span>
+                                <span> for every interest</span> <br>
+                                <span style="
+                display: flex;
+                /* align-items: center; */
+                /* justify-content: center; */
+            "> and passion </span>
+                <div class="dedssd">
+                    <p>Create or join activities based on your interests, meet new people, and make meaningful connections in your area.</p>
+            
+                </div>
+                            </div>
             </h2>
-            <p>Create or join activities based on your interests, meet new people, and make meaningful connections in your area.</p>
             <div class="activities-grid">
                 <div class="activity-card yellow">
-                    <i data-lucide="palette"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar h-8 w-8 text-amber-800 mb-3"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
                     <h3>Art Therapy</h3>
                     <p>Enjoy painting, pottery, and more with art buffs</p>
                 </div>
                 <div class="activity-card white">
-                    <i data-lucide="utensils"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-utensils h-8 w-8 text-dymm-purple mb-3"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path></svg>
                     <h3>Dinner Club</h3>
                     <p>Try new restaurants with foodies</p>
                 </div>
                 <div class="activity-card pink">
-                    <i data-lucide="coffee"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart h-8 w-8 text-dymm-pink mb-3"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
                     <h3>Coffee Dates</h3>
                     <p>Connect over a cup of coffee</p>
                 </div>
                 <div class="activity-card blue">
-                    <i data-lucide="film"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-film h-8 w-8 text-blue-700 mb-3"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M7 3v18"></path><path d="M3 7.5h4"></path><path d="M3 12h18"></path><path d="M3 16.5h4"></path><path d="M17 3v18"></path><path d="M17 7.5h4"></path><path d="M17 16.5h4"></path></svg>
                     <h3>Movie Nights</h3>
                     <p>Watch the latest films with movie buffs</p>
                 </div>
                 <div class="activity-card purple">
-                    <i data-lucide="users"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users h-8 w-8 text-dymm-purple mb-3"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                     <h3>Double Dates</h3>
                     <p>Bring your date and meet another couple</p>
                 </div>
                 <div class="activity-card green">
-                    <i data-lucide="trophy"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trophy h-8 w-8 text-green-700 mb-3"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>
                     <h3>Sports Events</h3>
                     <p>Bring in people to enjoy your fav sports</p>
                 </div>
                 <div class="activity-card yellow">
-                    <i data-lucide="mountain"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mountain h-8 w-8 text-amber-800 mb-3"><path d="m8 3 4 8 5-5 5 15H2L8 3z"></path></svg>
                     <h3>Group Hikes</h3>
                     <p>Explore nature trails with fellow hikers</p>
                 </div>
                 <div class="activity-card cyan">
-                    <i data-lucide="music"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-music h-8 w-8 text-teal-700 mb-3"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
                     <h3>Music Jams</h3>
                     <p>Play or listen to live music sessions</p>
                 </div>

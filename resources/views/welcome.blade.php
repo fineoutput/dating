@@ -858,7 +858,7 @@ body.light-mode .footer-bottom p {
             </h1>
             <p>Create and join activities that match your interests, connect with like-minded people, and make genuine connections IRL.</p>
             <div class="scroll-indicator">
-                <i data-lucide="arrow-down"></i>
+                <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-arrow-down mx-auto h-10 w-10 text-dymm-teal opacity-80 hover:opacity-100 transition-opacity"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="m8 12 4 4 4-4"></path></svg>
             </div>
         </div>
     </section>
@@ -978,7 +978,7 @@ body.light-mode .footer-bottom p {
                 <div class="cupid-content">
                     <h2>
                         <span>Find Your Perfect</span>
-                        <span class="gradient-text">Match</span>
+                        <span class="gradient-text" style="font-size: 2rem">Match</span>
                     </h2>
                     <p>DYMM isn't just about activities. Connect with people you meet, or explore our dating features to find someone special.</p>
                     <div class="cupid-features">

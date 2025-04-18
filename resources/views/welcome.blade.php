@@ -869,6 +869,7 @@ body.light-mode .footer-bottom p {
   cursor: pointer;
   font-weight: bold;
   transition: all 0.3s ease;
+  width: 60%;
 }
 
 .waitlist-btn:hover {

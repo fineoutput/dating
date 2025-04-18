@@ -13,11 +13,43 @@
         </style>
 </head>
 <style>
+    .purple-blur-circle {
+  position: absolute;
+  top: -2.5rem;      /* -top-10 => -40px */
+  left: -2.5rem;     /* -left-10 => -40px */
+  width: 10rem;      /* w-40 => 160px */
+  height: 10rem;     /* h-40 => 160px */
+  background-color: #8000807a; /* Replace with actual RGB value */
+  border-radius: 9999px;  /* rounded-full */
+  filter: blur(64px);     /* blur-3xl */
+}
+.blue {
+    position: absolute;
+    top: 17.5rem;
+    left: 17.5rem;
+    width: 10rem;
+    height: 10rem;
+    background-color: #0000ff33;
+    border-radius: 9999px;
+    filter: blur(64px);
+}
+
     .snow {
     display: flex;
     align-items: center;
     margin-top: 10px;
     gap: 10px;
+}
+.cupid-card {
+    transform: rotate(5deg);
+    transition: transform 0.3s ease;
+}
+
+.rounded-full {
+    border-radius: 9999px;
+}
+.bg-dymm-pink\/10 {
+    background-color: rgb(255 105 180 / 0.1);
 }
     /* From Uiverse.io by satyamchaudharydev */ 
 /* The switch - the box around the slider */
@@ -444,7 +476,7 @@ body.light-mode .activity-card.cyan { background: #E6FFFA; }
 
 .cupid-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1.5fr 1fr;
     gap: 3rem;
     align-items: center;
 }
@@ -480,7 +512,7 @@ body.light-mode .cupid-content > p {
 }
 
 .cupid-card {
-    padding: 2rem;
+    padding: 2rem 1rem;
     border-radius: 1rem;
     backdrop-filter: blur(12px);
     background: rgba(255, 255, 255, 0.05);
@@ -836,7 +868,9 @@ body.light-mode .footer-bottom p {
         <div class="container">
             <h2>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles h-7 w-7 text-dymm-purple"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path><path d="M20 3v4"></path><path d="M22 5h-4"></path><path d="M4 17v2"></path><path d="M5 18H3"></path></svg>
-                <span class="gradient-text" style="font-size: 2rem">How DYMM Works</span></h2>
+                <span class="gradient-text" style="font-size: 2rem">How DYMM Works</span>
+                <p style="font-size: 1rem; color: #ffffffc4;">Join or host activities you love and find meaningful relationships with like-minded people</p>
+            </h2>
             <div class="features-grid">
                 <div class="feature-card">
                     <svg xmlns="http://www.w3.org/2000/svg" width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar h-12 w-12 text-dymm-purple mb-4"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
@@ -949,29 +983,45 @@ body.light-mode .footer-bottom p {
                     <p>DYMM isn't just about activities. Connect with people you meet, or explore our dating features to find someone special.</p>
                     <div class="cupid-features">
                         <div class="cupid-feature-item">
-                            <i data-lucide="star"></i>
+                            <div class="mt-1 bg-dymm-pink/10 p-2 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart h-5 w-5 text-dymm-pink"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg></div>
                             <div>
                                 <h3>Genuine Connections</h3>
                                 <p>Meet through shared interests and activities</p>
                             </div>
                         </div>
                         <div class="cupid-feature-item">
-                            <i data-lucide="star"></i>
+                            <div class="mt-1 bg-dymm-teal/10 p-2 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users h-5 w-5 text-dymm-teal"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
                             <div>
                                 <h3>Chill Socials</h3>
                                 <p>Get to know people in group settings</p>
                             </div>
                         </div>
                         <div class="cupid-feature-item">
-                            <i data-lucide="star"></i>
+                            <div class="mt-1 bg-dymm-purple/10 p-2 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles h-5 w-5 text-dymm-purple"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path><path d="M20 3v4"></path><path d="M22 5h-4"></path><path d="M4 17v2"></path><path d="M5 18H3"></path></svg></div>
                             <div>
                                 <h3>Cupid Feature</h3>
                                 <p>Let friends play matchmaker and introduce you</p>
                             </div>
                         </div>
+                        <div class="cupid-feature-item">
+                            <div class="mt-1 bg-dymm-teal/10 p-2 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield h-5 w-5 text-dymm-teal"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg></div>
+                            <div>
+                                <h3>Full Control</h3>
+                                <p>Easily disable dating features if you're just here for activities</p>
+                            </div>
+                        </div>
+                        <div class="cupid-feature-item">
+                            <div class="mt-1 bg-dymm-purple/10 p-2 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock-keyhole h-5 w-5 text-dymm-purple"><circle cx="12" cy="16" r="1"></circle><rect x="3" y="10" width="18" height="12" rx="2"></rect><path d="M7 10V7a5 5 0 0 1 10 0v3"></path></svg></div>
+                            <div>
+                                <h3>Private Matchmaking</h3>
+                                <p>Cupid matches are anonymous - no one knows who suggested the matchs</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                
                 <div class="cupid-card">
+                    <div class="purple-blur-circle absolute -top-10 -left-10 w-40 h-40 bg-dymm-purple/30 rounded-full blur-3xl"></div>
                     <i data-lucide="star"></i>
                     <h3>Cupid Mode</h3>
                     <p>Play matchmaker! Think two friends would hit it off?</p>
@@ -982,6 +1032,7 @@ body.light-mode .footer-bottom p {
                     </div>
                     <button class="match-btn">Make a Match</button>
                     <p class="disclaimer">Your identity stays anonymous</p>
+                    <div class="blue absolute -top-10 -left-10 w-40 h-40 bg-dymm-purple/30 rounded-full blur-3xl"></div>
                 </div>
             </div>
         </div>

@@ -24,16 +24,14 @@
     color: #8a2be2;
 }
 .switch {
-  display: block;
-  --width-of-switch: 3.5em;
-  --height-of-switch: 2em;
-  /* size of sliding icon -- sun and moon */
-  --size-of-icon: 1.4em;
-  /* it is like a inline-padding of switch */
-  --slider-offset: 0.3em;
-  position: relative;
-  width: var(--width-of-switch);
-  height: var(--height-of-switch);
+    display: block;
+    --width-of-switch: 2.9em;
+    --height-of-switch: 1.5em;
+    --size-of-icon: 1.2em;
+    --slider-offset: 0.3em;
+    position: relative;
+    width: var(--width-of-switch);
+    height: var(--height-of-switch);
 }
 .text-dymm-purple {
     --tw-text-opacity: 1;
@@ -66,29 +64,28 @@
 
 /* The slider */
 .slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #f4f4f5;
-  transition: .4s;
-  border-radius: 30px;
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #6a2bbe;
+    transition: .4s;
+    border-radius: 30px;
 }
 
 .slider:before {
-  position: absolute;
-  content: "";
-  height: var(--size-of-icon,1.4em);
-  width: var(--size-of-icon,1.4em);
-  border-radius: 20px;
-  left: var(--slider-offset,0.3em);
-  top: 50%;
-  transform: translateY(-50%);
-  background: linear-gradient(40deg,#ff0080,#ff8c00 70%);
-  ;
- transition: .4s;
+    position: absolute;
+    content: "";
+    height: var(--size-of-icon,1.4em);
+    width: var(--size-of-icon,1.4em);
+    border-radius: 20px;
+    left: var(--slider-offset,0.3em);
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(40deg, #000000, #000000 70%);
+    transition: .4s;
 }
 
 input:checked + .slider {
@@ -168,13 +165,15 @@ body.light-mode .header {
     background-clip: text;
     color: transparent;
 }
-
+a{
+    text-decoration:none; 
+}
 .beta-badge {
-    padding: 0.25rem 0.5rem;
+    padding: 0.10rem 0.5rem;
     font-size: 0.75rem;
     font-weight: bold;
     background: #ffd700;
-    color: var(--primary);
+    color: #8a2be2;
     text-decoration: none;
     border-radius: 9999px;
 }
@@ -453,6 +452,14 @@ body.light-mode .footer-bottom p {
         padding: 0 1rem;
     }
 }
+.haalat svg {
+    color: #e5e3e8;
+}
+.haalat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 </style>
 <body>
     <!-- Header -->
@@ -461,16 +468,27 @@ body.light-mode .footer-bottom p {
             <nav>
                 
                     <div class="logo">
-                        <a href="http://127.0.0.1:8000">
+                        <a href="http://127.0.0.1:8000" style="
+                        display: flex;
+                        align-items: center;
+                        gap: 5px;
+                    ">
                         <span class="logo-text">DYMM</span>
                         <span class="beta-badge">Beta</span>
                     </a>
                         
                         <!-- From Uiverse.io by satyamchaudharydev --> 
+                        <div class="haalat">
+                            
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon h-4 w-4 text-foreground"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
 <label class="switch"  onclick="toggleTheme()">
     <input type="checkbox">
     <span class="slider"></span>
 </label>
+
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun h-4 w-4 text-foreground"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+        
+                        </div>
                     </div>
               
                 

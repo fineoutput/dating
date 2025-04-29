@@ -13,6 +13,15 @@
         </style>
 </head>
 <style>
+    .haalat svg {
+    color: #e5e3e8;
+}
+.haalat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
     .purple-blur-circle {
   position: absolute;
   top: -2.5rem;      /* -top-10 => -40px */
@@ -55,10 +64,10 @@
 /* The switch - the box around the slider */
 .switch {
   display: block;
-  --width-of-switch: 3.5em;
-  --height-of-switch: 2em;
+  --width-of-switch: 2.9em;
+  --height-of-switch: 1.5em;
   /* size of sliding icon -- sun and moon */
-  --size-of-icon: 1.4em;
+  --size-of-icon: 1.2em;
   /* it is like a inline-padding of switch */
   --slider-offset: 0.3em;
   position: relative;
@@ -84,7 +93,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    text-align: center;
+    text-align: left;
     margin-bottom: 10px;
 }
 /* Hide default HTML checkbox */
@@ -102,7 +111,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #f4f4f5;
+  background-color: #6a2bbe;
   transition: .4s;
   border-radius: 30px;
 }
@@ -116,9 +125,8 @@
   left: var(--slider-offset,0.3em);
   top: 50%;
   transform: translateY(-50%);
-  background: linear-gradient(40deg,#ff0080,#ff8c00 70%);
-  ;
- transition: .4s;
+  background: linear-gradient(40deg, #000000, #000000 70%);
+  transition: .4s;
 }
 
 input:checked + .slider {
@@ -167,9 +175,9 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1340px;
     margin: 0 auto;
-    padding: 0 2rem;
+    /* padding: 0 2rem; */
 }
 
 /* Utility Classes */
@@ -226,11 +234,11 @@ a{
 }
 
 .beta-badge {
-    padding: 0.25rem 0.5rem;
+    padding: 0.10rem 0.5rem;
     font-size: 0.75rem;
     font-weight: bold;
     background: #ffd700;
-    color: var(--primary);
+    color: #8a2be2;
     text-decoration: none;
     border-radius: 9999px;
 }
@@ -361,7 +369,7 @@ body.light-mode .pattern-overlay {
     animation: bounce 2s infinite;
 }
 
-@keyframes bounce {
+@keyframes    bounce {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
 }
@@ -785,12 +793,12 @@ body.light-mode .footer-bottom p {
       height: 40px;
     }
 
-    @keyframes pulse {
+    @keyframes    pulse {
       0%, 100% { filter: brightness(1); }
       50% { filter: brightness(1.3); }
     }
 
-    @keyframes float {
+    @keyframes    float {
       0% { transform: translateY(0); }
       50% { transform: translateY(-10px); }
       100% { transform: translateY(0); }
@@ -914,33 +922,38 @@ body.light-mode .footer-bottom p {
             <nav>
                 
                     <div class="logo">
-                        <a href="{{route('/')}}">
+                        <a href="http://127.0.0.1:8000" style="
+                        display: flex;
+                        align-items: center;
+                        gap: 5px;
+                    ">
                         <span class="logo-text">DYMM</span>
                         <span class="beta-badge">Beta</span>
                     </a>
-                        {{-- <button class="theme-toggle-btn">
-                            <i data-lucide="sun"></i>
-                            Toggle Theme
-                        </button> --}}
+                        
                         <!-- From Uiverse.io by satyamchaudharydev --> 
+                        <div class="haalat">
+                            
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon h-4 w-4 text-foreground"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
 <label class="switch"  onclick="toggleTheme()">
     <input type="checkbox">
     <span class="slider"></span>
 </label>
+
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun h-4 w-4 text-foreground"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+        
+                        </div>
                     </div>
               
                 
                 <div class="nav-links">
-                    <a href="{{route('about')}}">About</a>
-                    <a href="{{route('contact')}}">Contact</a>
+                    <a href="http://127.0.0.1:8000/about/about">About</a>
+                    <a href="http://127.0.0.1:8000/contact/contact">Contact</a>
                     <button class="download-btn">
                         <i data-lucide="download"></i>
                         Download App
                     </button>
-                    {{-- <button class="theme-toggle-btn" onclick="toggleTheme()">
-                        <i data-lucide="sun"></i>
-                        Toggle Theme
-                    </button> --}}
+                    
                 </div>
             </nav>
         </div>
@@ -1066,6 +1079,11 @@ body.light-mode .footer-bottom p {
                     <h3>Music Jams</h3>
                     <p>Play or listen to live music sessions</p>
                 </div>
+                <div class="activity-card cyan">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-film h-8 w-8 text-blue-700 mb-3"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M7 3v18"></path><path d="M3 7.5h4"></path><path d="M3 12h18"></path><path d="M3 16.5h4"></path><path d="M17 3v18"></path><path d="M17 7.5h4"></path><path d="M17 16.5h4"></path></svg>
+                    <h3>Movie Nights</h3>
+                    <p>Watch the latest films with movie buffs</p>
+                </div>
             </div>
         </div>
     </section>
@@ -1140,46 +1158,7 @@ body.light-mode .footer-bottom p {
     </section>
 
     <!-- Gallery -->
-    {{-- <section class="gallery">
-        <div class="container">
-            <div class="gallery-header">
-                <span>📸</span>
-                <h2>Follow our journey</h2>
-            </div>
-            <div class="gallery-grid">
-                <div class="gallery-item">
-                    <img src="https://images.unsplash.com/photo-1721322800607-8c38375eef04" alt="Brunch with friends">
-                    <div class="gallery-overlay">
-                        <p>Enjoying the perfect brunch with friends #weekendvibes</p>
-                        <div class="gallery-stats">
-                            <span>❤️ 142</span>
-                            <span>💭 32</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="gallery-item">
-                    <img src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9" alt="Office cat">
-                    <div class="gallery-overlay">
-                        <p>Meet our new office cat! #officepet #cutecat</p>
-                        <div class="gallery-stats">
-                            <span>❤️ 297</span>
-                            <span>💭 34</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="gallery-item">
-                    <img src="https://images.unsplash.com/photo-1582562124811-c09040d0a901" alt="Office lounge">
-                    <div class="gallery-overlay">
-                        <p>New space, new energy. Our refreshed office lounge ✨</p>
-                        <div class="gallery-stats">
-                            <span>❤️ 195</span>
-                            <span>💭 21</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section> --}}
+    
     <section class="activities-section">
         <div class="activities-box">
           <h2>Ready to Join <span class="highlight">Activities</span>?</h2>
@@ -1208,9 +1187,9 @@ body.light-mode .footer-bottom p {
                 <div class="footer-links">
                     <h3>Company</h3>
                     <ul>
-                        <li><a href="{{route('about')}}">About Us</a></li>
+                        <li><a href="http://127.0.0.1:8000/about/about">About Us</a></li>
                         <li><a href="#careers">Careers</a></li>
-                        <li><a href="{{route('contact')}}">Contact</a></li>
+                        <li><a href="http://127.0.0.1:8000/contact/contact">Contact</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">

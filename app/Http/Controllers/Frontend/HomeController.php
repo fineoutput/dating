@@ -18,5 +18,15 @@ class HomeController extends Controller
      
         return view('welcome')->withTitle('');
     }
+    public function contact(Request $req)
+    {
+     
+        return view('contact');
+    }
+    public function about(Request $req)
+    {
+     
+        return view('about');
+    }
     
 }

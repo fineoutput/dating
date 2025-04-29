@@ -913,7 +913,20 @@ body.light-mode .footer-bottom p {
     transition: box-shadow 0.3s ease-in-out;
     box-shadow: 0 0 50px 10px rgba(163, 90, 255, 0.3);
 }
-
+.jahatak p {
+    color: #e5e3e8b3;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-family: cursive;
+    font-style: italic;
+}
+.jahatak {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin-top: 20px;
+}
 </style>
 <body>
     <!-- Header -->
@@ -1084,6 +1097,10 @@ body.light-mode .footer-bottom p {
                     <h3>Movie Nights</h3>
                     <p>Watch the latest films with movie buffs</p>
                 </div>
+            </div>
+
+            <div class="jahatak">
+                <p>Create connections through any activity you can dream up — <br>your social world is waiting to unfold.</p>
             </div>
         </div>
     </section>

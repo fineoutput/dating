@@ -769,7 +769,9 @@ public function getActivitydetailes(Request $request)
     $mainActivityData = [
         'user_name' => $mainActivity->user->name ?? '',
         'rendom' => $mainActivity->rendom ?? '',
-        'profile_image' => $profileImageUrl,
+        'profile_image' => !empty($mainActivity->image) && file_exists(public_path('images/activities/' . $mainActivity->image))
+        ? asset('images/activities/' . $mainActivity->image)
+        : $profileImageUrl,
         'title' => $mainActivity->title,
         'description' => $mainActivity->description,
         'location' => $mainActivity->location,
@@ -828,7 +830,9 @@ public function getActivitydetailes(Request $request)
             return [
                 'user_name' => $act->user->name ?? '',
                 'rendom' => $act->rendom ?? '',
-                'profile_image' => $img,
+                'profile_image' => !empty($act->image) && file_exists(public_path('images/activities/' . $act->image))
+                ? asset('images/activities/' . $act->image)
+                : $img,
                 'title' => $act->title,
                 'description' => $act->description,
                 'location' => $act->location,
@@ -1668,7 +1672,9 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                 'vibe_name' => $activity->vibe->name ?? '',
                 'vibe_icon' => $activity->vibe->icon ?? '',
                 'user_name' => $userDetails->name,
-                'user_profile_image' => $profileImageUrl,  
+                'user_profile_image' => !empty($activity->image) && file_exists(public_path('images/activities/' . $activity->image))
+                ? asset('images/activities/' . $activity->image)
+                : $profileImageUrl,  
                 'user_time' => \Carbon\Carbon::parse($userDetails->created_at)->format('d-F H:i'),
             ];
         });
@@ -1909,7 +1915,9 @@ public function vibeactivitydetails(Request $request)
                     'vibe_name' => $activity->vibe->name ?? '',
                     'vibe_icon' => $activity->vibe->icon ?? '',
                     'user_name' => $user_rendom->name,
-                    'user_profile_image' => $profileImageUrl,
+                    'user_profile_image' => !empty($activity->image) && file_exists(public_path('images/activities/' . $activity->image))
+                    ? asset('images/activities/' . $activity->image)
+                    : $profileImageUrl,
                     'user_time' => \Carbon\Carbon::parse($activity->created_at)->format('d-F H:i'),
                     'status' => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
                 ];

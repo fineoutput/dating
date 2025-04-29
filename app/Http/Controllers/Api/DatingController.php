@@ -262,7 +262,7 @@ class DatingController extends Controller
                 'match_percentage' => number_format($matchingPercentage, 2),
                 'message' => $message ? $message->message : null,
                 'message_status' => $message ? $message->status : null,
-                'distance' => $distance . ' km', 
+                'distance' => round($distance) . ' km', 
             ];
 
             $usersWithInterests[] = $userData;

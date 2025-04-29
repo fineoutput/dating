@@ -542,21 +542,6 @@ public function useractivitys(Request $request)
         }
     }
 
-    // return $filteredActivities;
-    
-// $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata
-// $todayDate = Carbon::today('Asia/Kolkata');
-// // return $currentTime->format('H:i:s');
-
-// // Fetch activities
-// $activities = Activity::orderBy('id', 'DESC')
-//     ->where('user_id', $user->id)
-//     ->where('status', 2) 
-//     ->whereDate('when_time', '>=', $todayDate->format('Y-m-d'))  
-//     ->whereTime('end_time', '>=', $currentTime->format('H:i:s'))  
-//     ->get();
-
-// return $activities;
 
 
     if ($activities->isEmpty()) {
@@ -604,7 +589,9 @@ public function useractivitys(Request $request)
             'vibe_name' => $activity->vibe->name ?? '',
             'vibe_icon' => $activity->vibe->icon ?? '',
             'user_name' => $user->name,
-            'user_profile_image' => $profileImageUrl,
+            'user_profile_image' => !empty($activity->image) && file_exists(public_path('images/activities/' . $activity->image))
+            ? asset('images/activities/' . $activity->image)
+            : $profileImageUrl,
             'user_time' => \Carbon\Carbon::parse($activity->created_at)->format('d-F H:i'),
             'status' => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
         ];

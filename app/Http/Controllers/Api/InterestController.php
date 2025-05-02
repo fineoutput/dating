@@ -193,6 +193,91 @@ class InterestController extends Controller
         }
     }
 
+
+    public function inviteinterest(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Unauthorized. Please log in.',
+            ]);
+        }
+    
+        $user = Auth::user();
+    
+        // Validate input
+        $validator = Validator::make($request->all(), [
+            'rendom'         => 'required|exists:activity_table,rendom',
+            'user_rendoms'   => 'required|array|min:1',
+            'user_rendoms.*' => 'required|string|exists:users,rendom',
+        ]);
+    
+        if ($validator->fails()) {
+            $errors = [];
+            foreach ($validator->errors()->getMessages() as $field => $messages) {
+                $errors[$field] = $messages[0];
+                break;
+            }
+            return response()->json(['message' => $errors, 'data' => [], 'status' => 201], 200);
+        }
+    
+        $activity = Activity::where('rendom', $request->rendom)->first();
+    
+        if (!$activity) {
+            return response()->json([
+                'message' => 'Activity not found.',
+                'data'    => [],
+                'status'  => 404,
+            ]);
+        }
+    
+        $created = [];
+        $skipped = [];
+    
+        foreach ($request->user_rendoms as $userRendom) {
+            $invitedUser = User::where('rendom', $userRendom)->first();
+    
+            if (!$invitedUser) {
+                $skipped[] = ['rendom' => $userRendom, 'reason' => 'User not found'];
+                continue;
+            }
+    
+            if ($invitedUser->id == $activity->user_id) {
+                $skipped[] = ['rendom' => $userRendom, 'reason' => 'User is the activity owner'];
+                continue;
+            }
+    
+            $existingInterest = OtherInterest::where('user_id', $invitedUser->id)
+                                             ->where('activity_id', $activity->id)
+                                             ->first();
+    
+            if ($existingInterest) {
+                $skipped[] = ['rendom' => $userRendom, 'reason' => 'Interest already exists'];
+                continue;
+            }
+    
+            OtherInterest::create([
+                'user_id'     => $invitedUser->id,
+                'activity_id' => $activity->id,
+                'confirm'     => 0,
+            ]);
+    
+            $created[] = $userRendom;
+        }
+    
+        return response()->json([
+            'message' => 'Interest processing completed.',
+            'status'  => 200,
+            'data'    => [
+                'activity_rendom' => $activity->rendom,
+                'created'         => $created,
+                'skipped'         => $skipped,
+            ],
+        ]);
+    }
+    
+    
+
+
     // public function addinterest(Request $request)
     // {
     //     if (!Auth::check()) {  

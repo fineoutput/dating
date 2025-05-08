@@ -805,6 +805,116 @@ class AuthController extends Controller
     public function userprofile(Request $request)
 {
     $user = Auth::user();
+
+    $matchingActivities = Activity::where('user_id', $user->id)
+                                ->where('status', 2)
+                                ->get();
+
+$activityIds = $matchingActivities->pluck('id'); 
+
+$interestIds = OtherInterest::whereIn('activity_id', $activityIds)->get();
+
+$userDetailsFromInterest = $interestIds->pluck('user_id');
+
+$userDetailsFromInterest2 = User::whereIn('id', $userDetailsFromInterest)->get();
+
+$userList = $userDetailsFromInterest2->map(function ($user) {
+    $imagePath = null;
+    if ($user->profile_image) {
+        $images = json_decode($user->profile_image, true); 
+        if (is_array($images) && count($images)) {
+            $imagePath = reset($images);
+        }
+    }
+
+    $chat = Chat::where('sender_id', Auth::id())
+                ->where('receiver_id', $user->id)
+                ->orderBy('id','DESC')
+                ->first();
+
+    return [
+        'id' => $user->id,
+        'user_rendom' => $user->rendom,
+        'name' => $user->name,
+        'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+        'form' => 'match',
+        'last_message' => $chat->message ?? null,
+    ];
+});
+
+/* -------------------- 2. FRIENDS FROM LIKES (SlideLike) -------------------- */
+$likeUser = SlideLike::where('matched_user', $user->id);
+$likeUserDetails = $likeUser->pluck('matching_user'); 
+
+$likeUserDetails2 = User::whereIn('id', $likeUserDetails)->get();
+
+$likeUserList = $likeUserDetails2->map(function ($user) {
+    $imagePath = null;
+    if ($user->profile_image) {
+        $images = json_decode($user->profile_image, true); 
+        if (is_array($images) && count($images)) {
+            $imagePath = reset($images);
+        }
+    }
+
+    $chat = Chat::where('sender_id', Auth::id())
+                ->where('receiver_id', $user->id)
+                ->orderBy('id','DESC')
+                ->first();
+
+    return [
+        'id' => $user->id,
+        'user_rendom' => $user->rendom,
+        'name' => $user->name,
+        'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+        'form' => 'activity',
+        'last_message' => $chat->message ?? null,
+    ];
+});
+
+/* -------------------- 3. FRIENDS FROM CUPID MATCHES -------------------- */
+$CupidMatches = Cupid::where('user_id_1', $user->id)
+                    ->orWhere('user_id_2', $user->id)
+                    ->get()
+                    ->unique();
+
+$matchedUsers = $CupidMatches->map(function ($match) use ($user) {
+    $matchedUserId = $match->user_id_1 == $user->id ? $match->user_id_2 : $match->user_id_1;
+    $matchedUser = User::find($matchedUserId);
+
+    if (!$matchedUser) return null;
+
+    $images = json_decode($matchedUser->profile_image, true);
+    $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
+
+    $chat = Chat::where('sender_id', Auth::id())
+                ->where('receiver_id', $matchedUser->id)
+                ->orderBy('id','DESC')
+                ->first();
+
+    return [
+        'id' => $matchedUser->id,
+        'user_rendom' => $matchedUser->rendom,
+        'name' => $matchedUser->name,
+        'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
+        'form' => 'match',
+        'last_message' => $chat->message ?? null,
+    ];
+})->filter();
+
+/* -------------------- 4. CALCULATE FRIEND COUNTS -------------------- */
+$friendFromInterestsCount = $userList->count();
+$friendFromLikesCount = $likeUserList->count();
+$friendFromCupidCount = $matchedUsers->count();
+
+$totalFriendCount = $friendFromInterestsCount + $friendFromLikesCount + $friendFromCupidCount;
+
+/* -------------------- 5. MERGE ALL USERS -------------------- */
+$userList = collect($userList);
+$likeUserList = collect($likeUserList);
+$matchedUsers = collect($matchedUsers);
+
+$matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
     
     if (!$user) {
         return response()->json([
@@ -871,6 +981,7 @@ class AuthController extends Controller
         'about' => $user->about ?? '',
         'address' => $user->address ?? '',
         'location' => $locationString,
+        'friend_count' => $userList->count() + $likeUserList->count() + $matchedUsers->count(),
     ];
 
     return response()->json([

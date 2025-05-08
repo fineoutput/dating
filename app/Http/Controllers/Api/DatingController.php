@@ -808,6 +808,14 @@ public function updateCupidMatch(Request $request)
             // Find the user by the 'rendom' field
             $user = User::where('rendom', $phoneNumber)->first();
             
+            if(!$user){
+                return response()->json([
+                    'message' => 'User not found',
+                    'status' => 200,
+                    'data' => [],
+                ]);
+            }
+            
             $matchingActivities = Activity::where('user_id', $user->id)
                                 ->where('status', 2)
                                 ->get();

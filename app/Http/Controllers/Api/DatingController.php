@@ -963,6 +963,7 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
                 $userData = [
                     'number' => $user->number,
                     'name' => $user->name,
+                    'about' => $user->about,
                     'email' => $user->email,
                     'age' => $user->age,
                     'gender' => $user->gender,

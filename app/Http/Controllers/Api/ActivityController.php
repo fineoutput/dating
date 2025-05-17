@@ -808,7 +808,7 @@ public function getActivitydetailes(Request $request)
     $currentTime = Carbon::now('Asia/Kolkata');
     $todayDate = Carbon::today('Asia/Kolkata');
 
-    $allActivities = Activity::with('user', 'vibe')
+    $allActivities = Activity::where('id','!=',$mainActivity->id)->with('user', 'vibe')
         ->orderBy('id', 'desc')
         ->whereDate('when_time', '>=', $todayDate)
         ->where('user_id', '!=', $user->id)->where(function ($query) use ($todayDate, $currentTime) {

@@ -785,7 +785,7 @@ public function getActivitydetailes(Request $request)
         'vibe_icon' => $mainActivity->vibe->icon ?? '',
         'like_user' => $like_user,
         'expense_name' => $firstExpenseName,
-        'alredy_interest' => $alinters,
+        'already_interest' => $alinters,
         'status' => $mainActivity->status,
     ];
 
@@ -851,7 +851,7 @@ public function getActivitydetailes(Request $request)
                 'vibe_name' => $act->vibe->name ?? '',
                 'vibe_icon' => $act->vibe->icon ?? '',
                 'expense_name' => $expense,
-                'alredy_interest' => $alinter,
+                'already_interest' => $alinter,
                 'status' => $act->status,
             ];
         });

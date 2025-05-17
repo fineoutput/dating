@@ -838,12 +838,15 @@ public function getActivitydetailes(Request $request)
                 $alinter = false;
             }
 
+             $interestCount = OtherInterest::where('activity_id', $act->id)->count();
+
             return [
                 'user_name' => $act->user->name ?? '',
                 'rendom' => $act->rendom ?? '',
                 'profile_image' => (!empty($act->image)) ? asset($act->image): $img,
                 'title' => $act->title,
                 'description' => $act->description,
+                'interestCount' => $interestCount,
                 'location' => $act->location,
                 'when_time' => $act->when_time,
                 'end_time' => $act->end_time,

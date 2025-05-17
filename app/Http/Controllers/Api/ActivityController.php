@@ -764,7 +764,12 @@ public function getActivitydetailes(Request $request)
 
     // Count confirmed users
     $interestCount = OtherInterest::where('activity_id', $mainActivity->id)->count();
-
+    $OtherInt = OtherInterest::where('user_id',Auth::id())->where('activity_id',$mainActivity->id)->first();
+      if($OtherInt){
+                $alinters = true;
+            }else{
+                $alinters = false;
+            }
     $mainActivityData = [
         'user_name' => $mainActivity->user->name ?? '',
         'rendom' => $mainActivity->rendom ?? '',
@@ -780,6 +785,7 @@ public function getActivitydetailes(Request $request)
         'vibe_icon' => $mainActivity->vibe->icon ?? '',
         'like_user' => $like_user,
         'expense_name' => $firstExpenseName,
+        'alredy_interest' => $alinters,
         'status' => $mainActivity->status,
     ];
 
@@ -825,6 +831,13 @@ public function getActivitydetailes(Request $request)
                 ? Expense::find($expenseIds[0])->name ?? null
                 : null;
 
+            $OtherInterest = OtherInterest::where('user_id',Auth::id())->where('activity_id',$act->id)->first();
+            if($OtherInterest){
+                $alinter = true;
+            }else{
+                $alinter = false;
+            }
+
             return [
                 'user_name' => $act->user->name ?? '',
                 'rendom' => $act->rendom ?? '',
@@ -838,6 +851,7 @@ public function getActivitydetailes(Request $request)
                 'vibe_name' => $act->vibe->name ?? '',
                 'vibe_icon' => $act->vibe->icon ?? '',
                 'expense_name' => $expense,
+                'alredy_interest' => $alinter,
                 'status' => $act->status,
             ];
         });

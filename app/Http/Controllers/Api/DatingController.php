@@ -426,6 +426,156 @@ class DatingController extends Controller
 
     
 
+
+
+
+
+     public function MatchingUsersdetailes(Request $request)
+{
+    $user = Auth::user();
+
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], 401);
+    }
+
+    $interestField = $user->interest;
+    $interestFieldDecoded = json_decode($interestField, true);
+
+    if (!is_array($interestFieldDecoded)) {
+        return response()->json(['message' => 'Invalid interest data'], 400);
+    }
+
+    $interestIds = [];
+    foreach ($interestFieldDecoded as $item) {
+        $interestIds = array_merge($interestIds, explode(',', $item));
+    }
+
+    $interestIds = array_map('trim', $interestIds);
+
+    $userLatitude = $user->latitude;
+    $userLongitude = $user->longitude;
+
+    // Get filters from request
+    $dateRange = $request->input('date_range'); // Example: '18-27'
+    $lookingFor = $request->input('looking_for');
+    $maxDistance = $request->input('distance'); // in km
+
+    // Parse date range if provided
+    $minAge = $maxAge = null;
+    if ($dateRange) {
+        $dateRangeParts = explode('-', $dateRange);
+        $minAge = $dateRangeParts[0] ?? null;
+        $maxAge = $dateRangeParts[1] ?? null;
+    }
+
+    // Modify the query to add conditions for the filters
+    $matchingUsers = User::where(function ($query) use ($interestIds) {
+        foreach ($interestIds as $interestId) {
+            $query->orWhere('interest', 'like', "%$interestId%");
+        }
+    })
+    ->where('id', '!=', $user->id)
+    ->when($minAge && $maxAge, function ($query) use ($minAge, $maxAge) {
+        return $query->whereBetween('age', [$minAge, $maxAge]);
+    })
+    ->when($lookingFor, function ($query) use ($lookingFor) {
+        return $query->where('looking_for', 'like', "%$lookingFor%");
+    })
+    ->get();
+    // return $matchingUsers;
+
+    if ($matchingUsers->isEmpty()) {
+        return response()->json([
+        'message' => 'No matching users found',
+        'status' => 201,
+        'data' => [],
+    ], 200);
+    }
+
+    $usersWithInterests = [];
+    $totalMatchingUsers = 0;
+
+    foreach ($matchingUsers as $matchingUser) {
+        $userInterestsField = $matchingUser->interest;
+        $userInterestsDecoded = json_decode($userInterestsField, true);
+
+        if (is_array($userInterestsDecoded)) {
+            $userInterestsIds = [];
+            foreach ($userInterestsDecoded as $item) {
+                $userInterestsIds = array_merge($userInterestsIds, explode(',', $item));
+            }
+
+            $userInterestsIds = array_map('trim', $userInterestsIds);
+
+            $userInterests = Interest::whereIn('id', $userInterestsIds)->get();
+
+            $matchingInterestCount = 0;
+            foreach ($userInterests as $interest) {
+                if (in_array($interest->id, $interestIds)) {
+                    $matchingInterestCount++;
+                }
+            }
+
+            $totalInterests = count($interestIds);
+            $matchingPercentage = ($totalInterests > 0) ? ($matchingInterestCount / $totalInterests) * 100 : 0;
+
+          $profileImages = json_decode($matchingUser->profile_image, true);
+$profileImageUrls = [];
+
+if (is_array($profileImages)) {
+    foreach ($profileImages as $image) {
+        $profileImageUrls[] = asset('uploads/app/profile_images/' . $image);
+    }
+}
+            $matchedUserLatitude = $matchingUser->latitude;
+            $matchedUserLongitude = $matchingUser->longitude;
+
+            // Calculate distance between users, always calculate distance
+            $distance = $this->calculateDistance($userLatitude, $userLongitude, $matchedUserLatitude, $matchedUserLongitude);
+
+            // Apply the distance filter if provided
+            if ($maxDistance && $distance > $maxDistance) {
+                continue; // Skip users who are farther than the specified distance
+            }
+
+            // Add user data to response array
+            $message = Chat::where('sender_id', Auth::id())
+                ->where('receiver_id', $matchingUser->id)
+                ->latest()
+                ->first();
+
+            $userData = [
+                'user' => $matchingUser->name,
+                'user_rendom' => $matchingUser->rendom,
+                'about' => $matchingUser->about,
+                'interest' => $userInterests,
+                'age' => $matchingUser->age,
+                'gender' => $matchingUser->gender,
+                'looking_for' => $matchingUser->looking_for,
+                'user_profile' => $profileImageUrls,
+                'status' => $matchingUser->status,
+                'address' => $matchingUser->address,
+                'match_percentage' => number_format($matchingPercentage, 2),
+                'message' => $message ? $message->message : null,
+                'message_status' => $message ? $message->status : null,
+                'distance' => round($distance) . ' km', 
+            ];
+
+            $usersWithInterests[] = $userData;
+            $totalMatchingUsers++;
+        }
+    }
+
+    return response()->json([
+        'message' => 'Matching users found successfully',
+        'status' => 200,
+        'total_count' => $totalMatchingUsers,
+        'data' => $usersWithInterests,
+    ]);
+}
+
+
+
     
 
     private function calculateDistance($lat1, $lon1, $lat2, $lon2)

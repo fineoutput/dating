@@ -787,6 +787,8 @@ public function getActivitydetailes(Request $request)
         'expense_name' => $firstExpenseName,
         'already_interest' => $alinters,
         'status' => $mainActivity->status,
+        'amount' => $mainActivity->amount,
+
     ];
 
     $attendees = OtherInterest::where('activity_id', $mainActivity->id)
@@ -856,6 +858,7 @@ public function getActivitydetailes(Request $request)
                 'expense_name' => $expense,
                 'already_interest' => $alinter,
                 'status' => $act->status,
+                'amount' => $act->amount,
             ];
         });
 

@@ -591,7 +591,7 @@ public function useractivitys(Request $request)
             'user_name' => $user->name,
             'user_profile_image' => (!empty($activity->image))
             ? asset($activity->image): $profileImageUrl,
-            'user_time' => \Carbon\Carbon::parse($activity->created_at)->format('d-F H:i'),
+           'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
             'status' => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
         ];
     }
@@ -1083,7 +1083,8 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             'user_profile_image' => $profileImageUrl,
             // 'user_state' => $userDetails->state,
             // 'user_city' => $userDetails->city,
-            'user_time' => \Carbon\Carbon::parse($userDetails->created_at)->format('d-F H:i'), 
+           'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
+
         ];
     });
         return response()->json([
@@ -1199,7 +1200,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             'user_profile_image' => $profileImageUrl,
             // 'user_state' => $userDetails->state,
             // 'user_city' => $userDetails->city,
-            'user_time' => \Carbon\Carbon::parse($userDetails->created_at)->format('d-F H:i'), 
+            'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'), 
         ];
     });
         return response()->json([
@@ -1366,7 +1367,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             'vibe_icon' => $activity->vibe->icon ?? '',
             'user_name' => $userData['name'] ?? '',
             'user_profile_image' => $userData['profile_image'] ?? '',
-            'user_time' => $userData['time'] ?? '',
+            'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
         ];
     });
 
@@ -1913,7 +1914,7 @@ public function friendcount(Request $request)
                 'user_name' => $userDetails->name,
                 'user_profile_image' => (!empty($activity->image))
                 ? asset($activity->image): $profileImageUrl,
-                'user_time' => \Carbon\Carbon::parse($userDetails->created_at)->format('d-F H:i'),
+                'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
             ];
         });
 
@@ -2155,7 +2156,7 @@ public function vibeactivitydetails(Request $request)
                     'user_name' => $user_rendom->name,
                     'user_profile_image' => (!empty($activity->image))
                     ? asset($activity->image): $profileImageUrl,
-                    'user_time' => \Carbon\Carbon::parse($activity->created_at)->format('d-F H:i'),
+                    'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
                     'status' => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
                 ];
             })

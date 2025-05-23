@@ -372,12 +372,14 @@ class DatingController extends Controller
                 $totalInterests = count($interestIds);
                 $matchingPercentage = ($totalInterests > 0) ? ($matchingInterestCount / $totalInterests) * 100 : 0;
 
-                $profileImages = json_decode($matchingUser->profile_image, true);
-                $profileImageUrl = null;
+                    $profileImages = json_decode($matchingUser->profile_image, true);
+                $profileImageUrls = [];
 
-                if (!empty($profileImages) && isset($profileImages[1])) {
-                    $profileImageUrl = asset('uploads/app/profile_images/' . $profileImages[1]);
-                }
+                if (is_array($profileImages)) {
+                    foreach ($profileImages as $image) {
+                        $profileImageUrls[] = asset('uploads/app/profile_images/' . $image);
+                    }
+}
 
                 $matchedUserLatitude = $matchingUser->latitude;
                 $matchedUserLongitude = $matchingUser->longitude;
@@ -399,10 +401,12 @@ class DatingController extends Controller
                 $userData = [
                     'user' => $matchingUser->name,
                     'user_rendom' => $matchingUser->rendom,
+                    'about' => $matchingUser->about,
+                    'interest' => $userInterests,
                     'age' => $matchingUser->age,
                     'gender' => $matchingUser->gender,
                     'looking_for' => $matchingUser->looking_for,
-                    'user_profile' => $profileImageUrl,
+                    'user_profile' => $profileImageUrls,
                     'status' => $matchingUser->status,
                     'address' => $matchingUser->address,
                     'match_percentage' => number_format($matchingPercentage, 2),

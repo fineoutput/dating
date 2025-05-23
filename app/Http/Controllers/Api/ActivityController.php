@@ -1093,6 +1093,122 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
         ]);
     }
 
+    public function findactivity(Request $request)
+    {
+        $user = Auth::user(); 
+
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+
+        $interestField = $user->interest; 
+        $interestFieldDecoded = json_decode($interestField, true);
+
+        if (!is_array($interestFieldDecoded)) {
+            return response()->json(['message' => 'Invalid interest data','status'=>201], 400);
+        }
+
+        $interestIds = [];
+        foreach ($interestFieldDecoded as $item) {
+            $interestIds = array_merge($interestIds, explode(',', $item));
+        }
+
+
+    $interestIds = array_map('trim', $interestIds);
+
+    $currentTime = Carbon::now('Asia/Kolkata');
+    $todayDate = Carbon::today('Asia/Kolkata');
+
+    $matchingActivities = Activity::orderBy('id','DESC')->where('user_id', '!=', $user->id)
+    ->where('status', 2)
+    ->where(function ($query) use ($interestIds) {
+        foreach ($interestIds as $id) {
+            $query->orWhere('interests_id', 'LIKE', '%"'.$id.'"%');
+        }
+    })->where(function ($query) use ($todayDate, $currentTime) {
+        $query->where(function ($subQuery) use ($todayDate, $currentTime) {
+   
+            $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
+ 
+            $subQuery->where('end_time', '>=', $endTime);
+        });
+
+        $query->where('when_time', '>=', $currentTime);  
+    })
+    ->get();
+   
+        // $matchingActivities = Activity::whereIn('interests_id', $interestIds)
+        //                             ->where('user_id', '!=', $user->id)
+        //                             ->get();
+
+    if ($matchingActivities->isEmpty()) {
+        return response()->json([
+            'message' => 'No matching activities found',
+            'status'=>200,
+            'data'=>[],
+        ], 200);
+    }
+
+    $activitiesWithUserDetails = $matchingActivities->map(function ($activity) {
+        $hash = md5($activity->id);
+$r = hexdec(substr($hash, 0, 2));
+$g = hexdec(substr($hash, 2, 2));
+$b = hexdec(substr($hash, 4, 2));
+
+$lightenFactor = 0.5;  // Adjust the lightening factor to 50%
+$r = round($r + (255 - $r) * $lightenFactor);
+$g = round($g + (255 - $g) * $lightenFactor);
+$b = round($b + (255 - $b) * $lightenFactor);
+
+// Convert back to hex format
+$bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
+    
+        $userDetails = User::find($activity->user_id);
+    
+        if ($userDetails) {
+            $profileImages = json_decode($userDetails->profile_image, true);
+            $profileImageUrl = isset($profileImages[1]) ? url('uploads/app/profile_images/' . $profileImages[1]) : null;
+    
+            // Merging user details directly in the main array
+            $userData = [
+                'id' => $userDetails->id,
+                'name' => $userDetails->name,
+                'profile_image' => $profileImageUrl, 
+                'state' => $userDetails->state,
+                'city' => $userDetails->city,
+                'time' => \Carbon\Carbon::parse($userDetails->created_at)->format('d-F H:i'), 
+            ];
+        }
+    
+        $imageUrl = $activity->image ? url('images/activities/' . $activity->image) : null;
+    
+        $activity->bg_color = $bgColor;
+
+        return [
+            // 'id' => $activity->id,
+            // 'user_id' => $activity->user_id,
+            'title' => $activity->title,
+            'rendom' => $activity->rendom,
+            'location' => $activity->location,    
+            // 'image' => $imageUrl,
+            'bg_color' => $activity->bg_color,
+            'vibe_name' => $activity->vibe->name ?? '',
+            'vibe_icon' => $activity->vibe->icon ?? '',
+            // 'user_id' => $userDetails->id,
+            'user_name' => $userDetails->name,
+            'user_profile_image' => $profileImageUrl,
+            // 'user_state' => $userDetails->state,
+            // 'user_city' => $userDetails->city,
+            'user_time' => \Carbon\Carbon::parse($userDetails->created_at)->format('d-F H:i'), 
+        ];
+    });
+        return response()->json([
+            'message' => 'Matching activities found successfully',
+            'status' => 200,
+            'data' => $activitiesWithUserDetails,
+        ]);
+    }
+
 
     // public function interestactivity(Request $request)
     // {

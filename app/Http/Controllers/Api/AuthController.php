@@ -1233,6 +1233,37 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
 
         
 
+   public function updatelatlong(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+
+        // Validate request
+        $validator = Validator::make($request->all(), [
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        $user->latitude = $request->latitude;
+        $user->longitude = $request->longitude;
+        $user->save();
+
+        return response()->json([
+            'message' => 'Location updated successfully',
+            'data' => [
+                'latitude' => $user->latitude,
+                'longitude' => $user->longitude,
+            ],
+            'status' => 200
+        ]);
+    }
         
         
         

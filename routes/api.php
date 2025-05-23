@@ -53,6 +53,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user-profile', [AuthController::class, 'userprofile']);
     
     Route::post('update-profile', [AuthController::class, 'updateProfile']);
+    Route::post('update-latlong', [AuthController::class, 'updatelatlong']);
+
 
 
     Route::post('find-matching-users-interest', [DatingController::class, 'findMatchingUsers']);

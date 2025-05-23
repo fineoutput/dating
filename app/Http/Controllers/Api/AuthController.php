@@ -1243,8 +1243,8 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
 
         // Validate request
         $validator = Validator::make($request->all(), [
-            'latitude' => 'required|numeric|between:-90,90',
-            'longitude' => 'required|numeric|between:-180,180',
+            'latitude' => 'required',
+            'longitude' => 'required',
         ]);
 
         if ($validator->fails()) {

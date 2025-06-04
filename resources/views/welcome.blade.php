@@ -13,6 +13,25 @@
         </style>
 </head>
 <style>
+.sitouro {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    font-size: 40px;
+}
+.don_image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+   .names img {
+    width: 200px;
+}
+
+.stores img {
+    width: 250px;
+} 
     .haalat svg {
     color: #e5e3e8;
 }
@@ -1191,6 +1210,29 @@ body.light-mode .footer-bottom p {
           <p class="footer-text">Find your community through activities you love.</p>
         </div>
       </section>
+
+    <section class="dowwd">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="roll_secion">
+                         <h2 class="sitouro ">Dowload our    <span class="highlight ml-2"> App</span></h2>
+                    </div>
+                    <div class="don_image">
+                        <div class="imagesPlay names">
+                            <img src="{{asset('images/activities/assetss.png')}}" alt="">
+                        </div>
+                        <div class="imagesPlay stores">
+                            <img src="{{asset('images/activities/off.png')}}" alt="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
       
     <!-- Footer -->
     <footer class="footer">

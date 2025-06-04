@@ -73,7 +73,10 @@
                                 <div class="form-group row">
                                     <div class="col-sm-12">
                                         <label class="form-label" for="icon">Icon</label>
-                                        <input class="form-control" type="text" id="icon" name="icon">
+                                        {{-- <input class="form-control" type="text" id="icon" name="icon"> --}}
+                                        <input class="form-control" type="text" id="icon" name="icon" maxlength="4">
+
+
                                         {{-- @isset($interest)
                                             <img src="{{ asset('uploads/app/int_images/' . $interest->icon) }}" width="100px" alt="Current Icon">
                                         @endisset --}}
@@ -95,4 +98,15 @@
         <!-- end page content-->
     </div> <!-- container-fluid -->
 </div> <!-- content -->
+
+<script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.4/dist/index.min.js"></script>
+<script>
+   document.getElementById('icon').addEventListener('input', function (e) {
+    const emojiRegex = /\p{Emoji}/u;
+    if (!emojiRegex.test(e.target.value)) {
+        e.target.value = ''; // Clear non-emoji input
+    }
+});
+</script>
+
 @endsection

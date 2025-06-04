@@ -33,6 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user-activitys', [ActivityController::class, 'useractivitys']);
   
     Route::get('find-matching-users-activity', [ActivityController::class, 'findMatchingactivity']);
+    Route::get('find-matching-activity', [ActivityController::class, 'findactivity']);
     Route::get('interest-activity', [ActivityController::class, 'interestactivity']);
     Route::get('vibe-activity-count', [ActivityController::class, 'vibeactivitycount']);
     Route::post('vibe-activity-details', [ActivityController::class, 'vibeactivitydetails']);
@@ -41,6 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('friend-count', [ActivityController::class, 'friendcount']);
 
     Route::post('add-interest', [InterestController::class, 'addinterest']);
+    Route::post('invite-interest', [InterestController::class, 'inviteinterest']);
     Route::post('get-user-interest', [InterestController::class, 'getuserinterest']);
     Route::post('confirm-user-interest', [InterestController::class, 'confirmuserinterest']);
     Route::post('add-confirm-user-interest', [InterestController::class, 'confirm_user_interest']);
@@ -52,9 +54,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user-profile', [AuthController::class, 'userprofile']);
     
     Route::post('update-profile', [AuthController::class, 'updateProfile']);
+    Route::post('update-latlong', [AuthController::class, 'updatelatlong']);
+
 
 
     Route::post('find-matching-users-interest', [DatingController::class, 'findMatchingUsers']);
+    Route::post('matching-users-detailes', [DatingController::class, 'MatchingUsersdetailes']);
+    Route::post('find-swipe', [DatingController::class, 'findswipe']);
 
     Route::post('/cupidmatch', [DatingController::class, 'cupidmatch']);
 

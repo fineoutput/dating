@@ -100,7 +100,6 @@ class ChatController extends Controller
     // Get the current user
     $sender = Auth::user();
 
-    // Check if the receiver exists
     $receiver_rendom = User::where('rendom', $request->receiver_rendom)->first();
     if (!$receiver_rendom) {
         return response()->json([

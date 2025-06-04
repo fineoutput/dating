@@ -589,10 +589,9 @@ public function useractivitys(Request $request)
             'vibe_name' => $activity->vibe->name ?? '',
             'vibe_icon' => $activity->vibe->icon ?? '',
             'user_name' => $user->name,
-            'user_profile_image' => !empty($activity->image) && file_exists(public_path('images/activities/' . $activity->image))
-            ? asset('images/activities/' . $activity->image)
-            : $profileImageUrl,
-            'user_time' => \Carbon\Carbon::parse($activity->created_at)->format('d-F H:i'),
+            'user_profile_image' => (!empty($activity->image))
+            ? asset($activity->image): $profileImageUrl,
+           'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
             'status' => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
         ];
     }
@@ -765,22 +764,31 @@ public function getActivitydetailes(Request $request)
 
     // Count confirmed users
     $interestCount = OtherInterest::where('activity_id', $mainActivity->id)->count();
-
+    $OtherInt = OtherInterest::where('user_id',Auth::id())->where('activity_id',$mainActivity->id)->first();
+      if($OtherInt){
+                $alinters = true;
+            }else{
+                $alinters = false;
+            }
     $mainActivityData = [
         'user_name' => $mainActivity->user->name ?? '',
         'rendom' => $mainActivity->rendom ?? '',
-        'profile_image' => $profileImageUrl,
+        'profile_image' => (!empty($mainActivity->image)) ? asset($mainActivity->image): $profileImageUrl,
         'title' => $mainActivity->title,
         'description' => $mainActivity->description,
         'location' => $mainActivity->location,
-        'when_time' => date('h:i a', strtotime($mainActivity->when_time)),
+        'when_time' => $mainActivity->when_time,
+        'end_time' => $mainActivity->end_time,
         'how_many' => $mainActivity->how_many,
         'interestCount' => $interestCount,
         'vibe_name' => $mainActivity->vibe->name ?? '',
         'vibe_icon' => $mainActivity->vibe->icon ?? '',
         'like_user' => $like_user,
         'expense_name' => $firstExpenseName,
+        'already_interest' => $alinters,
         'status' => $mainActivity->status,
+        'amount' => $mainActivity->amount,
+
     ];
 
     $attendees = OtherInterest::where('activity_id', $mainActivity->id)
@@ -802,7 +810,7 @@ public function getActivitydetailes(Request $request)
     $currentTime = Carbon::now('Asia/Kolkata');
     $todayDate = Carbon::today('Asia/Kolkata');
 
-    $allActivities = Activity::with('user', 'vibe')
+    $allActivities = Activity::where('id','!=',$mainActivity->id)->with('user', 'vibe')
         ->orderBy('id', 'desc')
         ->whereDate('when_time', '>=', $todayDate)
         ->where('user_id', '!=', $user->id)->where(function ($query) use ($todayDate, $currentTime) {
@@ -825,19 +833,32 @@ public function getActivitydetailes(Request $request)
                 ? Expense::find($expenseIds[0])->name ?? null
                 : null;
 
+            $OtherInterest = OtherInterest::where('user_id',Auth::id())->where('activity_id',$act->id)->first();
+            if($OtherInterest){
+                $alinter = true;
+            }else{
+                $alinter = false;
+            }
+
+             $interestCount = OtherInterest::where('activity_id', $act->id)->count();
+
             return [
                 'user_name' => $act->user->name ?? '',
                 'rendom' => $act->rendom ?? '',
-                'profile_image' => $img,
+                'profile_image' => (!empty($act->image)) ? asset($act->image): $img,
                 'title' => $act->title,
                 'description' => $act->description,
+                'interestCount' => $interestCount,
                 'location' => $act->location,
-                'when_time' => date('h:i a', strtotime($act->when_time)),
+                'when_time' => $act->when_time,
+                'end_time' => $act->end_time,
                 'how_many' => $act->how_many,
                 'vibe_name' => $act->vibe->name ?? '',
                 'vibe_icon' => $act->vibe->icon ?? '',
                 'expense_name' => $expense,
+                'already_interest' => $alinter,
                 'status' => $act->status,
+                'amount' => $act->amount,
             ];
         });
 
@@ -1062,7 +1083,124 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             'user_profile_image' => $profileImageUrl,
             // 'user_state' => $userDetails->state,
             // 'user_city' => $userDetails->city,
-            'user_time' => \Carbon\Carbon::parse($userDetails->created_at)->format('d-F H:i'), 
+           'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
+
+        ];
+    });
+        return response()->json([
+            'message' => 'Matching activities found successfully',
+            'status' => 200,
+            'data' => $activitiesWithUserDetails,
+        ]);
+    }
+
+    public function findactivity(Request $request)
+    {
+        $user = Auth::user(); 
+
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+
+        $interestField = $user->interest; 
+        $interestFieldDecoded = json_decode($interestField, true);
+
+        if (!is_array($interestFieldDecoded)) {
+            return response()->json(['message' => 'Invalid interest data','status'=>201], 400);
+        }
+
+        $interestIds = [];
+        foreach ($interestFieldDecoded as $item) {
+            $interestIds = array_merge($interestIds, explode(',', $item));
+        }
+
+
+    $interestIds = array_map('trim', $interestIds);
+
+    $currentTime = Carbon::now('Asia/Kolkata');
+    $todayDate = Carbon::today('Asia/Kolkata');
+
+    $matchingActivities = Activity::orderBy('id','DESC')->where('user_id', '!=', $user->id)
+    ->where('status', 2)
+    ->where(function ($query) use ($interestIds) {
+        foreach ($interestIds as $id) {
+            $query->orWhere('interests_id', 'LIKE', '%"'.$id.'"%');
+        }
+    })->where(function ($query) use ($todayDate, $currentTime) {
+        $query->where(function ($subQuery) use ($todayDate, $currentTime) {
+   
+            $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
+ 
+            $subQuery->where('end_time', '>=', $endTime);
+        });
+
+        $query->where('when_time', '>=', $currentTime);  
+    })
+    ->get();
+   
+        // $matchingActivities = Activity::whereIn('interests_id', $interestIds)
+        //                             ->where('user_id', '!=', $user->id)
+        //                             ->get();
+
+    if ($matchingActivities->isEmpty()) {
+        return response()->json([
+            'message' => 'No matching activities found',
+            'status'=>200,
+            'data'=>[],
+        ], 200);
+    }
+
+    $activitiesWithUserDetails = $matchingActivities->map(function ($activity) {
+        $hash = md5($activity->id);
+$r = hexdec(substr($hash, 0, 2));
+$g = hexdec(substr($hash, 2, 2));
+$b = hexdec(substr($hash, 4, 2));
+
+$lightenFactor = 0.5;  // Adjust the lightening factor to 50%
+$r = round($r + (255 - $r) * $lightenFactor);
+$g = round($g + (255 - $g) * $lightenFactor);
+$b = round($b + (255 - $b) * $lightenFactor);
+
+// Convert back to hex format
+$bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
+    
+        $userDetails = User::find($activity->user_id);
+    
+        if ($userDetails) {
+            $profileImages = json_decode($userDetails->profile_image, true);
+            $profileImageUrl = isset($profileImages[1]) ? url('uploads/app/profile_images/' . $profileImages[1]) : null;
+    
+            // Merging user details directly in the main array
+            $userData = [
+                'id' => $userDetails->id,
+                'name' => $userDetails->name,
+                'profile_image' => $profileImageUrl, 
+                'state' => $userDetails->state,
+                'city' => $userDetails->city,
+                'time' => \Carbon\Carbon::parse($userDetails->created_at)->format('d-F H:i'), 
+            ];
+        }
+    
+        $imageUrl = $activity->image ? url('images/activities/' . $activity->image) : null;
+    
+        $activity->bg_color = $bgColor;
+
+        return [
+            // 'id' => $activity->id,
+            // 'user_id' => $activity->user_id,
+            'title' => $activity->title,
+            'rendom' => $activity->rendom,
+            'location' => $activity->location,    
+            // 'image' => $imageUrl,
+            'bg_color' => $activity->bg_color,
+            'vibe_name' => $activity->vibe->name ?? '',
+            'vibe_icon' => $activity->vibe->icon ?? '',
+            // 'user_id' => $userDetails->id,
+            'user_name' => $userDetails->name,
+            'user_profile_image' => $profileImageUrl,
+            // 'user_state' => $userDetails->state,
+            // 'user_city' => $userDetails->city,
+            'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'), 
         ];
     });
         return response()->json([
@@ -1229,7 +1367,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             'vibe_icon' => $activity->vibe->icon ?? '',
             'user_name' => $userData['name'] ?? '',
             'user_profile_image' => $userData['profile_image'] ?? '',
-            'user_time' => $userData['time'] ?? '',
+            'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
         ];
     });
 
@@ -1243,123 +1381,229 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
 
 
-    public function friendcount(Request $request)
-{
-    $user = Auth::user(); 
+    // public function friendcount(Request $request)
+    // {
+    //     $user = Auth::user(); 
 
-    if (!$user) {
-        return response()->json(['message' => 'User not authenticated'], 401);
+    //     if (!$user) {
+    //         return response()->json(['message' => 'User not authenticated'], 401);
+    //     }
+
+    //     $matchingActivities = Activity::where('user_id', $user->id)
+    //                                     ->where('status', 2)
+    //                                     ->get();
+
+    //     $activityIds = $matchingActivities->pluck('id'); 
+
+    //     $interestIds = OtherInterest::whereIn('activity_id', $activityIds)->get();
+
+    //     $userDetailsFromInterest = $interestIds->pluck('user_id');
+
+    //     $likeUser = SlideLike::where('matched_user', $user->id);
+    //     $likeUserDetails = $likeUser->pluck('matching_user'); 
+
+    //     $userDetailsFromInterest2 = User::whereIn('id', $userDetailsFromInterest)->get();
+    //     $likeUserDetails2 = User::whereIn('id', $likeUserDetails)->get();
+
+    //     $userList = $userDetailsFromInterest2->map(function ($user) {
+    //         $imagePath = null;
+
+    //         if ($user->profile_image) {
+    //             $images = json_decode($user->profile_image, true); 
+    //             if (is_array($images) && count($images)) {
+    //                 $imagePath = reset($images);
+    //             }
+    //         }
+
+    //         $chat = Chat::where('sender_id',Auth::id())->where('receiver_id',$user->id)->orderBy('id','DESC')->first();
+
+    //         return [
+    //             'id' => $user->id,
+    //             'user_rendom' => $user->rendom,
+    //             'name' => $user->name,
+    //             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+    //             'form' => 'match',
+    //             'last_message' => $chat->message ?? null,
+    //         ];
+    //     });
+
+    //     $likeUserList = $likeUserDetails2->map(function ($user) {
+    //         $imagePath = null;
+
+    //         if ($user->profile_image) {
+    //             $images = json_decode($user->profile_image, true); 
+    //             if (is_array($images) && count($images)) {
+    //                 $imagePath = reset($images);
+    //             }
+    //         }
+    //         $chat = Chat::where('sender_id',Auth::id())->where('receiver_id',$user->id)->orderBy('id','DESC')->first();
+
+    //         return [
+    //             'id' => $user->id,
+    //             'user_rendom' => $user->rendom,
+    //             'name' => $user->name,
+    //             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+    //             'form' => 'activity',
+    //             'last_message' => $chat->message ?? null,
+    //         ];
+    //     });
+
+    //     $CupidMatches = Cupid::where('user_id_1', $user->id)
+    //                         ->orWhere('user_id_2', $user->id)
+    //                         ->get()->unique();
+
+    //     $matchedUsers = $CupidMatches->map(function ($match) use ($user) {
+    //         $matchedUserId = $match->user_id_1 == $user->id ? $match->user_id_2 : $match->user_id_1;
+    //         $matchedUser = User::find($matchedUserId);
+
+    //         if (!$matchedUser) return null;
+
+    //         $images = json_decode($matchedUser->profile_image, true);
+    //         $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
+    //         $chat = Chat::where('sender_id',Auth::id())->where('receiver_id',$matchedUser->id)
+    //         ->orderBy('id','DESC')->first();
+    //         return [
+    //             'id' => $matchedUser->id,
+    //             'user_rendom' => $matchedUser->rendom,
+    //             'name' => $matchedUser->name,
+    //             'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
+    //             'form' => 'match',
+    //             'last_message' => $chat->message ?? null,
+    //         ];
+    //     })->filter(); 
+
+    //     $userList = collect($userList);  
+    //     $likeUserList = collect($likeUserList);   
+    //     $matchedUsers = collect($matchedUsers);  
+    //     $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
+
+    //     return response()->json([
+    //         'message' => 'Friend and Cupid data fetched successfully',
+    //         'status' => 200,
+    //         'data' => [
+    //             'match_users' => $matchUsers, 
+    //             'friend_count' => $userList->count() + $likeUserList->count() + $matchedUsers->count(),
+    //             'like_count' => $interestIds->count(),
+    //         ]
+    //     ]);
+    // }
+
+public function friendcount(Request $request)
+    {
+        $user = Auth::user(); 
+
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+
+        $matchingActivities = Activity::where('user_id', $user->id)
+                                        ->where('status', 2)
+                                        ->get();
+
+        $activityIds = $matchingActivities->pluck('id'); 
+
+        $interestIds = OtherInterest::whereIn('activity_id', $activityIds)->get();
+        $userDetailsFromInterest = $interestIds->pluck('user_id');
+
+        $likeUser = SlideLike::where('matched_user', $user->id);
+        $likeUserDetails = $likeUser->pluck('matching_user'); 
+
+        $userDetailsFromInterest2 = User::whereIn('id', $userDetailsFromInterest)->get();
+        $likeUserDetails2 = User::whereIn('id', $likeUserDetails)->get();
+
+        $userList = $userDetailsFromInterest2->map(function ($user) {
+            $imagePath = null;
+
+            if ($user->profile_image) {
+                $images = json_decode($user->profile_image, true); 
+                if (is_array($images) && count($images)) {
+                    $imagePath = reset($images);
+                }
+            }
+
+            $chat = Chat::where('sender_id', Auth::id())->where('receiver_id', $user->id)->orderBy('id', 'DESC')->first();
+
+            return [
+                'id' => $user->id,
+                'user_rendom' => $user->rendom,
+                'name' => $user->name,
+                'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+                'form' => 'match',
+                'last_message' => $chat->message ?? null,
+            ];
+        });
+
+        $likeUserList = $likeUserDetails2->map(function ($user) {
+            $imagePath = null;
+
+            if ($user->profile_image) {
+                $images = json_decode($user->profile_image, true); 
+                if (is_array($images) && count($images)) {
+                    $imagePath = reset($images);
+                }
+            }
+
+            $chat = Chat::where('sender_id', Auth::id())->where('receiver_id', $user->id)->orderBy('id', 'DESC')->first();
+
+            return [
+                'id' => $user->id,
+                'user_rendom' => $user->rendom,
+                'name' => $user->name,
+                'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+                'form' => 'activity',
+                'last_message' => $chat->message ?? null,
+            ];
+        });
+
+        $CupidMatches = Cupid::where('user_id_1', $user->id)
+                            ->orWhere('user_id_2', $user->id)
+                            ->get()->unique();
+
+        $matchedUsers = $CupidMatches->map(function ($match) use ($user) {
+            $matchedUserId = $match->user_id_1 == $user->id ? $match->user_id_2 : $match->user_id_1;
+            $matchedUser = User::find($matchedUserId);
+
+            if (!$matchedUser) return null;
+
+            $images = json_decode($matchedUser->profile_image, true);
+            $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
+            $chat = Chat::where('sender_id', Auth::id())->where('receiver_id', $matchedUser->id)
+                        ->orderBy('id', 'DESC')->first();
+
+            return [
+                'id' => $matchedUser->id,
+                'user_rendom' => $matchedUser->rendom,
+                'name' => $matchedUser->name,
+                'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
+                'form' => 'match',
+                'last_message' => $chat->message ?? null,
+            ];
+        })->filter(); 
+
+        $userList = collect($userList);  
+        $likeUserList = collect($likeUserList);   
+        $matchedUsers = collect($matchedUsers);  
+
+        $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
+
+        $matchUsers = $matchUsers->map(function ($user) {
+            $chat = Chat::where('sender_id', Auth::id())->where('receiver_id', $user['id'])->orderBy('id', 'DESC')->first();
+            if ($chat) {
+                $user['form'] = 'activity';
+            }
+            return $user;
+        });
+
+        return response()->json([
+            'message' => 'Friend and Cupid data fetched successfully',
+            'status' => 200,
+            'data' => [
+                'match_users' => $matchUsers, 
+                'friend_count' => $userList->count() + $likeUserList->count() + $matchedUsers->count(),
+                'like_count' => $interestIds->count(),
+            ]
+        ]);
     }
-
-    // Fetch matching activities where status is 2
-    $matchingActivities = Activity::where('user_id', $user->id)
-                                    ->where('status', 2)
-                                    ->get();
-
-    // Get activity IDs related to the matching activities
-    $activityIds = $matchingActivities->pluck('id'); 
-
-    // Fetch interests for the given activity IDs
-    $interestIds = OtherInterest::whereIn('activity_id', $activityIds)->get();
-
-    // Fetch the users associated with these interests
-    $userDetailsFromInterest = $interestIds->pluck('user_id');
-
-    $likeUser = SlideLike::where('matched_user', $user->id);
-    $likeUserDetails = $likeUser->pluck('matching_user'); 
-
-    // Fetch the user details based on the user IDs
-    $userDetailsFromInterest2 = User::whereIn('id', $userDetailsFromInterest)->get();
-    $likeUserDetails2 = User::whereIn('id', $likeUserDetails)->get();
-
-    $userList = $userDetailsFromInterest2->map(function ($user) {
-        $imagePath = null;
-
-        if ($user->profile_image) {
-            $images = json_decode($user->profile_image, true); 
-            if (is_array($images) && count($images)) {
-                $imagePath = reset($images);
-            }
-        }
-
-        $chat = Chat::where('sender_id',Auth::id())->where('receiver_id',$user->id)->orderBy('id','DESC')->first();
-
-        return [
-            'id' => $user->id,
-            'user_rendom' => $user->rendom,
-            'name' => $user->name,
-            'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
-            'form' => 'match',
-            'last_message' => $chat->message ?? null,
-        ];
-    });
-
-    // Prepare the list of users who liked the current user
-    $likeUserList = $likeUserDetails2->map(function ($user) {
-        $imagePath = null;
-
-        if ($user->profile_image) {
-            $images = json_decode($user->profile_image, true); 
-            if (is_array($images) && count($images)) {
-                $imagePath = reset($images);
-            }
-        }
-        $chat = Chat::where('sender_id',Auth::id())->where('receiver_id',$user->id)->orderBy('id','DESC')->first();
-
-        return [
-            'id' => $user->id,
-            'user_rendom' => $user->rendom,
-            'name' => $user->name,
-            'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
-            'form' => 'activity',
-            'last_message' => $chat->message ?? null,
-        ];
-    });
-
-    $CupidMatches = Cupid::where('user_id_1', $user->id)
-                        ->orWhere('user_id_2', $user->id)
-                        ->get()->unique();
-
-// return $CupidMatches;
-    // Prepare the list of matched users from Cupid matches
-    $matchedUsers = $CupidMatches->map(function ($match) use ($user) {
-        $matchedUserId = $match->user_id_1 == $user->id ? $match->user_id_2 : $match->user_id_1;
-        $matchedUser = User::find($matchedUserId);
-
-        if (!$matchedUser) return null;
-
-        $images = json_decode($matchedUser->profile_image, true);
-        $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
-        $chat = Chat::where('sender_id',Auth::id())->where('receiver_id',$matchedUser->id)
-        ->orderBy('id','DESC')->first();
-        return [
-            'id' => $matchedUser->id,
-            'user_rendom' => $matchedUser->rendom,
-            'name' => $matchedUser->name,
-            'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
-            'form' => 'match',
-            'last_message' => $chat->message ?? null,
-        ];
-    })->filter();  // Remove null values
-
-    // Ensure that all users are Eloquent collections
-    $userList = collect($userList);   // Ensure it's a collection
-    $likeUserList = collect($likeUserList);   // Ensure it's a collection
-    $matchedUsers = collect($matchedUsers);   // Ensure it's a collection
-
-    // Merge all users into one collection (activity users, liked users, and cupid users)
-    $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
-
-    return response()->json([
-        'message' => 'Friend and Cupid data fetched successfully',
-        'status' => 200,
-        'data' => [
-            'match_users' => $matchUsers, 
-            'friend_count' => $userList->count() + $likeUserList->count() + $matchedUsers->count(),
-            'like_count' => $interestIds->count(),
-        ]
-    ]);
-}
 
 
     // public function friendcount(Request $request)
@@ -1668,8 +1912,9 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                 'vibe_name' => $activity->vibe->name ?? '',
                 'vibe_icon' => $activity->vibe->icon ?? '',
                 'user_name' => $userDetails->name,
-                'user_profile_image' => $profileImageUrl,  
-                'user_time' => \Carbon\Carbon::parse($userDetails->created_at)->format('d-F H:i'),
+                'user_profile_image' => (!empty($activity->image))
+                ? asset($activity->image): $profileImageUrl,
+                'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
             ];
         });
 
@@ -1909,8 +2154,9 @@ public function vibeactivitydetails(Request $request)
                     'vibe_name' => $activity->vibe->name ?? '',
                     'vibe_icon' => $activity->vibe->icon ?? '',
                     'user_name' => $user_rendom->name,
-                    'user_profile_image' => $profileImageUrl,
-                    'user_time' => \Carbon\Carbon::parse($activity->created_at)->format('d-F H:i'),
+                    'user_profile_image' => (!empty($activity->image))
+                    ? asset($activity->image): $profileImageUrl,
+                    'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
                     'status' => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
                 ];
             })

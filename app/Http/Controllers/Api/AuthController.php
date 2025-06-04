@@ -12,6 +12,11 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Mail\OtpMail;
+use App\Models\Activity;
+use App\Models\Chat;
+use App\Models\Cupid;
+use App\Models\OtherInterest;
+use App\Models\SlideLike;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -805,6 +810,116 @@ class AuthController extends Controller
     public function userprofile(Request $request)
 {
     $user = Auth::user();
+
+    $matchingActivities = Activity::where('user_id', $user->id)
+                                ->where('status', 2)
+                                ->get();
+
+$activityIds = $matchingActivities->pluck('id'); 
+
+$interestIds = OtherInterest::whereIn('activity_id', $activityIds)->get();
+
+$userDetailsFromInterest = $interestIds->pluck('user_id');
+
+$userDetailsFromInterest2 = User::whereIn('id', $userDetailsFromInterest)->get();
+
+$userList = $userDetailsFromInterest2->map(function ($user) {
+    $imagePath = null;
+    if ($user->profile_image) {
+        $images = json_decode($user->profile_image, true); 
+        if (is_array($images) && count($images)) {
+            $imagePath = reset($images);
+        }
+    }
+
+    $chat = Chat::where('sender_id', Auth::id())
+                ->where('receiver_id', $user->id)
+                ->orderBy('id','DESC')
+                ->first();
+
+    return [
+        'id' => $user->id,
+        'user_rendom' => $user->rendom,
+        'name' => $user->name,
+        'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+        'form' => 'match',
+        'last_message' => $chat->message ?? null,
+    ];
+});
+
+/* -------------------- 2. FRIENDS FROM LIKES (SlideLike) -------------------- */
+$likeUser = SlideLike::where('matched_user', $user->id);
+$likeUserDetails = $likeUser->pluck('matching_user'); 
+
+$likeUserDetails2 = User::whereIn('id', $likeUserDetails)->get();
+
+$likeUserList = $likeUserDetails2->map(function ($user) {
+    $imagePath = null;
+    if ($user->profile_image) {
+        $images = json_decode($user->profile_image, true); 
+        if (is_array($images) && count($images)) {
+            $imagePath = reset($images);
+        }
+    }
+
+    $chat = Chat::where('sender_id', Auth::id())
+                ->where('receiver_id', $user->id)
+                ->orderBy('id','DESC')
+                ->first();
+
+    return [
+        'id' => $user->id,
+        'user_rendom' => $user->rendom,
+        'name' => $user->name,
+        'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+        'form' => 'activity',
+        'last_message' => $chat->message ?? null,
+    ];
+});
+
+/* -------------------- 3. FRIENDS FROM CUPID MATCHES -------------------- */
+$CupidMatches = Cupid::where('user_id_1', $user->id)
+                    ->orWhere('user_id_2', $user->id)
+                    ->get()
+                    ->unique();
+
+$matchedUsers = $CupidMatches->map(function ($match) use ($user) {
+    $matchedUserId = $match->user_id_1 == $user->id ? $match->user_id_2 : $match->user_id_1;
+    $matchedUser = User::find($matchedUserId);
+
+    if (!$matchedUser) return null;
+
+    $images = json_decode($matchedUser->profile_image, true);
+    $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
+
+    $chat = Chat::where('sender_id', Auth::id())
+                ->where('receiver_id', $matchedUser->id)
+                ->orderBy('id','DESC')
+                ->first();
+
+    return [
+        'id' => $matchedUser->id,
+        'user_rendom' => $matchedUser->rendom,
+        'name' => $matchedUser->name,
+        'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
+        'form' => 'match',
+        'last_message' => $chat->message ?? null,
+    ];
+})->filter();
+
+/* -------------------- 4. CALCULATE FRIEND COUNTS -------------------- */
+$friendFromInterestsCount = $userList->count();
+$friendFromLikesCount = $likeUserList->count();
+$friendFromCupidCount = $matchedUsers->count();
+
+$totalFriendCount = $friendFromInterestsCount + $friendFromLikesCount + $friendFromCupidCount;
+
+/* -------------------- 5. MERGE ALL USERS -------------------- */
+$userList = collect($userList);
+$likeUserList = collect($likeUserList);
+$matchedUsers = collect($matchedUsers);
+
+$matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
     
     if (!$user) {
         return response()->json([
@@ -871,6 +986,7 @@ class AuthController extends Controller
         'about' => $user->about ?? '',
         'address' => $user->address ?? '',
         'location' => $locationString,
+        'friend_count' => $userList->count() + $likeUserList->count() + $matchedUsers->count(),
     ];
 
     return response()->json([
@@ -993,128 +1109,161 @@ class AuthController extends Controller
         // }
 
 
-        public function updateProfile(Request $request)
-{
-    $user = Auth::user();
+ public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
 
-    if (!$user) {
-        return response()->json(['message' => 'User not authenticated'], 401);
-    }
-
-    // Validate the incoming request data
-    $validator = Validator::make($request->all(), [
-        'name' => 'nullable|string|max:255',
-        'age' => 'nullable|integer|min:18|max:100',
-        'gender' => 'nullable|string',
-        'looking_for' => 'nullable|string|max:255',
-        'interest' => 'nullable|array',  // Array of interests (only updated for subscribed users)
-        'about' => 'nullable|string|max:1000',  // New field for "about" text (can be updated by any user)
-        'address' => 'nullable|string|max:255',  // Address field if applicable
-        'profile_image' => 'nullable|array', // Add validation for multiple images
-    ]);
-
-    // If validation fails, return error messages
-    if ($validator->fails()) {
-        return response()->json(['errors' => $validator->errors()], 400);
-    }
-
-    // Prepare data to be updated
-    $updateData = [
-        'name' => $request->name,
-        'age' => $request->age,
-        'gender' => $request->gender,
-        'looking_for' => $request->looking_for,
-    ];
-
-    // Handle 'interest' field if provided and if the user has an active subscription
-    if ($user->subscription == 1 && $request->has('interest') && is_array($request->interest)) {
-        $updateData['interest'] = json_encode($request->interest);  // Store interests as JSON
-    }
-
-    if ($request->has('about')) {
-        $updateData['about'] = $request->about;
-    }
-    if ($request->has('address')) {
-        $updateData['address'] = $request->address;
-    }
-
-    // Handle profile images (if any)
-    if ($request->hasFile('profile_image')) {
-        $imagePaths = [];
-
-        foreach ($request->file('profile_image') as $image) {
-            // Validate each image
-            $imageValidator = Validator::make(['image' => $image], [
-                'image' => 'required', // Max 5MB for each image
-            ]);
-
-            if ($imageValidator->fails()) {
-                return response()->json(['errors' => $imageValidator->errors()], 400);
-            }
-
-            // Generate a unique file name for each image
-            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('uploads/app/profile_images/'), $imageName);
-
-            // Store the image paths in the array
-            $imagePaths[] = $imageName;
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
         }
 
-        // Convert image paths to JSON and add to update data
+        $validator = Validator::make($request->all(), [
+            'name' => 'nullable|string|max:255',
+            'age' => 'nullable|integer|min:18|max:100',
+            'gender' => 'nullable|string',
+            'looking_for' => 'nullable|string|max:255',
+            'interest' => 'nullable|array', 
+            'about' => 'nullable|string|max:1000', 
+            'address' => 'nullable|string|max:255',  
+            'profile_image' => 'nullable|array',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        $updateData = [
+            'name' => $request->name,
+            'age' => $request->age,
+            'gender' => $request->gender,
+            'looking_for' => $request->looking_for,
+        ];
+
+        if ($user->subscription == 1 && $request->has('interest') && is_array($request->interest)) {
+            $updateData['interest'] = json_encode($request->interest); 
+        }
+
+        if ($request->has('about')) {
+            $updateData['about'] = $request->about;
+        }
+        if ($request->has('address')) {
+            $updateData['address'] = $request->address;
+        }
+
+       if ($request->hasFile('profile_image')) {
+        $existingImages = [];
+        if ($user->profile_image) {
+            $existingImages = json_decode($user->profile_image, true);
+        }
+
+        $newImages = $request->file('profile_image');
+
+        $availableSlots = 9 - count($existingImages);
+        if ($availableSlots <= 0) {
+            return response()->json(['message' => 'You already have maximum 9 images.'], 400);
+        }
+
+        $imagePaths = $existingImages; 
+
+        $uploadedCount = 0;
+
+        foreach ($newImages as $image) {
+            if ($uploadedCount >= $availableSlots) {
+                break;
+            }
+
+            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+
+            if (in_array($imageName, $existingImages)) {
+                continue;
+            }
+
+            $image->move(public_path('uploads/app/profile_images/'), $imageName);
+            $imagePaths[] = $imageName;
+            $uploadedCount++;
+        }
+
         $updateData['profile_image'] = json_encode($imagePaths);
     }
 
-    // Update the user with new data (including image data if present)
-    $user->update($updateData);
+        $user->update($updateData);
 
-    // Handle 'interest' names and icons (only for subscribed users)
-    $interestNamesWithIcons = [];
-    if ($user->subscription == 1 && $request->has('interest') && is_array($request->interest)) {
-        $interestIds = $request->interest;
-        $interests = Interest::whereIn('id', $interestIds)->get();
+        $interestNamesWithIcons = [];
+        if ($user->subscription == 1 && $request->has('interest') && is_array($request->interest)) {
+            $interestIds = $request->interest;
+            $interests = Interest::whereIn('id', $interestIds)->get();
 
-        foreach ($interests as $interest) {
-            $interestNamesWithIcons[] = [
-                'name' => $interest->name,
-                'icon' => $interest->icon,
-            ];
-        }
-    }
-
-    // Return all the current profile image URLs if exists
-    $imageUrls = [];
-    if ($user->profile_image) {
-        $imagePaths = json_decode($user->profile_image, true);
-
-        // Check if $imagePaths is an array and loop through it
-        if (is_array($imagePaths)) {
-            foreach ($imagePaths as $imageName) {
-                $imageUrls[] = url('uploads/app/profile_images/' . $imageName);
+            foreach ($interests as $interest) {
+                $interestNamesWithIcons[] = [
+                    'name' => $interest->name,
+                    'icon' => $interest->icon,
+                ];
             }
         }
-    }
 
-    return response()->json([
-        'message' => 'Profile updated successfully',
-        'data' => [
-            [
-                'rendom' => $user->rendom,
-                'name' => $user->name,
-                'age' => $user->age,
-                'gender' => $user->gender,
-                'looking_for' => $user->looking_for,
-                'interest' => $interestNamesWithIcons,
-                'profile_image' => $imageUrls, // Returning the image URLs (multiple if applicable)
-                'about' => $user->about,
-                'address' => $user->address,
-            ]
-        ],
-        'status' => 200,
-    ], 200);
-}
+        $imageUrls = [];
+        if ($user->profile_image) {
+            $imagePaths = json_decode($user->profile_image, true);
+
+            if (is_array($imagePaths)) {
+                foreach ($imagePaths as $imageName) {
+                    $imageUrls[] = url('uploads/app/profile_images/' . $imageName);
+                }
+            }
+        }
+
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'data' => [
+                [
+                    'rendom' => $user->rendom,
+                    'name' => $user->name,
+                    'age' => $user->age,
+                    'gender' => $user->gender,
+                    'looking_for' => $user->looking_for,
+                    'interest' => $interestNamesWithIcons,
+                    'profile_image' => $imageUrls,
+                    'about' => $user->about,
+                    'address' => $user->address,
+                ]
+            ],
+            'status' => 200,
+        ], 200);
+    }
 
         
 
+   public function updatelatlong(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+
+        // Validate request
+        $validator = Validator::make($request->all(), [
+            'latitude' => 'required',
+            'longitude' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        $user->latitude = $request->latitude;
+        $user->longitude = $request->longitude;
+        $user->save();
+
+        return response()->json([
+            'message' => 'Location updated successfully',
+            'data' => [
+                'latitude' => $user->latitude,
+                'longitude' => $user->longitude,
+            ],
+            'status' => 200
+        ]);
+    }
         
         
         

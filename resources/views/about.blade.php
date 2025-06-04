@@ -565,16 +565,16 @@ body.light-mode .footer-bottom p {
                     <h3>Company</h3>
                     <ul>
                         <li><a href="http://127.0.0.1:8000/about/about">About Us</a></li>
-                        <li><a href="#careers">Careers</a></li>
+                        {{-- <li><a href="#careers">Careers</a></li> --}}
                         <li><a href="http://127.0.0.1:8000/contact/contact">Contact</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">
                     <h3>Legal</h3>
                     <ul>
-                        <li><a href="#terms">Terms</a></li>
-                        <li><a href="#privacy">Privacy</a></li>
-                        <li><a href="#guidelines">Community Guidelines</a></li>
+                        <li><a href="#terms">Terms & conditions</a></li>
+                        <li><a href="#privacy">Privacy policy</a></li>
+                        {{-- <li><a href="#guidelines">Community Guidelines</a></li> --}}
                     </ul>
                 </div>
                 <div class="footer-social">

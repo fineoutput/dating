@@ -979,7 +979,7 @@ body.light-mode .footer-bottom p {
               
                 
                 <div class="nav-links">
-                    <a href="http://127.0.0.1:8000/about/about">About</a>
+                    <a href="about.blade.php">About</a>
                     <a href="http://127.0.0.1:8000/contact/contact">Contact</a>
                     <button class="download-btn">
                         <i data-lucide="download"></i>

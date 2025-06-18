@@ -28,5 +28,10 @@ class HomeController extends Controller
      
         return view('about');
     }
+    public function privacy_policy(Request $req)
+    {
+     
+        return view('privacy_policy');
+    }
     
 }

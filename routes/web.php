@@ -49,6 +49,9 @@ Route::group(['prefix' => 'contact'], function () {
 Route::group(['prefix' => 'about'], function () {
     Route::get('about', [HomeController::class, 'about'])->name('about');
 });
+Route::group(['prefix' => 'privacy_policy'], function () {
+    Route::get('privacy_policy', [HomeController::class, 'privacy_policy'])->name('privacy_policy');
+});
 
 //======================================= ADMIN ===================================================
 Route::group(['prifix' => 'admin'], function () {

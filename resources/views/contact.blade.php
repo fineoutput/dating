@@ -679,7 +679,7 @@ body.light-mode .contact-form button {
                     <h3>Legal</h3>
                     <ul>
                         <li><a href="#terms">Terms & conditions</a></li>
-                        <li><a href="#privacy">Privacy policy</a></li>
+                        <li><a href="{{route('privacy_policy')}}">Privacy policy</a></li>
                         {{-- <li><a href="#guidelines">Community Guidelines</a></li> --}}
                     </ul>
                 </div>

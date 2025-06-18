@@ -979,8 +979,8 @@ body.light-mode .footer-bottom p {
               
                 
                 <div class="nav-links">
-                    <a href="about.blade.php">About</a>
-                    <a href="contact.blade.php">Contact</a>
+                    <a href="{{route('about')}}">About</a>
+                    <a href="{{route('contact')}}">Contact</a>
                     <button class="download-btn">
                         <i data-lucide="download"></i>
                         Download App

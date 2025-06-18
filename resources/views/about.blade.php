@@ -468,7 +468,7 @@ body.light-mode .footer-bottom p {
             <nav>
                 
                     <div class="logo">
-                        <a href="http://127.0.0.1:8000" style="
+                        <a href="{{route('/')}}" style="
                         display: flex;
                         align-items: center;
                         gap: 5px;
@@ -493,8 +493,8 @@ body.light-mode .footer-bottom p {
               
                 
                 <div class="nav-links">
-                    <a href="http://127.0.0.1:8000/about/about">About</a>
-                    <a href="http://127.0.0.1:8000/contact/contact">Contact</a>
+                    <a href="{{route('about')}}">About</a>
+                    <a href="{{route('contact')}}">Contact</a>
                     <button class="download-btn">
                         <i data-lucide="download"></i>
                         Download App
@@ -564,9 +564,9 @@ body.light-mode .footer-bottom p {
                 <div class="footer-links">
                     <h3>Company</h3>
                     <ul>
-                        <li><a href="http://127.0.0.1:8000/about/about">About Us</a></li>
+                        <li><a href="{{route('about')}}">About Us</a></li>
                         {{-- <li><a href="#careers">Careers</a></li> --}}
-                        <li><a href="http://127.0.0.1:8000/contact/contact">Contact</a></li>
+                        <li><a href="{{route('contact')}}">Contact</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">

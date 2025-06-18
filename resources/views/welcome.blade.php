@@ -980,7 +980,7 @@ body.light-mode .footer-bottom p {
                 
                 <div class="nav-links">
                     <a href="about.blade.php">About</a>
-                    <a href="http://127.0.0.1:8000/contact/contact">Contact</a>
+                    <a href="contact.blade.php">Contact</a>
                     <button class="download-btn">
                         <i data-lucide="download"></i>
                         Download App
@@ -1248,9 +1248,9 @@ body.light-mode .footer-bottom p {
                 <div class="footer-links">
                     <h3>Company</h3>
                     <ul>
-                        <li><a href="http://127.0.0.1:8000/about/about">About Us</a></li>
+                        <li><a href="about.blade.php">About Us</a></li>
                         {{-- <li><a href="#careers">Careers</a></li> --}}
-                        <li><a href="http://127.0.0.1:8000/contact/contact">Contact</a></li>
+                        <li><a href="contact.blade.php">Contact</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">

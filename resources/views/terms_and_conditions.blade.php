@@ -29,7 +29,11 @@
             --dark-darker: #E2E8F0;
             --white: #1A202C;
         }
-
+.voho{
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
         * {
             margin: 0;
             padding: 0;
@@ -578,8 +582,10 @@
                 <div class="footer-brand">
                     <a href="/">
                         <div class="logo">
-                            <span class="logo-text">DYMM</span>
-                            <span class="beta-badge">Beta</span>
+                             <a class="voho" href="{{route('/')}}">
+                        <span class="logo-text">DYMM</span>
+                        <span class="beta-badge">Beta</span>
+                        </a>
                         </div>
                     </a>
                     <p>Connect with people through activities, dating, and our unique cupid feature.</p>

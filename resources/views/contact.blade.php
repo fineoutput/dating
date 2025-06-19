@@ -20,6 +20,12 @@
     --dark-darker: #131019;
     --white: #ffffff;
 }
+
+.voho{
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
 .switch {
     display: block;
     --width-of-switch: 2.9em;
@@ -661,8 +667,10 @@ body.light-mode .contact-form button {
                 <div class="footer-brand">
                     <a href="http://127.0.0.1:8000">
                         <div class="logo">
-                            <span class="logo-text">DYMM</span>
-                            <span class="beta-badge">Beta</span>
+                             <a class="voho" href="{{route('/')}}">
+                        <span class="logo-text">DYMM</span>
+                        <span class="beta-badge">Beta</span>
+                        </a>
                         </div>
                     </a>
                     <p>Connect with people through activities, dating, and our unique cupid feature.</p>

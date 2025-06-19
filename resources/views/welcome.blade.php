@@ -13,6 +13,11 @@
         </style>
 </head>
 <style>
+    .voho{
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
 .sitouro {
     display: flex;
     justify-content: center;
@@ -1240,8 +1245,10 @@ body.light-mode .footer-bottom p {
             <div class="footer-grid">
                 <div class="footer-brand">
                     <div class="logo">
+                        <a class="voho" href="{{route('/')}}">
                         <span class="logo-text">DYMM</span>
                         <span class="beta-badge">Beta</span>
+                        </a>
                     </div>
                     <p>Connect with people through activities, dating, and our unique cupid feature.</p>
                 </div>

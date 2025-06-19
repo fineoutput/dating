@@ -20,6 +20,11 @@
     --dark-darker: #161922;
     --white: #ffffff;
 }
+.voho{
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
 .value-card h3 {
     color: #8a2be2;
 }
@@ -555,9 +560,11 @@ body.light-mode .footer-bottom p {
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <div class="logo">
+                    <div class="logo ">
+                        <a class="voho" href="{{route('/')}}">
                         <span class="logo-text">DYMM</span>
                         <span class="beta-badge">Beta</span>
+                        </a>
                     </div>
                     <p>Connect with people through activities, dating, and our unique cupid feature.</p>
                 </div>

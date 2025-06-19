@@ -52,6 +52,9 @@ Route::group(['prefix' => 'about'], function () {
 Route::group(['prefix' => 'privacy_policy'], function () {
     Route::get('privacy_policy', [HomeController::class, 'privacy_policy'])->name('privacy_policy');
 });
+Route::group(['prefix' => 'terms_and_conditions'], function () {
+    Route::get('terms_and_conditions', [HomeController::class, 'terms_and_conditions'])->name('terms_and_conditions');
+});
 
 //======================================= ADMIN ===================================================
 Route::group(['prifix' => 'admin'], function () {

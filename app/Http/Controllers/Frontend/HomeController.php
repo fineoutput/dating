@@ -33,5 +33,10 @@ class HomeController extends Controller
      
         return view('privacy_policy');
     }
+    public function terms_and_conditions(Request $req)
+    {
+     
+        return view('terms_and_conditions');
+    }
     
 }

@@ -622,7 +622,7 @@ body.light-mode .contact-form button {
             </nav>
         </div>
     </header>
-    <div class="gradient-overlay"></div>
+    {{-- <div class="gradient-overlay"></div> --}}
     <div class="doodle-container" id="doodleContainer"></div>   
   
     <!-- Hero Section -->

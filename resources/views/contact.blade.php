@@ -639,7 +639,7 @@ body.light-mode .contact-form button {
                 </div>
                 <div class="contact-info-item">
                     <i data-lucide="mail"></i>
-                    <a href="mailto:support@dymm.app">support@dymm.app</a>
+                    <a href="mailto:contactdymm@gmail.com">contactdymm@gmail.com</a>
                 </div>
             </div>
             <div class="contact-form">

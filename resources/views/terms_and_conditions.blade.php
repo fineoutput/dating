@@ -397,7 +397,7 @@
         <div class="container">
             <nav>
                 <div class="logo">
-                    <a href="/" style="display: flex; align-items: center; gap: 5px;">
+                    <a href="{{route('/')}}" style="display: flex; align-items: center; gap: 5px;">
                         <span class="logo-text">DYMM</span>
                         <span class="beta-badge">Beta</span>
                     </a>

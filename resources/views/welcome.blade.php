@@ -954,7 +954,7 @@ body.light-mode .footer-bottom p {
             <nav>
                 
                     <div class="logo">
-                        <a href="http://127.0.0.1:8000" style="
+                        <a href="{{route('/')}}" style="
                         display: flex;
                         align-items: center;
                         gap: 5px;

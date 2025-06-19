@@ -425,8 +425,7 @@
     <!-- Terms and Conditions Section -->
     <section class="terms-conditions">
         <div class="container">
-            <h1>Terms and Conditions of Use</h1>
-            <p>Effective Date: June 18, 2025</p>
+            <h1>Terms and Conditions</h1>
 
             <h2>1. Introduction</h2>
             <p>Welcome to <strong>Premier App Solutions</strong>.</p>

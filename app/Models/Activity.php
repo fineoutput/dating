@@ -24,6 +24,7 @@ class Activity extends Model
         'title',
         'description',
         'location',
+        'friend_rendom',
         'amount',
         'image',
         'rendom',

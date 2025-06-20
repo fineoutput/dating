@@ -314,6 +314,7 @@ class ActivityController extends Controller
                 'image' => 'nullable',
                 'amount' => 'nullable|numeric',
                 'activity_id' => 'nullable|exists:activity_temp_table,id', 
+                'friend_rendom' => 'nullable', 
                 'update_status' => 'nullable|in:update,final', 
             ]);
         } else {
@@ -333,6 +334,7 @@ class ActivityController extends Controller
                 'other_activity' => 'nullable|string',
                 'image' => 'nullable',
                 'amount' => 'nullable|numeric',
+                'friend_rendom' => 'nullable',
                 'activity_id' => 'nullable|exists:activity_temp_table,id', 
                 'update_status' => 'nullable|in:update,final', 
             ]);
@@ -366,6 +368,7 @@ class ActivityController extends Controller
             $activityTemp->how_many = $request->how_many ?? $activityTemp->how_many;
             $activityTemp->start_time = $request->start_time ?? $activityTemp->start_time;
             $activityTemp->end_time = $request->end_time ?? $activityTemp->end_time;
+            $activityTemp->friend_rendom = $request->friend_rendom ?? $activityTemp->friend_rendom;
             $activityTemp->interests_id = isset($user->interest) ? implode(',', (array)$user->interest) : $user->interest;
             $activityTemp->vibe_id = $request->vibe_id ?? $activityTemp->vibe_id;
             $activityTemp->expense_id = isset($request->expense_id) ? implode(',', (array)$request->expense_id) : $activityTemp->expense_id;
@@ -422,6 +425,7 @@ class ActivityController extends Controller
                 'interests_id' => $activityTemp->interests_id,
                 'vibe_id' => $activityTemp->vibe_id,
                 'expense_id' => $activityTemp->expense_id,
+                'friend_rendom' => $activityTemp->friend_rendom,
                 'status' => $activityTemp->status,
                 'title' => $activityTemp->title,
                 'description' => $activityTemp->description,
@@ -465,6 +469,7 @@ class ActivityController extends Controller
             'location' => $request->location,
             'when_time' => $request->when_time,
             'how_many' => $request->how_many,
+            'friend_rendom' => $request->friend_rendom,
             'start_time' => $request->start_time,
             'end_time' => $request->end_time,
             'interests_id' => isset($user->interests_id) ? implode(',', (array)$user->interests_id) : null,  // Handling multiple interests_id

@@ -256,7 +256,7 @@ else{
                         $images = json_decode($profileImageJson, true);
                         if (is_array($images) && count($images) > 0) {
                             $firstImage = reset($images);
-                            return url('') . '/' . ltrim($firstImage, '/');
+                            return url('') . '/uploads/app/profile_images/' . ltrim($firstImage, '/');
                         }
                         return null;
                     })($rendom_2->profile_image),

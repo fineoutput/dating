@@ -252,6 +252,14 @@ else{
                 'chat_type' => $message->chat_type,
                 'sender_rendom' => $rendom_1->rendom,
                 'receiver_rendom' => $rendom_2->rendom,
+                'profile_image' => (function ($profileImageJson) {
+                        $images = json_decode($profileImageJson, true);
+                        if (is_array($images) && count($images) > 0) {
+                            $firstImage = reset($images);
+                            return url('') . '/' . ltrim($firstImage, '/');
+                        }
+                        return null;
+                    })($rendom_2->profile_image),
                 'message' => $message->message,
                 'status' => $message->status,
                 'sent_time' => Carbon::parse($message->created_at)->diffForHumans(), // Add "time ago" feature

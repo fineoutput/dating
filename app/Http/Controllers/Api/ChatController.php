@@ -204,74 +204,66 @@ else{
 }
 
 
+public function getMessages(Request $request)
+{
+    $authUser = Auth::user();
+    $receiverRendom = $request->input('receiver_rendom');
 
-   public function getMessages(Request $request)
-    {
-        $userss = Auth::user();
+    $receiver = User::where('rendom', $receiverRendom)->first();
 
-        $receiverId = $request->input('receiver_rendom'); 
-        // return $receiverId;
-        $receiverExists = User::where('rendom',$receiverId)->first();
-        
-        if (!$receiverExists) {
-            return response()->json([
-                'message' => 'Data Not Found',
-                'data' => [],
-                'status' => 200,
-            ]);
-        }
-
-        $receve_id = $receiverExists->id;
-
-        if (!$receiverExists) {
-            return response()->json([
-                'message' => 'Receiver not found.',
-                'data' => [],
-                'status' => 200,
-            ]);
-        }
-
-        // Fetch messages between the authenticate    d user and the receiver
-        $messages = Chat::where(function ($query) use ($receve_id) {
-                $query->where('sender_id', Auth::id())
-                    ->where('receiver_id', $receve_id);
-            })
-            ->orWhere(function ($query) use ($receve_id) {
-                $query->where('sender_id', $receve_id)
-                    ->where('receiver_id', Auth::id());
-            })
-            ->orderBy('created_at', 'asc')
-            ->get();
-
-            
-        $messagesArray = $messages->map(function ($message) {
-            $rendom_1 = User::where('id',$message->sender_id)->first();
-            $rendom_2 = User::where('id',$message->receiver_id)->first();
-            return [
-                'rendom' => $message->rendom,
-                'chat_type' => $message->chat_type,
-                'sender_rendom' => $rendom_1->rendom,
-                'receiver_rendom' => $rendom_2->rendom,
-                'profile_image' => (function ($profileImageJson) {
-                        $images = json_decode($profileImageJson, true);
-                        if (is_array($images) && count($images) > 0) {
-                            $firstImage = reset($images);
-                            return url('') . '/uploads/app/profile_images/' . ltrim($firstImage, '/');
-                        }
-                        return null;
-                    })($rendom_2->profile_image),
-                'message' => $message->message,
-                'status' => $message->status,
-                'sent_time' => Carbon::parse($message->created_at)->diffForHumans(), // Add "time ago" feature
-            ];
-        });
-
+    if (!$receiver) {
         return response()->json([
-            'message' => 'Messages fetched successfully.',
-            'data' => $messagesArray,
+            'message' => 'Data Not Found',
+            'data' => [],
             'status' => 200,
         ]);
     }
+
+    $receiverId = $receiver->id;
+
+    // ✅ Decode only once
+    $decodedImages = json_decode($receiver->profile_image, true);
+    $profileImageUrl = null;
+
+    if (is_array($decodedImages) && count($decodedImages) > 0) {
+        $firstImage = reset($decodedImages);
+        $profileImageUrl = url('') . '/uploads/app/profile_images/' . ltrim($firstImage, '/');
+    }
+
+    // ✅ Fetch messages between sender & receiver
+    $messages = Chat::where(function ($query) use ($receiverId) {
+            $query->where('sender_id', Auth::id())
+                ->where('receiver_id', $receiverId);
+        })
+        ->orWhere(function ($query) use ($receiverId) {
+            $query->where('sender_id', $receiverId)
+                ->where('receiver_id', Auth::id());
+        })
+        ->orderBy('created_at', 'asc')
+        ->get();
+
+    $messagesArray = $messages->map(function ($message) use ($profileImageUrl) {
+        $sender = User::find($message->sender_id);
+        $receiver = User::find($message->receiver_id);
+
+        return [
+            'rendom' => $message->rendom,
+            'chat_type' => $message->chat_type,
+            'sender_rendom' => $sender->rendom ?? null,
+            'receiver_rendom' => $receiver->rendom ?? null,
+            'profile_image' => $profileImageUrl, // ✅ Same for all
+            'message' => $message->message,
+            'status' => $message->status,
+            'sent_time' => Carbon::parse($message->created_at)->diffForHumans(),
+        ];
+    });
+
+    return response()->json([
+        'message' => 'Messages fetched successfully.',
+        'data' => $messagesArray,
+        'status' => 200,
+    ]);
+}
 
 
     public function updateMessageStatus(Request $request)

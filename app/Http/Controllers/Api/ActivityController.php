@@ -612,51 +612,64 @@ public function useractivitys(Request $request)
 
 public function foryouactivitys(Request $request)
 {
-    $user = Auth::user();
-
-    if (!$user) {
+    $users = Auth::user();
+    
+    if (!$users) {
         return response()->json(['message' => 'User not authenticated'], 401);
     }
 
-    $currentTime = Carbon::now('Asia/Kolkata');
-    $todayDate = Carbon::today('Asia/Kolkata');
+    $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata
+    $todayDate = Carbon::today('Asia/Kolkata');  // Today's date in Asia/Kolkata
 
     $activities = Activity::orderBy('id', 'DESC')
-        ->where('status', 2)
-        ->whereDate('when_time', '>=', $todayDate->format('Y-m-d'))
+        // ->where('user_id', $user->id)
+        ->where('status', 2) 
+        ->whereDate('when_time', '>=', $todayDate->format('Y-m-d')) 
         ->where(function ($query) use ($todayDate, $currentTime) {
-            $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')
-                ->setDate($todayDate->year, $todayDate->month, $todayDate->day);
-
-            $query->where('end_time', '>=', $endTime)
-                  ->orWhere('when_time', '>=', $currentTime);
+            $query->where(function ($subQuery) use ($todayDate, $currentTime) {
+       
+                $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
+     
+                $subQuery->where('end_time', '>=', $endTime);
+            });
+    
+            $query->where('when_time', '>=', $currentTime);  
         })
         ->get();
-
+    
     $filteredActivities = [];
-
+    
     foreach ($activities as $activity) {
+
         $whenTime = Carbon::parse($activity->when_time)->setTimezone('Asia/Kolkata');
-        $endTime = Carbon::createFromFormat('H:i:s', $activity->end_time)->setTimezone('Asia/Kolkata');
+
+        $endTime = Carbon::createFromFormat('h:i A', $activity->end_time)->setTimezone('Asia/Kolkata'); 
+
         $combinedDateTime = $whenTime->copy()->setTimeFromTimeString($endTime->toTimeString());
 
         if ($combinedDateTime >= $currentTime) {
+
             $filteredActivities[] = $activity;
         }
     }
 
-    if (empty($filteredActivities)) {
+
+
+    if ($activities->isEmpty()) {
         return response()->json([
             'message' => 'No upcoming activities found',
-            'status' => 200,
-            'data' => [],
+            'status'=>200,
+            'data'=>[],
         ], 200);
     }
 
-    $activitiesData = [];
+    // Process the profile image URL
+  
 
-    foreach ($filteredActivities as $activity) {
-        $activityUser = User::find($activity->user_id);
+    $activitiesData = [];
+    foreach ($activities as $activity) {
+
+         $activityUser = User::find($activity->user_id);
 
         $profileImageUrl = null;
         if ($activityUser && $activityUser->profile_image) {
@@ -689,19 +702,19 @@ public function foryouactivitys(Request $request)
             'how_many' => $activity->how_many,
             'vibe_name' => $activity->vibe->name ?? '',
             'vibe_icon' => $activity->vibe->icon ?? '',
-            'user_name' => $activityUser->name ?? '',
-            'user_profile_image' => !empty($activity->image)
-                ? asset($activity->image)
-                : $profileImageUrl,
-            'user_time' => Carbon::parse($activity->when_time)->format('d-F') . ' ' . Carbon::parse($activity->end_time)->format('H:i'),
+            'user_name' => $activityUser->name,
+            'user_profile_image' => (!empty($activity->image))
+            ? asset($activity->image): $profileImageUrl,
+           'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
             'status' => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
         ];
     }
 
+    // Return the response with all activities included
     return response()->json([
         'message' => 'User activities fetched successfully',
         'status' => 200,
-        'data' => $activitiesData,
+        'data' => $activitiesData, // Return the activities directly without nesting them inside a separate array
     ]);
 }
 

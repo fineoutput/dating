@@ -668,7 +668,7 @@ public function foryouactivitys(Request $request)
 
     $activitiesData = [];
     foreach ($activities as $activity) {
-        $user = User::where($activity->user_id)->get();
+        $user = User::where('id',$activity->user_id)->get();
           $profileImageUrl = null;
     if ($user->profile_image) {
         $profileImages = json_decode($user->profile_image, true);

@@ -612,11 +612,11 @@ public function useractivitys(Request $request)
 
 public function foryouactivitys(Request $request)
 {
-    // $user = Auth::user();
+    $users = Auth::user();
     
-    // if (!$user) {
-    //     return response()->json(['message' => 'User not authenticated'], 401);
-    // }
+    if (!$users) {
+        return response()->json(['message' => 'User not authenticated'], 401);
+    }
 
     $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata
     $todayDate = Carbon::today('Asia/Kolkata');  // Today's date in Asia/Kolkata
@@ -664,7 +664,12 @@ public function foryouactivitys(Request $request)
     }
 
     // Process the profile image URL
-    $profileImageUrl = null;
+  
+
+    $activitiesData = [];
+    foreach ($activities as $activity) {
+        $user = User::where($activity->user_id)->get();
+          $profileImageUrl = null;
     if ($user->profile_image) {
         $profileImages = json_decode($user->profile_image, true);
 
@@ -673,10 +678,6 @@ public function foryouactivitys(Request $request)
         }
     }
 
-    // Process each activity directly and add bg_color
-    $activitiesData = [];
-    foreach ($activities as $activity) {
-        // Generate background color based on activity ID
         $hash = md5($activity->id);
         $r = hexdec(substr($hash, 0, 2));
         $g = hexdec(substr($hash, 2, 2));

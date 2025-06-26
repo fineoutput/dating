@@ -2334,7 +2334,17 @@ public function friendcount(Request $request)
             $vibeWithActivityCount = [];
         
             foreach ($vibes as $vibe) {
-                $activityCount = Activity::where('vibe_id', $vibe->id)->where('status',2)->count();
+                $activityCount = Activity::where('status',2)->get();
+
+                  $filtered = $activityCount->filter(function ($activity) use ($vibe) {
+                    $vibeIdsRaw = json_decode($activity->vibe_id, true);
+                    if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
+                        $ids = explode(',', $vibeIdsRaw[0]); // e.g., "1,2" → ["1", "2"]
+                        return in_array((string)$vibe->id, $ids); // Cast to string for exact match
+                    }
+                    return false;
+                });
+
                 $vibeWithActivityCount[] = [
                     'id' => $vibe->id,
                     'name' => $vibe->name,
@@ -2342,7 +2352,7 @@ public function friendcount(Request $request)
                     // 'image' => $vibe->image,
                     'status' => $vibe->status,
                     'icon' => $vibe->icon,
-                    'activity_count' => $activityCount
+                    'activity_count' => $filtered->count()
                 ];
             }
             return response()->json([
@@ -2404,7 +2414,7 @@ public function vibeactivitydetails(Request $request)
             $currentTime = Carbon::now('Asia/Kolkata'); 
             $todayDate = Carbon::today('Asia/Kolkata');
             $activities = Activity::orderBy('id', 'DESC')
-                ->where('vibe_id', $vibe->id)
+            // ->where('vibe_id', 'LIKE', '%"'.$vibe->id.'"%')
                 ->where('status', 2)
                 ->whereDate('when_time', '>=', $todayDate->format('Y-m-d'))->where(function ($query) use ($todayDate, $currentTime) {
                     $query->where(function ($subQuery) use ($todayDate, $currentTime) {
@@ -2416,7 +2426,14 @@ public function vibeactivitydetails(Request $request)
             
                     $query->where('when_time', '>=', $currentTime);  
                 })
-                ->get();
+                ->get()->filter(function ($activity) use ($vibe) {
+        $vibeIdsRaw = json_decode($activity->vibe_id, true);
+        if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
+            $ids = explode(',', $vibeIdsRaw[0]); // ["1", "2"] → [1, 2]
+            return in_array($vibe->id, $ids);
+        }
+        return false;
+    });
     
             $filteredActivities = [];
     
@@ -2469,7 +2486,7 @@ public function vibeactivitydetails(Request $request)
         $todayDate = Carbon::today('Asia/Kolkata');
 
         $activities = Activity::orderBy('id', 'DESC')
-            ->where('vibe_id', $vibe->id)
+            // ->where('vibe_id', 'LIKE', '%"'.$vibe->id.'"%')
             ->where('status', 2)
             ->whereDate('when_time', '>=', $todayDate->format('Y-m-d'))
             ->where(function ($query) use ($todayDate, $currentTime) {
@@ -2482,7 +2499,14 @@ public function vibeactivitydetails(Request $request)
         
                 $query->where('when_time', '>=', $currentTime);  
             })
-            ->get();
+            ->get()->filter(function ($activity) use ($vibe) {
+        $vibeIdsRaw = json_decode($activity->vibe_id, true);
+        if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
+            $ids = explode(',', $vibeIdsRaw[0]); // ["1", "2"] → [1, 2]
+            return in_array($vibe->id, $ids);
+        }
+        return false;
+    });
 
         $filteredActivities = [];
 
@@ -2535,6 +2559,19 @@ public function vibeactivitydetails(Request $request)
                     }
                 }
 
+                      $vibeNames = [];
+
+                    $vibeIdsRaw = json_decode($activity->vibe_id, true); // returns: ["1,2"]
+                    if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
+                        $vibeIdList = explode(',', $vibeIdsRaw[0]); // now [1, 2]
+
+                        $vibes = Vibes::whereIn('id', $vibeIdList)->get();
+
+                        foreach ($vibes as $vibe) {
+                            $vibeNames[] = trim($vibe->icon . ' ' . $vibe->name); // 🎉 Social
+                        }
+                    }
+
                 return [
                     'rendom' => $activity->rendom,
                     'when_time' => $activity->when_time,
@@ -2543,8 +2580,8 @@ public function vibeactivitydetails(Request $request)
                     'location' => $activity->location,
                     'bg_color' => $bgColor,
                     'how_many' => $activity->how_many,
-                    'vibe_name' => $activity->vibe->name ?? '',
-                    'vibe_icon' => $activity->vibe->icon ?? '',
+                    'vibe_name' => $vibeNames ?? '',
+                    // 'vibe_icon' => $activity->vibe->icon ?? '',
                     'user_name' => $user_rendom->name,
                     'user_profile_image' => (!empty($activity->image))
                     ? asset($activity->image): $profileImageUrl,

@@ -997,6 +997,165 @@ public function getActivitydetailes(Request $request)
 }
 
 
+public function foryouActivitydetailes(Request $request)
+{
+    $user = Auth::user();
+
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], 401);
+    }
+
+    $request->validate([
+        'rendom' => 'required',
+    ]);
+
+    // 🔹 1. Main activity from rendom
+    $mainActivity = Activity::with('user', 'vibe')->where('rendom', $request->rendom)->first();
+
+    if (!$mainActivity) {
+        return response()->json([
+            'message' => 'Activity Not Found',
+            'data' => [],
+            'status' => 201,
+        ], 200);
+    }
+
+    // Expense name
+    $expenseIds = json_decode($mainActivity->expense_id, true);
+    $firstExpenseName = null;
+    if (is_array($expenseIds) && count($expenseIds) > 0) {
+        $firstExpense = Expense::find($expenseIds[0]);
+        $firstExpenseName = $firstExpense->name ?? null;
+    }
+
+    // Profile image
+    $profileImages = json_decode($mainActivity->user->profile_image ?? '[]', true);
+    $profileImageUrl = isset($profileImages[1]) ? asset('uploads/app/profile_images/' . $profileImages[1]) : null;
+
+    // Logged-in user is creator?
+    $like_user = $mainActivity->user_id === $user->id;
+
+    // Count confirmed users
+    $interestCount = OtherInterest::where('activity_id', $mainActivity->id)->count();
+    $OtherInt = OtherInterest::where('user_id',Auth::id())->where('activity_id',$mainActivity->id)->first();
+      if($OtherInt){
+                $alinters = true;
+            }else{
+                $alinters = false;
+            }
+    $mainActivityData = [
+        'user_name' => $mainActivity->user->name ?? '',
+        'rendom' => $mainActivity->rendom ?? '',
+        'profile_image' => $profileImageUrl ?? null,
+        'activity_image' => (!empty($mainActivity->image)) ? asset($mainActivity->image): null,
+        'title' => $mainActivity->title,
+        'description' => $mainActivity->description,
+        'location' => $mainActivity->location,
+        'when_time' => $mainActivity->when_time,
+        'end_time' => $mainActivity->end_time,
+        'how_many' => $mainActivity->how_many,
+        'interestCount' => $interestCount,
+        'vibe_name' => $mainActivity->vibe->name ?? '',
+        'vibe_icon' => $mainActivity->vibe->icon ?? '',
+        'like_user' => $like_user,
+        'expense_name' => $firstExpenseName,
+        'already_interest' => $alinters,
+        'status' => $mainActivity->status,
+        'amount' => $mainActivity->amount,
+
+    ];
+
+    $attendees = OtherInterest::where('activity_id', $mainActivity->id)
+        ->where('confirm', 1)
+        ->with('user')
+        ->get();
+
+    $attendeeList = $attendees->map(function ($a) {
+        $images = json_decode($a->user->profile_image ?? '[]', true);
+        $img = isset($images[1]) ? asset('uploads/app/profile_images/' . $images[1]) : null;
+
+        return [
+            'user_id' => $a->user->id ?? null,
+            'user_name' => $a->user->name ?? '',
+            'profile_image' => $img,
+        ];
+    });
+
+    $currentTime = Carbon::now('Asia/Kolkata');
+    $todayDate = Carbon::today('Asia/Kolkata');
+
+    $allActivities = Activity::where('id','!=',$mainActivity->id)->with('user', 'vibe')
+        ->orderBy('id', 'desc')
+        ->whereDate('when_time', '>=', $todayDate)
+        ->where('user_id', '!=', $user->id)->where(function ($query) use ($todayDate, $currentTime) {
+            $query->where(function ($subQuery) use ($todayDate, $currentTime) {
+       
+                $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
+     
+                $subQuery->where('end_time', '>=', $endTime);
+            });
+    
+            $query->where('when_time', '>=', $currentTime);  
+        })
+        ->get()
+        ->map(function ($act) {
+            $images = json_decode($act->user->profile_image ?? '[]', true);
+            $img = isset($images[1]) ? asset('uploads/app/profile_images/' . $images[1]) : null;
+
+            $expenseIds = json_decode($act->expense_id, true);
+            $expense = is_array($expenseIds) && count($expenseIds) > 0
+                ? Expense::find($expenseIds[0])->name ?? null
+                : null;
+
+            $OtherInterest = OtherInterest::where('user_id',Auth::id())->where('activity_id',$act->id)->first();
+            if($OtherInterest){
+                $alinter = true;
+            }else{
+                $alinter = false;
+            }
+
+             $interestCount = OtherInterest::where('activity_id', $act->id)->count();
+
+            return [
+                'user_name' => $act->user->name ?? '',
+                'rendom' => $act->rendom ?? '',
+                'profile_image' => (!empty($act->image)) ? asset($act->image): $img,
+                'title' => $act->title,
+                'description' => $act->description,
+                'interestCount' => $interestCount,
+                'location' => $act->location,
+                'when_time' => $act->when_time,
+                'end_time' => $act->end_time,
+                'how_many' => $act->how_many,
+                'vibe_name' => $act->vibe->name ?? '',
+                'vibe_icon' => $act->vibe->icon ?? '',
+                'expense_name' => $expense,
+                'already_interest' => $alinter,
+                'status' => $act->status,
+                'amount' => $act->amount,
+            ];
+        });
+
+    $mainActivityData['attendees_count'] = $attendeeList->count();
+    $mainActivityData['attendees'] = $attendeeList->values();
+
+    // Merge into one flat data array
+    $mergedData = array_merge([$mainActivityData], $allActivities->toArray());
+
+    // 🔢 Add serial_number to each entry
+    $mergedData = array_map(function ($item, $index) {
+        $item['serial_number'] = $index + 1;
+        return $item;
+    }, $mergedData, array_keys($mergedData));
+
+    return response()->json([
+        'message' => 'Activity details fetched',
+        'status' => 200,
+        'data' => $mergedData,
+    ]);
+}
+
+
     
         public function activitys(Request $request)
         {

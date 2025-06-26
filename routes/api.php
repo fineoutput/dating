@@ -31,6 +31,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('activitys', [ActivityController::class, 'activitys']);
     Route::post('get-activity-detaile', [ActivityController::class, 'getActivitydetailes']);
     Route::get('user-activitys', [ActivityController::class, 'useractivitys']);
+    Route::get('for-you-activitys', [ActivityController::class, 'foryouactivitys']);
   
     Route::get('find-matching-users-activity', [ActivityController::class, 'findMatchingactivity']);
     Route::get('find-matching-activity', [ActivityController::class, 'findactivity']);

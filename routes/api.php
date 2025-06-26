@@ -30,6 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('activity-store', [ActivityController::class, 'activitystore']);
     Route::get('activitys', [ActivityController::class, 'activitys']);
     Route::post('get-activity-detaile', [ActivityController::class, 'getActivitydetailes']);
+    Route::post('for-you-activity-detaile', [ActivityController::class, 'foryouActivitydetailes']);
     Route::get('user-activitys', [ActivityController::class, 'useractivitys']);
     Route::get('for-you-activitys', [ActivityController::class, 'foryouactivitys']);
   

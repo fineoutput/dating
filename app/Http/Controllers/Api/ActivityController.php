@@ -887,7 +887,8 @@ public function getActivitydetailes(Request $request)
     $mainActivityData = [
         'user_name' => $mainActivity->user->name ?? '',
         'rendom' => $mainActivity->rendom ?? '',
-        'profile_image' => (!empty($mainActivity->image)) ? asset($mainActivity->image): $profileImageUrl,
+        'profile_image' => $profileImageUrl ?? null,
+        'activity_image' => (!empty($mainActivity->image)) ? asset($mainActivity->image): null,
         'title' => $mainActivity->title,
         'description' => $mainActivity->description,
         'location' => $mainActivity->location,
@@ -980,7 +981,7 @@ public function getActivitydetailes(Request $request)
     $mainActivityData['attendees'] = $attendeeList->values();
 
     // Merge into one flat data array
-    $mergedData = array_merge([$mainActivityData], $allActivities->toArray());
+    $mergedData = array_merge([$mainActivityData]);
 
     // 🔢 Add serial_number to each entry
     $mergedData = array_map(function ($item, $index) {

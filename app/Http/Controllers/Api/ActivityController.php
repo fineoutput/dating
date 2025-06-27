@@ -2007,7 +2007,7 @@ public function friendcount(Request $request)
     $activityIds = $matchingActivities->pluck('id'); 
 
     // 🔹 Get users who showed interest in those activities
-    $interestIds = OtherInterest::whereIn('activity_id', $activityIds)->get();
+    $interestIds = OtherInterest::where('user_id',$user->id)->orWhere('user_id_1',$user->id)->get();
     $userDetailsFromInterest = $interestIds->pluck('user_id');
 
     // 🔹 Get users who liked this user

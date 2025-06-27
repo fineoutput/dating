@@ -294,6 +294,7 @@ class ActivityController extends Controller
             if ($activityCount >= $activitysubscriptioncount->activity_count) {
                 return response()->json([
                     'message' => 'You can only create up to activities per week due to your subscription.',
+                    'status' => 200,
                 ], 400);
             }
     

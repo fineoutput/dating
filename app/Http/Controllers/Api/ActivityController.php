@@ -1023,9 +1023,8 @@ if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
     $mainActivityData['attendees'] = $attendeeList->values();
 
     // Merge into one flat data array
-    $mergedData = array_merge([$mainActivityData]);
+    $mergedData = array_merge($mainActivityData);
 
-    // 🔢 Add serial_number to each entry
     $mergedData = array_map(function ($item, $index) {
         $item['serial_number'] = $index + 1;
         return $item;

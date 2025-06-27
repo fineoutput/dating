@@ -295,7 +295,7 @@ class ActivityController extends Controller
                 return response()->json([
                     'message' => 'You can only create up to activities per week due to your subscription.',
                     'status' => 200,
-                ], 400);
+                ], 200);
             }
     
             $validator = Validator::make($request->all(), [

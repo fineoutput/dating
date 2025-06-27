@@ -1672,7 +1672,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
     $interestIds = OtherInterest::where('user_id', $user->id)->get();
     $activityIds = $interestIds->pluck('activity_id'); 
-    $matchingActivities = Activity::whereIn('id', $activityIds)->where('status', 2)
+    $matchingActivities = Activity::whereIn('id', $activityIds)->where('user_id','!=',$user->id)->where('status', 2)
     ->where(function ($query) use ($todayDate, $currentTime) {
         $query->where(function ($subQuery) use ($todayDate, $currentTime) {
    

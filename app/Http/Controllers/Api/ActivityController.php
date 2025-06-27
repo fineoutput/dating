@@ -1142,6 +1142,7 @@ if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
 
     $allActivities = Activity::where('id','!=',$mainActivity->id)->with('user', 'vibe')
         ->orderBy('id', 'desc')
+        ->where('user_id','!=', $user->id)
         ->whereDate('when_time', '>=', $todayDate)
         ->where('user_id', '!=', $user->id)->where(function ($query) use ($todayDate, $currentTime) {
             $query->where(function ($subQuery) use ($todayDate, $currentTime) {

@@ -627,6 +627,7 @@ public function useractivitys(Request $request)
 public function foryouactivitys(Request $request)
 {
     $users = Auth::user();
+    // return $users;
     
     if (!$users) {
         return response()->json(['message' => 'User not authenticated'], 401);
@@ -636,7 +637,7 @@ public function foryouactivitys(Request $request)
     $todayDate = Carbon::today('Asia/Kolkata');  // Today's date in Asia/Kolkata
 
     $activities = Activity::orderBy('id', 'DESC')
-        // ->where('user_id', $user->id)
+        ->where('user_id','!=', $users->id)
         ->where('status', 2) 
         ->whereDate('when_time', '>=', $todayDate->format('Y-m-d')) 
         ->where(function ($query) use ($todayDate, $currentTime) {

@@ -1023,7 +1023,7 @@ if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
     $mainActivityData['attendees'] = $attendeeList->values();
 
     // Merge into one flat data array
-    $mergedData = array_merge($mainActivityData);
+    $mergedData = array_merge([$mainActivityData]);
 
     $mergedData = array_map(function ($item, $index) {
         $item['serial_number'] = $index + 1;
@@ -1033,7 +1033,7 @@ if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
     return response()->json([
         'message' => 'Activity details fetched',
         'status' => 200,
-        'data' => $mergedData,
+        'data' => $mainActivityData,
     ]);
 }
 

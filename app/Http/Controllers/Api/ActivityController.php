@@ -1187,7 +1187,9 @@ if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
             return [
                 'user_name' => $act->user->name ?? '',
                 'rendom' => $act->rendom ?? '',
-                'profile_image' => (!empty($act->image)) ? asset($act->image): $img,
+                // 'profile_image' => (!empty($act->image)) ? asset($act->image): $img,
+                'profile_image' => $img ?? null,
+                'activity_image' => (!empty($act->image)) ? asset($act->image): null,
                 'title' => $act->title,
                 'description' => $act->description,
                 'interestCount' => $interestCount,

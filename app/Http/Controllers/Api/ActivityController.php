@@ -2005,7 +2005,6 @@ public function friendcount(Request $request)
 
     $activityIds = $matchingActivities->pluck('id');
 
-    // 🔹 Get opposite user IDs from OtherInterest (exclude self)
     $interestRelations = OtherInterest::where('user_id', $user->id)
                                       ->orWhere('user_id_1', $user->id)
                                       ->get();
@@ -2013,8 +2012,20 @@ public function friendcount(Request $request)
     $oppositeUserIds = $interestRelations->map(function ($relation) use ($user) {
         return $relation->user_id == $user->id ? $relation->user_id_1 : $relation->user_id;
     })->unique()->values();
+    
 
-    $userDetailsFromInterest2 = User::whereIn('id', $oppositeUserIds)->get();
+    $userDetailsFromInterest2 = User::whereIn('id', $oppositeUserIds)->get()->map(function ($userItem) use ($interestRelations, $user) {
+    // Find the matching interest relation for this user
+        $matchingRelation = $interestRelations->first(function ($relation) use ($userItem, $user) {
+            return ($relation->user_id == $user->id && $relation->user_id_1 == $userItem->id) ||
+                ($relation->user_id_1 == $user->id && $relation->user_id == $userItem->id);
+        });
+
+        // Attach activity_id to user object temporarily
+        $userItem->interest_activity_id = $matchingRelation->activity_id ?? null;
+
+        return $userItem;
+    });
 
     // 🔹 Get matched users from SlideLike table
     $likeUser = SlideLike::where('matched_user', $user->id);
@@ -2040,7 +2051,7 @@ public function friendcount(Request $request)
             'id' => $userItem->id,
             'user_rendom' => $userItem->rendom,
             'name' => $userItem->name,
-            'activity_id' => $userItem->activity_id ?? '',
+            'activity_id' => $userItem->interest_activity_id,
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
             'form' => 'activity',
             'last_message' => $chat->message ?? null,
@@ -2066,7 +2077,6 @@ public function friendcount(Request $request)
             'id' => $userItem->id,
             'user_rendom' => $userItem->rendom,
             'name' => $userItem->name,
-            'activity_id' => $userItem->activity_id ?? '',
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
             'form' => 'activity',
             'last_message' => $chat->message ?? null,

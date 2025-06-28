@@ -2160,7 +2160,17 @@ public function friendcount_one(Request $request)
         return $relation->user_id == $user->id ? $relation->user_id_1 : $relation->user_id;
     })->unique()->values();
 
-    $userDetailsFromInterest2 = User::whereIn('id', $oppositeUserIds)->get();
+    $userDetailsFromInterest2 = User::whereIn('id', $oppositeUserIds)->get()->map(function ($userItem) use ($interestRelations, $user) {
+    // Find the matching interest relation for this user
+    $matchingRelation = $interestRelations->first(function ($relation) use ($userItem, $user) {
+        return ($relation->user_id == $user->id && $relation->user_id_1 == $userItem->id) ||
+               ($relation->user_id_1 == $user->id && $relation->user_id == $userItem->id);
+    });
+
+        $userItem->interest_activity_id = $matchingRelation->activity_id ?? null;
+
+        return $userItem;
+    });
 
     // 🔹 Get matched users from SlideLike table
     $likeUser = SlideLike::where('matched_user', $user->id);
@@ -2186,6 +2196,7 @@ public function friendcount_one(Request $request)
             'id' => $userItem->id,
             'user_rendom' => $userItem->rendom,
             'name' => $userItem->name,
+            'activity_id' => $userItem->interest_activity_id,
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
             'form' => 'activity',
             'last_message' => $chat->message ?? null,

@@ -88,6 +88,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/update-pactup', [ActivityController::class, 'acceptpactup']);
 
     Route::get('user-interest', [InterestController::class, 'userinterest']);
+    Route::get('pactup-request', [ActivityController::class, 'pactup_request']);
 
 
 });   

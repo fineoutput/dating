@@ -2962,7 +2962,7 @@ public function updateConfirm(Request $request)
     $otherInterest = OtherInterest::where('user_id', $user->id)->where('activity_id',$activity_rendom_1->id)->first();
 
     if ($otherInterest) {
-        $otherInterest->update(['confirm' => 0]);
+        $otherInterest->update(['confirm' => 2]);
 
         return response()->json([
             'message' => 'Confirm updated successfully to',

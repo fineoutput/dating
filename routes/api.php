@@ -85,6 +85,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/coin-categories', [SubscriptionController::class, 'subscriptionlist']);
 
     Route::post('/update-confirm', [ActivityController::class, 'updateConfirm']);
+    Route::post('/update-pactup', [ActivityController::class, 'acceptpactup']);
 
     Route::get('user-interest', [InterestController::class, 'userinterest']);
 

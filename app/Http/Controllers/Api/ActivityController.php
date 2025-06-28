@@ -3136,6 +3136,65 @@ public function updateConfirm(Request $request)
 }
 
 
+public function acceptpactup(Request $request)
+{
+    $request->validate([
+        'random' => 'required|string', 
+        'type' => 'required', 
+        'activity_id' => 'required', 
+    ]);
+
+    $random = $request->input('random');
+    $pactup = $request->input('pactup');
+    $activity_id = $request->input('activity_id');
+
+
+
+    $user = User::where('rendom', $random)->first();
+    // $activity_id = Activity::where('rendom', $activity_rendom)->first();
+
+    if (!$activity_id) {
+        return response()->json([
+        'message' => 'Activity not found',
+        'data'=>[],
+        'status'=>201
+    ], 200);
+    }
+
+    if (!$user) {
+        return response()->json([
+            'message' => 'User not found.',
+            'status' => 201,
+            'data' => [],
+    ], 201);
+    }
+
+    
+    // return $user->id;
+
+    $otherInterest = OtherInterest::where('user_id', $user->id)->orWhere('user_id_1', $user->id)->where('activity_id',$activity_id)->first();
+
+    if ($otherInterest) {
+        if($pactup == 'accept'){
+         $otherInterest->update(['confirm' => 3]);
+        }else{
+         $otherInterest->update(['confirm' => 4]);
+        }
+        return response()->json([
+            'message' => 'Confirm updated successfully to',
+            'status' => 200,
+            'data' => [],
+        ], 200);
+    }
+
+    return response()->json([
+        'message' => 'No matching record in OtherInterest table.',
+        'status' => 201,
+        'data' => [],
+], 201);
+}
+
+
         
 
 }

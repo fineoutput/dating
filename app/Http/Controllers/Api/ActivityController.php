@@ -2066,6 +2066,7 @@ public function friendcount(Request $request)
             'id' => $userItem->id,
             'user_rendom' => $userItem->rendom,
             'name' => $userItem->name,
+            'activity_id' => $userItem->activity_id ?? '',
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
             'form' => 'activity',
             'last_message' => $chat->message ?? null,

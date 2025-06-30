@@ -285,7 +285,7 @@ public function getMessages(Request $request)
         return $relation->user_id == $user->id ? $relation->user_id_1 : $relation->user_id;
     })->unique()->values();
 
-    $userDetailsFromInterest2 = User::whereIn('id', $oppositeUserIds)->get()->map(function ($userItem) use ($interestRelations, $user) {
+    $userDetailsFromInterest2 = User::where('rendom',$receiverRendom)->whereIn('id', $oppositeUserIds)->get()->map(function ($userItem) use ($interestRelations, $user) {
     // Find the matching interest relation for this user
     $matchingRelation = $interestRelations->first(function ($relation) use ($userItem, $user) {
         return ($relation->user_id == $user->id && $relation->user_id_1 == $userItem->id) ||

@@ -3145,7 +3145,7 @@ public function acceptpactup(Request $request)
     ]);
 
     $random = $request->input('random');
-    $pactup = $request->input('pactup');
+    $pactup = $request->input('type');
     $activity_id = $request->input('activity_id');
     // return $activity_id;
 

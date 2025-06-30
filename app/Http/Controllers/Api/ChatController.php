@@ -293,6 +293,7 @@ public function getMessages(Request $request)
     });
 
         $userItem->interest_activity_id = $matchingRelation->activity_id ?? null;
+        $userItem->confirm = $matchingRelation->confirm ?? null;
 
         return $userItem;
     });
@@ -322,6 +323,7 @@ public function getMessages(Request $request)
             'user_rendom' => $userItem->rendom,
             'name' => $userItem->name,
             'activity_id' => $userItem->interest_activity_id,
+            'status' => $userItem->confirm,
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
             'form' => 'activity',
             'last_message' => $chat->message ?? null,

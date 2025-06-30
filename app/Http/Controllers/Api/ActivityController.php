@@ -951,6 +951,7 @@ if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
 
     $attendees = OtherInterest::where('activity_id', $mainActivity->id)
         ->where('confirm', 1)
+        ->orWhere('confirm', 3)
         ->with('user')
         ->get();
 

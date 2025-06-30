@@ -195,6 +195,71 @@ class InterestController extends Controller
     }
 
 
+  public function removeinterest(Request $request)
+{
+    if (!Auth::check()) {
+        return response()->json([
+            'message' => 'Unauthorized. Please log in.',
+        ]);
+    }
+
+    $user = Auth::user();
+
+    // Validate input
+    $validator = Validator::make($request->all(), [
+        'rendom' => 'required|exists:activity_table,rendom',
+    ]);
+
+    if ($validator->fails()) {
+        $errors = [];
+        foreach ($validator->errors()->getMessages() as $field => $messages) {
+            $errors[$field] = $messages[0];
+            break;
+        }
+        return response()->json(['message' => $errors, 'data' => [], 'status' => 201], 200);
+    }
+
+    $activity = Activity::where('rendom', $request->rendom)->first();
+
+    if (!$activity) {
+        return response()->json([
+            'message' => 'Activity not found.',
+            'data' => [],
+            'status' => 404,
+        ]);
+    }
+
+    if ($activity->user_id == $user->id) {
+        return response()->json([
+            'message' => 'You cannot add interest to your own activity.',
+            'data' => [],
+            'status' => 201,
+        ]);
+    }
+
+    $existingInterest = OtherInterest::where('user_id', $user->id)
+                                    ->where('activity_id', $activity->id)
+                                    ->first();
+
+    if ($existingInterest) {
+      
+        $existingInterest->confirm = 5;
+        $existingInterest->save();
+
+        return response()->json([
+            'message' => 'Interest updated to confirm = 5.',
+            'data' => [
+                'user_rendom'     => $user->rendom,
+                'activity_rendom' => $request->rendom,
+                'confirm'         => 5,
+            ],
+            'status' => 200,
+        ]);
+    }
+
+}
+
+
     public function inviteinterest(Request $request)
     {
         if (!Auth::check()) {

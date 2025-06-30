@@ -278,7 +278,7 @@ public function getMessages(Request $request)
 
     // $Activitiesren = Activity::where('rendom', $request->rendom)->first();
 
-    $interestRelations = OtherInterest::Where('user_id_1', $user->id)->orderBy('id','DESC')
+    $interestRelations = OtherInterest::where('user_id', $user->id)->orderBy('id','DESC')
                                       ->get();
 
     $oppositeUserIds = $interestRelations->map(function ($relation) use ($user) {

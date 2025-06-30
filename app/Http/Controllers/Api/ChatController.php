@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Mail\OtpMail;
+use App\Models\Activity;
+use App\Models\Cupid;
+use App\Models\OtherInterest;
+use App\Models\SlideLike;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -258,9 +262,142 @@ public function getMessages(Request $request)
         ];
     });
 
+
+     $user = Auth::user(); 
+
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], 401);
+    }
+
+    // 🔹 Get all activities by this user where status = 2
+    $matchingActivities = Activity::where('user_id', $user->id)
+                                  ->where('status', 2)
+                                  ->get();
+
+    $activityIds = $matchingActivities->pluck('id');
+
+    // 🔹 Get opposite user IDs from OtherInterest (exclude self)
+    $interestRelations = OtherInterest::where('user_id', $user->id)
+                                      ->orWhere('user_id_1', $user->id)
+                                      ->get();
+
+    $oppositeUserIds = $interestRelations->map(function ($relation) use ($user) {
+        return $relation->user_id == $user->id ? $relation->user_id_1 : $relation->user_id;
+    })->unique()->values();
+
+    $userDetailsFromInterest2 = User::whereIn('id', $oppositeUserIds)->get()->map(function ($userItem) use ($interestRelations, $user) {
+    // Find the matching interest relation for this user
+    $matchingRelation = $interestRelations->first(function ($relation) use ($userItem, $user) {
+        return ($relation->user_id == $user->id && $relation->user_id_1 == $userItem->id) ||
+               ($relation->user_id_1 == $user->id && $relation->user_id == $userItem->id);
+    });
+
+        $userItem->interest_activity_id = $matchingRelation->activity_id ?? null;
+
+        return $userItem;
+    });
+
+    // 🔹 Get matched users from SlideLike table
+    $likeUser = SlideLike::where('matched_user', $user->id);
+    $likeUserDetails = $likeUser->pluck('matching_user');
+    $likeUserDetails2 = User::whereIn('id', $likeUserDetails)->get();
+
+    // 🔹 Map interest users
+    $userList = $userDetailsFromInterest2->map(function ($userItem) use ($user) {
+        $imagePath = null;
+        if ($userItem->profile_image) {
+            $images = json_decode($userItem->profile_image, true); 
+            if (is_array($images) && count($images)) {
+                $imagePath = reset($images);
+            }
+        }
+
+        $chat = Chat::where('sender_id', $user->id)
+                    ->where('receiver_id', $userItem->id)
+                    ->orderBy('id', 'DESC')
+                    ->first();
+
+        return [
+            'id' => $userItem->id,
+            'user_rendom' => $userItem->rendom,
+            'name' => $userItem->name,
+            'activity_id' => $userItem->interest_activity_id,
+            'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+            'form' => 'activity',
+            'last_message' => $chat->message ?? null,
+        ];
+    });
+
+    // 🔹 Map liked users
+    $likeUserList = $likeUserDetails2->map(function ($userItem) use ($user) {
+        $imagePath = null;
+        if ($userItem->profile_image) {
+            $images = json_decode($userItem->profile_image, true); 
+            if (is_array($images) && count($images)) {
+                $imagePath = reset($images);
+            }
+        }
+
+        $chat = Chat::where('sender_id', $user->id)
+                    ->where('receiver_id', $userItem->id)
+                    ->orderBy('id', 'DESC')
+                    ->first();
+
+        return [
+            'id' => $userItem->id,
+            'user_rendom' => $userItem->rendom,
+            'name' => $userItem->name,
+            'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+            'form' => 'activity',
+            'last_message' => $chat->message ?? null,
+        ];
+    });
+
+    // 🔹 Get Cupid matches
+    $CupidMatches = Cupid::where('user_id_1', $user->id)
+                         ->orWhere('user_id_2', $user->id)
+                         ->get()
+                         ->unique();
+
+    $matchedUsers = $CupidMatches->map(function ($match) use ($user) {
+        $matchedUserId = $match->user_id_1 == $user->id ? $match->user_id_2 : $match->user_id_1;
+        $matchedUser = User::find($matchedUserId);
+
+        if (!$matchedUser) return null;
+
+        $images = json_decode($matchedUser->profile_image, true);
+        $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
+
+        $chat = Chat::where('sender_id', $user->id)
+                    ->where('receiver_id', $matchedUser->id)
+                    ->orderBy('id', 'DESC')
+                    ->first();
+
+        return [
+            'id' => $matchedUser->id,
+            'user_rendom' => $matchedUser->rendom,
+            'name' => $matchedUser->name,
+            'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
+            'form' => 'match',
+            'last_message' => $chat->message ?? null,
+        ];
+    })->filter(); // remove nulls
+
+    // 🔹 Combine and remove duplicates, prioritize 'match'
+    $matchUsers = collect($userList)
+                    ->merge($likeUserList)
+                    ->merge($matchedUsers)
+                    ->sortByDesc(function ($user) {
+                        return $user['form'] === 'match' ? 2 : 1;
+                    })
+                    ->unique('id')
+                    ->values();
+
+
     return response()->json([
         'message' => 'Messages fetched successfully.',
         'data' => $messagesArray,
+        'pactup' => $userList,
         'status' => 200,
     ]);
 }

@@ -3147,6 +3147,7 @@ public function acceptpactup(Request $request)
     $random = $request->input('random');
     $pactup = $request->input('pactup');
     $activity_id = $request->input('activity_id');
+    // return $activity_id;
 
 
 
@@ -3172,8 +3173,13 @@ public function acceptpactup(Request $request)
     
     // return $user->id;
 
-    $otherInterest = OtherInterest::where('user_id', $user->id)->orWhere('user_id_1', $user->id)->where('activity_id',$activity_id)->first();
-
+    // $otherInterest = OtherInterest::where('user_id', $user->id)->orWhere('user_id_1', $user->id)->where('activity_id',$activity_id)->first();
+    $otherInterest = OtherInterest::where(function($query) use ($user, $activity_id) {
+    $query->where('user_id', $user->id)
+          ->orWhere('user_id_1', $user->id);
+})->where('activity_id', $activity_id)
+  ->first();
+  
     if ($otherInterest) {
         if($pactup == 'accept'){
          $otherInterest->update(['confirm' => 3]);

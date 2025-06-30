@@ -276,9 +276,10 @@ public function getMessages(Request $request)
 
     $activityIds = $matchingActivities->pluck('id');
 
-    // 🔹 Get opposite user IDs from OtherInterest (exclude self)
-    $interestRelations = OtherInterest::where('user_id', $user->id)
-                                      ->orWhere('user_id_1', $user->id)
+    $Activitiesren = Activity::where('rendom', $request->rendom)->first();
+
+    $interestRelations = OtherInterest::where('activity_id',$Activitiesren->id)->where('user_id', $user->id)
+                                      ->orWhere('user_id_1', $user->id)->orderBy('id','DESC')
                                       ->get();
 
     $oppositeUserIds = $interestRelations->map(function ($relation) use ($user) {

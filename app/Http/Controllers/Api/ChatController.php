@@ -276,9 +276,9 @@ public function getMessages(Request $request)
 
     $activityIds = $matchingActivities->pluck('id');
 
-    $Activitiesren = Activity::where('rendom', $request->rendom)->first();
+    // $Activitiesren = Activity::where('rendom', $request->rendom)->first();
 
-    $interestRelations = OtherInterest::where('activity_id',$Activitiesren->id)->where('user_id', $user->id)
+    $interestRelations = OtherInterest::where('user_id', $user->id)
                                       ->orWhere('user_id_1', $user->id)->orderBy('id','DESC')
                                       ->get();
 

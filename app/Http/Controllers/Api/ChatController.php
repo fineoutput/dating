@@ -318,11 +318,13 @@ public function getMessages(Request $request)
                     ->orderBy('id', 'DESC')
                     ->first();
 
+            $activityname = Activity::where('id',$userItem->interest_activity_id)->first();
         return [
             'id' => $userItem->id,
             'user_rendom' => $userItem->rendom,
             'name' => $userItem->name,
             'activity_id' => $userItem->interest_activity_id,
+            'title' => $activityname->title,
             'status' => $userItem->confirm,
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
             'form' => 'activity',

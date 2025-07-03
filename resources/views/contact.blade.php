@@ -619,6 +619,7 @@ body.light-mode .contact-form button {
                 <div class="nav-links">
                     <a href="{{route('about')}}">About</a>
                     <a href="{{route('contact')}}">Contact</a>
+                    <a href="{{route('products')}}">Products</a>
                     <button class="download-btn">
                         <i data-lucide="download"></i>
                         Download App

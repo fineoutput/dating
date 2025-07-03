@@ -38,5 +38,10 @@ class HomeController extends Controller
      
         return view('terms_and_conditions');
     }
+    public function products(Request $req)
+    {
+     
+        return view('products');
+    }
     
 }

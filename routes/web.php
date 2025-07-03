@@ -56,6 +56,10 @@ Route::group(['prefix' => 'terms_and_conditions'], function () {
     Route::get('terms_and_conditions', [HomeController::class, 'terms_and_conditions'])->name('terms_and_conditions');
 });
 
+Route::group(['prefix' => 'products'], function () {
+    Route::get('products', [HomeController::class, 'products'])->name('products');
+});
+
 //======================================= ADMIN ===================================================
 Route::group(['prifix' => 'admin'], function () {
     Route::group(['middleware'=>'admin.guest'],function(){

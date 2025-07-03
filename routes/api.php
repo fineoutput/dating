@@ -30,7 +30,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('activity-store', [ActivityController::class, 'activitystore']);
     Route::get('activitys', [ActivityController::class, 'activitys']);
     Route::post('get-activity-detaile', [ActivityController::class, 'getActivitydetailes']);
+    Route::post('for-you-activity-detaile', [ActivityController::class, 'foryouActivitydetailes']);
     Route::get('user-activitys', [ActivityController::class, 'useractivitys']);
+    Route::get('for-you-activitys', [ActivityController::class, 'foryouactivitys']);
   
     Route::get('find-matching-users-activity', [ActivityController::class, 'findMatchingactivity']);
     Route::get('find-matching-activity', [ActivityController::class, 'findactivity']);
@@ -40,8 +42,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('filter-activity', [ActivityController::class, 'filteractivity']);
 
     Route::get('friend-count', [ActivityController::class, 'friendcount']);
+    Route::get('friend-count-one', [ActivityController::class, 'friendcount_one']);
 
     Route::post('add-interest', [InterestController::class, 'addinterest']);
+    Route::post('remove-interest', [InterestController::class, 'removeinterest']);
     Route::post('invite-interest', [InterestController::class, 'inviteinterest']);
     Route::post('get-user-interest', [InterestController::class, 'getuserinterest']);
     Route::post('confirm-user-interest', [InterestController::class, 'confirmuserinterest']);
@@ -82,8 +86,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/coin-categories', [SubscriptionController::class, 'subscriptionlist']);
 
     Route::post('/update-confirm', [ActivityController::class, 'updateConfirm']);
+    Route::post('/update-pactup', [ActivityController::class, 'acceptpactup']);
 
     Route::get('user-interest', [InterestController::class, 'userinterest']);
+    Route::get('pactup-request', [ActivityController::class, 'pactup_request']);
 
 
 });   

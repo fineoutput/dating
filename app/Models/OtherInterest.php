@@ -12,6 +12,7 @@ class OtherInterest extends Model
     protected $fillable = [
         'user_id', 
         'activity_id', 
+        'user_id_1', 
         'confirm',
     ];
 

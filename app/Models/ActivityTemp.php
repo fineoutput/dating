@@ -26,6 +26,7 @@ class ActivityTemp extends Model
         'location',
         'amount',
         'rendom',
+        'friend_rendom',
         'image',
     ];
 

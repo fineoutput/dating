@@ -506,12 +506,12 @@
       background-color: #1b132a;
     }
 
-    .feature-table th,
-    .feature-table td {
-      padding: 18px 16px;
-      text-align: left;
-      border-bottom: 1px solid #2c2239;
-    }
+   .feature-table th, .feature-table td {
+    padding: 18px 43px;
+    text-align: left;
+    border-bottom: 1px solid #2c2239;
+    font-size: 13px;
+}
 
     .feature-table th {
       background-color: #1b132a;
@@ -563,7 +563,7 @@
     .motoSept {
     color: #fff;
     font-size: 0.875rem;
-    background: #393f55;
+    background: #e5e3e81a;
     padding: 5px;
     border-radius: 10px;
     text-transform: capitalize;

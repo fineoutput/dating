@@ -468,24 +468,34 @@
             margin-bottom: 1.5rem;
             font-size: 0.9rem;
         }
-        .plan-features {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+       .plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+}
         .plan-features li {
             margin-bottom: 0.8rem;
             color: #b0b0c0;
             font-size: 0.95rem;
         }
         .plan-features li::before {
-            content: "•";
-            color: #d946ef;
-            font-weight: bold;
-            display: inline-block;
-            width: 1em;
-            margin-left: -1em;
-        }
+    content: "•";
+    color: #00ffcc;
+    font-weight: bold;
+    display: inline-block;
+    width: 1em;
+    margin-left: -1em;
+}
+.plan-card.free {
+    border: 2px solid #20b2aa4d;
+}
+.plan-card.gold {
+    border: 2px solid rgb(255 215 0 / 0.5);
+}
+.plan-card.platinum {
+    border: 2px solid rgb(138 43 226 / 0.5);
+}
           .feature-table {
       width: 100%;
       max-width: 1500px;

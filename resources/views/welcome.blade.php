@@ -1259,6 +1259,7 @@ body.light-mode .footer-bottom p {
                         <li><a href="{{route('about')}}">About Us</a></li>
                         {{-- <li><a href="#careers">Careers</a></li> --}}
                         <li><a href="{{route('contact')}}">Contact</a></li>
+                        <li><a href="{{route('products')}}">Products</a></li>
                     </ul>
                 </div>  
                 <div class="footer-links">

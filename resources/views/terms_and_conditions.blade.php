@@ -400,27 +400,41 @@
     <header class="header">
         <div class="container">
             <nav>
-                <div class="logo">
-                    <a href="{{route('/')}}" style="display: flex; align-items: center; gap: 5px;">
+                
+                    <div class="logo">
+                        <a href="{{route('/')}}" style="
+                        display: flex;
+                        align-items: center;
+                        gap: 5px;
+                    ">
                         <span class="logo-text">DYMM</span>
                         <span class="beta-badge">Beta</span>
                     </a>
-                    <div class="haalat">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon h-4 w-4 text-foreground"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
-                        <label class="switch" onclick="toggleTheme()">
-                            <input type="checkbox">
-                            <span class="slider"></span>
-                        </label>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun h-4 w-4 text-foreground"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                        
+                        <!-- From Uiverse.io by satyamchaudharydev --> 
+                        <div class="haalat">
+                            
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon h-4 w-4 text-foreground"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+<label class="switch"  onclick="toggleTheme()">
+    <input type="checkbox">
+    <span class="slider"></span>
+</label>
+
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun h-4 w-4 text-foreground"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+        
+                        </div>
                     </div>
-                </div>
+              
+                
                 <div class="nav-links">
                     <a href="{{route('about')}}">About</a>
                     <a href="{{route('contact')}}">Contact</a>
+                    <a href="{{route('products')}}">Products</a>
                     <button class="download-btn">
                         <i data-lucide="download"></i>
                         Download App
                     </button>
+                    
                 </div>
             </nav>
         </div>
@@ -595,6 +609,7 @@
                     <ul>
                         <li><a href="{{route('about')}}">About Us</a></li>
                         <li><a href="{{route('contact')}}">Contact</a></li>
+                        <li><a href="{{route('products')}}">Products</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">

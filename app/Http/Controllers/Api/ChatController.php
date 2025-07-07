@@ -332,7 +332,6 @@ public function getMessages(Request $request)
         ];
     });
 
-    // 🔹 Map liked users
     $likeUserList = $likeUserDetails2->map(function ($userItem) use ($user) {
         $imagePath = null;
         if ($userItem->profile_image) {

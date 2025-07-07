@@ -90,6 +90,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('user-interest', [InterestController::class, 'userinterest']);
     Route::get('pactup-request', [ActivityController::class, 'pactup_request']);
+    Route::get('verify-City', [ActivityController::class, 'verifyCity']);
 
 
 });   

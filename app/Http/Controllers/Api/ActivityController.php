@@ -17,6 +17,7 @@ use App\Models\Vibes;
 use App\Models\Activity;
 use App\Models\ActivitySubscription;
 use App\Models\ActivityTemp;
+use App\Models\AdminCity;
 use App\Models\Chat;
 use App\Models\Cupid;
 use App\Models\SlideLike;
@@ -269,6 +270,47 @@ class ActivityController extends Controller
     //         'data' => $activityData,
     //     ], 200);
     // }
+
+
+  public function verifyCity(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Unauthorized. Please log in.',
+            ], 401);
+        }
+
+        $user = Auth::user();
+        $userLat = $user->latitude;
+        $userLng = $user->longitude;
+
+        $nearestCity = AdminCity::selectRaw("*, 
+            (6371 * acos(cos(radians(?)) * cos(radians(latitude)) 
+            * cos(radians(longitude) - radians(?)) 
+            + sin(radians(?)) * sin(radians(latitude)))) AS distance", 
+            [$userLat, $userLng, $userLat])
+            ->orderBy('distance')
+            ->first();
+
+        if (!$nearestCity) {
+            return response()->json([
+                'message' => 'City not found.',
+            ], 404);
+        }
+
+        if (strcasecmp($nearestCity->city_name, $user->city_name ?? '') !== 0) {
+            return response()->json([
+                'message' => 'City mismatch.',
+                'user_city' => $user->city_name ?? null,
+                'nearest_city' => $nearestCity->city_name,
+            ], 422);
+        }
+
+        return response()->json([
+            'message' => 'Success. City verified.',
+            'city' => $nearestCity->city_name,
+        ]);
+    }
     
 
     public function activitystore(Request $request)

@@ -21,6 +21,7 @@ use App\Models\AdminCity;
 use App\Models\Chat;
 use App\Models\Cupid;
 use App\Models\SlideLike;
+use Illuminate\Support\Facades\Http;
 use App\Models\OtherInterest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -281,34 +282,64 @@ class ActivityController extends Controller
         }
 
         $user = Auth::user();
-        $userLat = $user->latitude;
-        $userLng = $user->longitude;
 
-        $nearestCity = AdminCity::selectRaw("*, 
-            (6371 * acos(cos(radians(?)) * cos(radians(latitude)) 
-            * cos(radians(longitude) - radians(?)) 
-            + sin(radians(?)) * sin(radians(latitude)))) AS distance", 
-            [$userLat, $userLng, $userLat])
-            ->orderBy('distance')
-            ->first();
-
-        if (!$nearestCity) {
+        if (!$user->latitude || !$user->longitude) {
             return response()->json([
-                'message' => 'City not found.',
+                'message' => 'User location not available.',
+            ], 400);
+        }
+
+        $lat = $user->latitude;
+        $lon = $user->longitude;
+
+        $apiKey = env('GOOGLE_MAPS_API_KEY');
+        $response = Http::get("https://maps.googleapis.com/maps/api/geocode/json", [
+            'latlng' => "$lat,$lon",
+            'key' => $apiKey,
+        ]);
+
+        if (!$response->successful()) {
+            return response()->json([
+                'message' => 'Failed to contact Google Maps API.',
+            ], 500);
+        }
+
+        $data = $response->json();
+
+        if (empty($data['results'])) {
+            return response()->json([
+                'message' => 'No results from Google Maps.',
             ], 404);
         }
 
-        if (strcasecmp($nearestCity->city_name, $user->city_name ?? '') !== 0) {
+        $city = null;
+        foreach ($data['results'][0]['address_components'] as $component) {
+            if (in_array('locality', $component['types'])) {
+                $city = $component['long_name'];
+                break;
+            }
+        }
+
+        if (!$city) {
             return response()->json([
-                'message' => 'City mismatch.',
-                'user_city' => $user->city_name ?? null,
-                'nearest_city' => $nearestCity->city_name,
-            ], 422);
+                'message' => 'City not found from your location.',
+            ], 404);
+        }
+
+        $matchedCity = AdminCity::where('city_name', 'LIKE', "%$city%")
+            ->where('status', 1)
+            ->first();
+
+        if (!$matchedCity) {
+            return response()->json([
+                'message' => 'Your city is not active in our system.',
+                'detected_city' => $city,
+            ], 404);
         }
 
         return response()->json([
-            'message' => 'Success. City verified.',
-            'city' => $nearestCity->city_name,
+            'message' => 'City matched and active.',
+            'city' => $matchedCity->city_name,
         ]);
     }
     

@@ -34,6 +34,11 @@
         align-items: center;
         gap: 5px;
     }
+    .QData {
+    background: #e5e3e80d;
+    padding: 10px;
+    border-radius: 10px;
+}
         * {
             margin: 0;
             padding: 0;
@@ -694,6 +699,14 @@
                 <div class="plan-icon" data-lucide="award"></div>
                 <h2 class="plan-title">👑 DYMM <span class="motoSept">Gold</span></h2>
                 <p class="plan-description">Enhanced features for active users</p>
+                <p class="plan-description"><b style="font-size: 1.5rem; color: #fff;">₹399</b>/month</p>
+                <div  class="QData">
+                    <p style="font-size: 1.125rem;"><b>₹2500</b> <del style="color: #e5e3e880"> ₹4500</del></p>
+                    <p style="font-size: .75rem; color: #e5e3e880">/year</p>
+                    <div style="margin-top: 10px;" class="ModalID">
+                        <p style="font-size: .72rem; color: #4ade80;"><b style="background: #15803d; padding: 5px 10px; border-radius: 20px;">44.44% OFF</b></p>
+                    </div>
+                </div>
                 <ul class="plan-features">
                     <li>Everything in Free</li>
                     <li>Unlimited Likes</li>
@@ -707,6 +720,15 @@
                 <div class="plan-icon" data-lucide="gem"></div>
                 <h2 class="plan-title">💎 DYMM <span class="motoSept">Platinum</span></h2>
                 <p class="plan-description">Premium experience with all features</p>
+                <p class="plan-description"><b style="font-size: 1.5rem; color: #fff;">₹599</b>/month</p>
+                <div  class="QData">
+                    <p style="font-size: 1.125rem;"><b>₹3500</b> <del style="color: #e5e3e880"> ₹6500</del></p>
+                    <p style="font-size: .75rem; color: #e5e3e880">/year</p>
+                    <div style="margin-top: 10px;" class="ModalID">
+                        <p style="font-size: .72rem; color: #4ade80;"><b style="background: #15803d; padding: 5px 10px; border-radius: 20px;">46.15% OFF
+</b></p>
+                    </div>
+                </div>
                 <ul class="plan-features">
                     <li>Everything in Gold</li>
                     <li>Extra Monthly Activities beyond Gold</li>

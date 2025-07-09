@@ -758,6 +758,14 @@ public function foryouactivitys(Request $request)
     $activitiesData = [];
     foreach ($activities as $activity) {
 
+         $expenseIds = json_decode($activity->expense_id, true);
+    $firstExpenseName = null;
+    if (is_array($expenseIds) && count($expenseIds) > 0) {
+        $firstExpense = Expense::find($expenseIds[0]);
+        $firstExpenseName = $firstExpense->name ?? null;
+    }
+
+
          $activityUser = User::find($activity->user_id);
 
         $profileImageUrl = null;
@@ -805,6 +813,7 @@ public function foryouactivitys(Request $request)
             'vibe_name' => $vibeNames ?? '',
             // 'vibe_icon' => $activity->vibe->icon ?? '',
             'user_name' => $activityUser->name,
+            'expense_name' => $firstExpenseName,
             'user_profile_image' => $profileImageUrl ?? '',
             'activity_image' => asset($activity->image),
            'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),

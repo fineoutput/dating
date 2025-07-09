@@ -1267,7 +1267,6 @@ body.light-mode .footer-bottom p {
                     <ul>
                         <li><a href="{{route('terms_and_conditions')}}">Terms & conditions</a></li>
                         <li><a href="{{route('privacy_policy')}}">Privacy policy</a></li>
-                        {{-- <li><a href="#guidelines">Community Guidelines</a></li> --}}
                     </ul>
                 </div>
                 <div class="footer-social">

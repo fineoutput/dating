@@ -80,17 +80,21 @@ class InterestController extends Controller
 
     public function vibes()
     {
-        $data = Vibes::where('status', 1)->get();
-        $message = "Vibes fetched successfully"; 
-        $status = 200;
-        $statusCode = 200; 
+        $vibes = Vibes::where('status', 1)->get();
 
-        $data->makeHidden(['created_at', 'updated_at', 'deleted_at']);
-
+        $data = $vibes->map(function ($vibe) {
+            return [
+                'id' => $vibe->id,
+                'name' => $vibe->name,
+                'activity_id' => $vibe->activity_id,
+                // 'icon' => $vibe->icon,
+                'image' => $vibe->icon ? asset($vibe->icon) : null,
+            ];
+        });
 
         return response()->json([
-            'message' => $message,
-            'status' => $status,
+            'message' => 'Vibes fetched successfully',
+            'status' => 200,
             'data' => $data,
         ]);
     }

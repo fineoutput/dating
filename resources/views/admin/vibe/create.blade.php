@@ -53,26 +53,25 @@
                                             <label for="name">Enter Name &nbsp;<span style="color:red;">*</span></label>
                                         </div>
                                         @error('name')
-                                        <div style="color:red">{{$message}}</div>
+                                        <div style="color:red">{{ $message }}</div>
                                         @enderror
                                     </div>
 
                                     <div class="col-sm-6">
-                                        <div class="form-floating">
-                                            <input type="text" class="form-control" value="{{ old('icon', $interest->icon ?? '') }}" id="icon" name="icon" placeholder="Enter icon" required>
-                                            <label for="icon">Icon &nbsp;<span style="color:red;">*</span></label>
-                                        </div>
-                                        @error('icon')
-                                        <div style="color:red">{{$message}}</div>
+                                        <label for="image">Image Upload &nbsp;<span style="color:red;">*</span></label>
+                                        <input type="file" class="form-control" name="image" id="image" accept="image/*" {{ isset($interest) ? '' : 'required' }}>
+                                        @error('image')
+                                        <div style="color:red">{{ $message }}</div>
                                         @enderror
+
+                                        @if(isset($interest) && $interest->icon)
+                                            <div class="mt-2">
+                                                <img src="{{ asset($interest->icon) }}" alt="Current Image" style="height: 60px;">
+                                            </div>
+                                        @endif
                                     </div>
-                     
-{{-- 
-                                    <div class="col-sm-6">
-                                        <label class="form-label" for="icon">Icon</label>
-                                        <input class="form-control" type="text" id="icon" name="icon">
-                                    </div> --}}
                                 </div>
+
                                 <div class="form-group">
                                     <div class="w-100 text-center">
                                         <button type="submit" class="btn btn-danger">

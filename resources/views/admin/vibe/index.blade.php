@@ -69,7 +69,7 @@
                         <th>{{$a = $loop->index+1}}</th>
                         <td>{{ $data->name}}</td>
                         <td>
-                            {{ $data->icon ?? ''}}
+                            <img width="100" height="100" src="{{ asset($data->icon) ?? ''}}" alt="">
                         </td>
                         {{-- <td>{{ $data->desc}}</td> --}}
                         @if($data->status == 1)

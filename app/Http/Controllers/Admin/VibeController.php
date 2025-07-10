@@ -38,26 +38,31 @@ class VibeController extends Controller
 
     
 
-    public function store(Request $request)
+  public function store(Request $request)
     {
-       
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'icon' => 'nullable',
+            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-        if ($request->hasFile('icon')) {
-            $image = $request->file('icon');
-            
+        $imagePath = null;
+
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
             $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('uploads/app/int_images'), $imageName);
-            $imagePaths[] = 'uploads/app/int_images/' . $imageName;
+            $destinationPath = public_path('uploads/app/int_images');
+            
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+
+            $image->move($destinationPath, $imageName);
+            $imagePath = 'uploads/app/int_images/' . $imageName;
         }
 
-        // Create the new interest
         $interest = Vibes::create([
             'name' => $validated['name'],
-            'icon' => $request->icon,
+            'icon' => $imagePath, 
             'status' => 1,
         ]);
 
@@ -72,22 +77,42 @@ class VibeController extends Controller
     }
 
 
-    public function update(Request $request, $id)
+   public function update(Request $request, $id)
     {
-        
-        // Validate incoming request
+        // Validate request
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'icon' => 'nullable',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         $interest = Vibes::findOrFail($id);
 
         $interest->name = $validated['name'];
-        $interest->icon = $request->icon;
+
+        // Handle new image upload
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $destinationPath = public_path('uploads/app/int_images');
+
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+
+            $image->move($destinationPath, $imageName);
+            $newImagePath = 'uploads/app/int_images/' . $imageName;
+
+            // Delete old image if it exists
+            if ($interest->icon && file_exists(public_path($interest->icon))) {
+                @unlink(public_path($interest->icon));
+            }
+
+            $interest->icon = $newImagePath;
+        }
+
         $interest->save();
 
-        return redirect()->route('vibe.index')->with('success', 'Data updated successfully!');
+        return redirect()->route('vibe.index')->with('success', 'Vibe updated successfully!');
     }
 
 

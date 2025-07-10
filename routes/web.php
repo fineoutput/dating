@@ -19,6 +19,7 @@ use App\Http\Controllers\Auth\adminlogincontroller;
 use App\Http\Controllers\Admin\InterestController;
 use App\Http\Controllers\Admin\VibeController;
 use App\Http\Controllers\Admin\ExpenseController;
+use App\Http\Controllers\Admin\AdminCityController;
 
 /*
 |--------------------------------------------------------------------------
@@ -124,6 +125,15 @@ Route::put('/vibe/update/{id}', [VibeController::class, 'update'])->name('vibe.u
 Route::delete('/vibe/{id}', [VibeController::class, 'destroy'])->name('vibe.destroy');
 Route::patch('/vibe/update-status/{id}', [VibeController::class, 'updateStatus'])->name('vibe.updateStatus');
 
+
+
+Route::get('/admin_city', [AdminCityController::class, 'index'])->name('admin_city.index');
+Route::get('/admin_city/create', [AdminCityController::class, 'create'])->name('admin_city.create');
+Route::post('/admin_city/store', [AdminCityController::class, 'store'])->name('admin_city.store');
+Route::get('/admin_city/edit/{id}', [AdminCityController::class, 'edit'])->name('admin_city.edit');
+Route::put('/admin_city/update/{id}', [AdminCityController::class, 'update'])->name('admin_city.update');
+Route::delete('/admin_city/{id}', [AdminCityController::class, 'destroy'])->name('admin_city.destroy');
+Route::patch('/admin_city/update-status/{id}', [AdminCityController::class, 'updateStatus'])->name('admin_city.updateStatus');
 
 Route::get('/expense', [ExpenseController::class, 'index'])->name('expense.index');
 Route::get('/expense/create', [ExpenseController::class, 'create'])->name('expense.create');

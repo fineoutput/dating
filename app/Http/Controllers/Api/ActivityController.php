@@ -980,7 +980,8 @@ public function getActivitydetailes(Request $request)
         $firstExpenseName = $firstExpense->name ?? null;
     }
 
- $vibeNames = [];
+ $vibeNames = '';
+ $vibeimage = '';
 
 $vibeIdsRaw = json_decode($mainActivity->vibe_id, true); // returns: ["1,2"]
 if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
@@ -989,7 +990,8 @@ if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
     $vibes = Vibes::whereIn('id', $vibeIdList)->get();
 
     foreach ($vibes as $vibe) {
-        $vibeNames[] = trim($vibe->icon . ' ' . $vibe->name); // 🎉 Social
+        $vibeNames = $vibe->name; 
+        $vibeimage = asset($vibe->icon); 
     }
 }
     
@@ -1022,6 +1024,7 @@ if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
         'how_many' => $mainActivity->how_many,
         'interestCount' => $interestCount,
         'vibe_name' => $vibeNames,
+        'vibe_image' => $vibeimage,
         // 'vibe_icon' => $vibeIcons ?? '',
         'like_user' => $like_user,
         'expense_name' => $firstExpenseName,
@@ -2859,7 +2862,7 @@ public function vibeactivitydetails(Request $request)
                 'id' => $vibe->id,
                 'name' => $vibe->name,
                 'status' => $vibe->status,
-                'icon' => $vibe->icon,
+                'icon' => asset($vibe->icon),
                 'bg_color' => $bgColor, 
                 'activity_count' => $filteredActivities->count(),
             ];

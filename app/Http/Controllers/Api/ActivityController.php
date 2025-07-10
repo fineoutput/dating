@@ -2983,8 +2983,8 @@ public function vibeactivitydetails(Request $request)
                     'vibe_name' => $vibeNames ?? '',
                     // 'vibe_icon' => $activity->vibe->icon ?? '',
                     'user_name' => $user_rendom->name,
-                    'user_profile_image' => (!empty($activity->image))
-                    ? asset($activity->image): $profileImageUrl,
+                     'user_profile_image' => $profileImageUrl ?? '',
+            'activity_image' => asset($activity->image),
                     'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
                     'status' => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
                 ];

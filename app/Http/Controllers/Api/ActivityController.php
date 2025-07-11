@@ -2991,12 +2991,12 @@ public function vibeactivitydetails(Request $request)
                     }
                 }
 
-                      $vibeNames = '';
+                     $vibeNames = '';
                     $vibeImages = '';
 
-                    $vibeIdsRaw = json_decode($activity->vibe_id, true); // returns: ["1,2"]
+                    $vibeIdsRaw = json_decode($activity->vibe_id, true); 
                     if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
-                        $vibeIdList = explode(',', $vibeIdsRaw[0]); // now [1, 2]
+                        $vibeIdList = explode(',', $vibeIdsRaw[0]); 
 
                         $vibes = Vibes::whereIn('id', $vibeIdList)->get();
 
@@ -3004,13 +3004,13 @@ public function vibeactivitydetails(Request $request)
                         $vibeImageArray = [];
 
                         foreach ($vibes as $vibe) {
-                            $vibeNameArray[] = $vibe->name;
-                            $vibeImageArray[] = asset($vibe->icon);
+                            $vibeNameArray[] = '"' . $vibe->name . '"';
+                            $vibeImageArray[] = '"' . asset($vibe->icon) . '"';
                         }
 
-                        // Join names with comma, images with something appropriate (optional)
-                        $vibeNames = implode(', ', $vibeNameArray);
-                        $vibeImages = implode(', ', $vibeImageArray); // Or use array if you need them separately
+                        // Join names and images with new lines
+                        $vibeNames = implode(",\n", $vibeNameArray);
+                        $vibeImages = implode(",\n", $vibeImageArray);
                     }
 
 
@@ -3027,7 +3027,7 @@ public function vibeactivitydetails(Request $request)
                     // 'vibe_icon' => $activity->vibe->icon ?? '',
                     'user_name' => $user_rendom->name,
                      'user_profile_image' => $profileImageUrl ?? '',
-            'activity_image' => asset($activity->image),
+                    'activity_image' => asset($activity->image),
                     'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
                     'status' => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
                 ];

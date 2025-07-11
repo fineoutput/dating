@@ -2991,8 +2991,8 @@ public function vibeactivitydetails(Request $request)
                     }
                 }
 
-                     $vibeNames = '';
-                    $vibeImages = '';
+                     $vibeNames = [];
+                    $vibeImages = [];
 
                     $vibeIdsRaw = json_decode($activity->vibe_id, true); 
                     if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {

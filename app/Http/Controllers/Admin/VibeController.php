@@ -62,6 +62,7 @@ class VibeController extends Controller
 
         $interest = Vibes::create([
             'name' => $validated['name'],
+            'image' => $request->image,
             'icon' => $imagePath, 
             'status' => 1,
         ]);
@@ -88,6 +89,7 @@ class VibeController extends Controller
         $interest = Vibes::findOrFail($id);
 
         $interest->name = $validated['name'];
+        $interest->image = $request->image;
 
         // Handle new image upload
         if ($request->hasFile('image')) {

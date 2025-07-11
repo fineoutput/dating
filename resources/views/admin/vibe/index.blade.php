@@ -57,6 +57,7 @@
                         <th>#</th>
                         <th data-priority="1">Name</th>
                         <th data-priority="2">icon</th>
+                        <th data-priority="2">Image</th>
                         {{-- <th data-priority="3">Image</th> --}}
                         <th data-priority="4">status</th>
                         <th data-priority="5">created_at</th>
@@ -68,6 +69,7 @@
                       <tr>
                         <th>{{$a = $loop->index+1}}</th>
                         <td>{{ $data->name}}</td>
+                        <td>{{ $data->image}}</td>
                         <td>
                             <img width="100" height="100" src="{{ asset($data->icon) ?? ''}}" alt="">
                         </td>

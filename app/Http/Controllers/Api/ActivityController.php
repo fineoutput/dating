@@ -3085,6 +3085,7 @@ public function vibeactivitydetails(Request $request)
             'name' => $vibe->name,
             'status' => $vibe->status,
             'image' => asset($vibe->icon),
+            'icon' => asset($vibe->image),
             'activities' => $filteredActivities->map(function ($activity) {
 
                 $hash = md5($activity->id);

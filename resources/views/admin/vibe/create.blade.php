@@ -56,6 +56,15 @@
                                         <div style="color:red">{{ $message }}</div>
                                         @enderror
                                     </div>
+                                    <div class="col-sm-6">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" value="{{ old('image', $interest->image ?? '') }}" id="image" name="image" placeholder="Enter image" required>
+                                            <label for="image">Enter Icon &nbsp;<span style="color:red;">*</span></label>
+                                        </div>
+                                        @error('image')
+                                        <div style="color:red">{{ $message }}</div>
+                                        @enderror
+                                    </div>
 
                                     <div class="col-sm-6">
                                         <label for="image">Image Upload &nbsp;<span style="color:red;">*</span></label>

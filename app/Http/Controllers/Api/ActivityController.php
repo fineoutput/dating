@@ -712,21 +712,16 @@ public function useroldactivitys(Request $request)
     }
 
     $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata
-    $todayDate = Carbon::today('Asia/Kolkata');  // Today's date in Asia/Kolkata
 
     $activities = Activity::orderBy('id', 'DESC')
         ->where('user_id', $user->id)
-        ->where('status', 2) 
-        ->whereDate('when_time', '<=', $todayDate->format('Y-m-d')) 
-        ->where(function ($query) use ($todayDate, $currentTime) {
-            $query->where(function ($subQuery) use ($todayDate, $currentTime) {
-       
-                $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
-     
-                $subQuery->where('end_time', '<=', $endTime);
-            });
-    
-            $query->where('when_time', '<=', $currentTime);  
+        ->where('status', 2)
+        ->where(function ($query) use ($currentTime) {
+            $query->whereDate('when_time', '<', $currentTime->toDateString()) // strictly before today
+                ->orWhere(function ($subQuery) use ($currentTime) {
+                    $subQuery->whereDate('when_time', '=', $currentTime->toDateString())
+                            ->whereTime('end_time', '<', $currentTime->toTimeString()); // same day, but ended before now
+                });
         })
         ->get();
     
@@ -750,7 +745,7 @@ public function useroldactivitys(Request $request)
 
     if ($activities->isEmpty()) {
         return response()->json([
-            'message' => 'No upcoming activities found',
+            'message' => 'No activities found',
             'status'=>200,
             'data'=>[],
         ], 200);

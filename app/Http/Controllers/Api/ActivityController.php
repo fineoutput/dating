@@ -597,7 +597,7 @@ public function useractivitys(Request $request)
         ->where(function ($query) use ($todayDate, $currentTime) {
             $query->where(function ($subQuery) use ($todayDate, $currentTime) {
        
-                $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
+                $endTime = Carbon::createFromFormat('g:i a', '1:45 pm')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
      
                 $subQuery->where('end_time', '>=', $endTime);
             });

@@ -702,6 +702,130 @@ public function useractivitys(Request $request)
 }
 
 
+
+public function useroldactivitys(Request $request)
+{
+    $user = Auth::user();
+    
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], 401);
+    }
+
+    $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata
+    $todayDate = Carbon::today('Asia/Kolkata');  // Today's date in Asia/Kolkata
+
+    $activities = Activity::orderBy('id', 'DESC')
+        ->where('user_id', $user->id)
+        ->where('status', 2) 
+        ->whereDate('when_time', '<=', $todayDate->format('Y-m-d')) 
+        ->where(function ($query) use ($todayDate, $currentTime) {
+            $query->where(function ($subQuery) use ($todayDate, $currentTime) {
+       
+                $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
+     
+                $subQuery->where('end_time', '<=', $endTime);
+            });
+    
+            $query->where('when_time', '<=', $currentTime);  
+        })
+        ->get();
+    
+    $filteredActivities = [];
+    
+    foreach ($activities as $activity) {
+
+        $whenTime = Carbon::parse($activity->when_time)->setTimezone('Asia/Kolkata');
+
+        $endTime = Carbon::createFromFormat('h:i A', $activity->end_time)->setTimezone('Asia/Kolkata'); 
+
+        $combinedDateTime = $whenTime->copy()->setTimeFromTimeString($endTime->toTimeString());
+
+        if ($combinedDateTime >= $currentTime) {
+
+            $filteredActivities[] = $activity;
+        }
+    }
+
+
+
+    if ($activities->isEmpty()) {
+        return response()->json([
+            'message' => 'No upcoming activities found',
+            'status'=>200,
+            'data'=>[],
+        ], 200);
+    }
+
+    // Process the profile image URL
+    $profileImageUrl = null;
+    if ($user->profile_image) {
+        $profileImages = json_decode($user->profile_image, true);
+
+        if (!empty($profileImages) && isset($profileImages[1])) {
+            $profileImageUrl = url('uploads/app/profile_images/' . $profileImages[1]);
+        }
+    }
+
+    // Process each activity directly and add bg_color
+    $activitiesData = [];
+    foreach ($activities as $activity) {
+        // Generate background color based on activity ID
+        $hash = md5($activity->id);
+        $r = hexdec(substr($hash, 0, 2));
+        $g = hexdec(substr($hash, 2, 2));
+        $b = hexdec(substr($hash, 4, 2));
+
+        $lightenFactor = 0.5;
+        $r = round($r + (255 - $r) * $lightenFactor);
+        $g = round($g + (255 - $g) * $lightenFactor);
+        $b = round($b + (255 - $b) * $lightenFactor);
+
+        $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
+
+         
+          $vibeNames = [];
+                    $vibeImages = [];
+
+                    $vibeIdsRaw = json_decode($activity->vibe_id, true); 
+                    if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
+                        $vibeIdList = explode(',', $vibeIdsRaw[0]); 
+
+                        $vibes = Vibes::whereIn('id', $vibeIdList)->get();
+
+                        foreach ($vibes as $vibe) {
+                            $vibeNames[] = $vibe->name;
+                            $vibeImages[] = asset($vibe->icon);
+                        }
+                    }
+
+        $activitiesData[] = [
+            'rendom' => $activity->rendom,
+            'when_time' => $activity->when_time,
+            'end_time' => $activity->end_time,
+            'title' => $activity->title,
+            'location' => $activity->location,
+            'bg_color' => $bgColor,
+            'how_many' => $activity->how_many,
+            'vibe_name' => $vibeNames ?? '',
+            'vibe_image' => $vibeImages ?? '',
+            // 'vibe_icon' => $activity->vibe->icon ?? '',
+            'user_name' => $user->name,
+           'user_profile_image' => $profileImageUrl ?? '',
+            'activity_image' => asset($activity->image),
+           'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
+            'status' => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
+        ];
+    }
+
+    // Return the response with all activities included
+    return response()->json([
+        'message' => 'User activities fetched successfully',
+        'status' => 200,
+        'data' => $activitiesData, // Return the activities directly without nesting them inside a separate array
+    ]);
+}
+
+
 public function foryouactivitys(Request $request)
 {
     $users = Auth::user();

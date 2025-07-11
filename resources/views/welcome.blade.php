@@ -1210,7 +1210,7 @@ body.light-mode .footer-bottom p {
           <p class="coming-soon">Coming Soon</p>
           <p class="waitlist-info">Join our waitlist to be notified when we launch our activities platform!</p>
           <button class="waitlist-btn">
-            Join Waitlist
+           <a style="color: #fff" href="https://docs.google.com/forms/d/e/1FAIpQLSenHGG-Wx6DM-rxbCKd8DSQ0kRK_vAWFjvAYTNL6qhra5hjKg/viewform"> Join Waitlist</a>
             <span class="icon">↗</span>
           </button>
           <p class="footer-text">Find your community through activities you love.</p>

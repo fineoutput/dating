@@ -659,20 +659,20 @@ public function useractivitys(Request $request)
         $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
          
-        $vibeNames = '';
-        $vibeimage = '';
+          $vibeNames = [];
+                    $vibeImages = [];
 
-        $vibeIdsRaw = json_decode($activity->vibe_id, true); // returns: ["1,2"]
-        if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
-            $vibeIdList = explode(',', $vibeIdsRaw[0]); // now [1, 2]
+                    $vibeIdsRaw = json_decode($activity->vibe_id, true); 
+                    if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
+                        $vibeIdList = explode(',', $vibeIdsRaw[0]); 
 
-            $vibes = Vibes::whereIn('id', $vibeIdList)->get();
+                        $vibes = Vibes::whereIn('id', $vibeIdList)->get();
 
-            foreach ($vibes as $vibe) {
-                $vibeNames = $vibe->name; 
-                $vibeimage = asset($vibe->icon); 
-            }
-        }
+                        foreach ($vibes as $vibe) {
+                            $vibeNames[] = $vibe->name;
+                            $vibeImages[] = asset($vibe->icon);
+                        }
+                    }
 
         $activitiesData[] = [
             'rendom' => $activity->rendom,
@@ -683,7 +683,7 @@ public function useractivitys(Request $request)
             'bg_color' => $bgColor,
             'how_many' => $activity->how_many,
             'vibe_name' => $vibeNames ?? '',
-            'vibe_image' => $vibeimage ?? '',
+            'vibe_image' => $vibeImages ?? '',
             // 'vibe_icon' => $activity->vibe->icon ?? '',
             'user_name' => $user->name,
            'user_profile_image' => $profileImageUrl ?? '',
@@ -794,20 +794,20 @@ public function foryouactivitys(Request $request)
         $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
         
-        $vibeNames = '';
-        $vibeimage = '';
+                $vibeNames = [];
+                    $vibeImages = [];
 
-        $vibeIdsRaw = json_decode($activity->vibe_id, true); // returns: ["1,2"]
-        if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
-            $vibeIdList = explode(',', $vibeIdsRaw[0]); // now [1, 2]
+                    $vibeIdsRaw = json_decode($activity->vibe_id, true); 
+                    if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
+                        $vibeIdList = explode(',', $vibeIdsRaw[0]); 
 
-            $vibes = Vibes::whereIn('id', $vibeIdList)->get();
+                        $vibes = Vibes::whereIn('id', $vibeIdList)->get();
 
-            foreach ($vibes as $vibe) {
-                $vibeNames = $vibe->name; 
-                $vibeimage = asset($vibe->icon); 
-            }
-        }
+                        foreach ($vibes as $vibe) {
+                            $vibeNames[] = $vibe->name;
+                            $vibeImages[] = asset($vibe->icon);
+                        }
+                    }
 
         $activitiesData[] = [
             'rendom' => $activity->rendom,
@@ -818,7 +818,7 @@ public function foryouactivitys(Request $request)
             'bg_color' => $bgColor,
             'how_many' => $activity->how_many,
             'vibe_name' => $vibeNames ?? '',
-            'vibe_image' => $vibeimage ?? '',
+            'vibe_image' => $vibeImages ?? '',
             // 'vibe_icon' => $activity->vibe->icon ?? '',
             'user_name' => $activityUser->name,
             'expense_name' => $firstExpenseName,
@@ -988,20 +988,20 @@ public function getActivitydetailes(Request $request)
         $firstExpenseName = $firstExpense->name ?? null;
     }
 
- $vibeNames = '';
- $vibeimage = '';
+   $vibeNames = [];
+                    $vibeImages = [];
 
-$vibeIdsRaw = json_decode($mainActivity->vibe_id, true); // returns: ["1,2"]
-if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
-    $vibeIdList = explode(',', $vibeIdsRaw[0]); // now [1, 2]
+                    $vibeIdsRaw = json_decode($mainActivity->vibe_id, true); 
+                    if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
+                        $vibeIdList = explode(',', $vibeIdsRaw[0]); 
 
-    $vibes = Vibes::whereIn('id', $vibeIdList)->get();
+                        $vibes = Vibes::whereIn('id', $vibeIdList)->get();
 
-    foreach ($vibes as $vibe) {
-        $vibeNames = $vibe->name; 
-        $vibeimage = asset($vibe->icon); 
-    }
-}
+                        foreach ($vibes as $vibe) {
+                            $vibeNames[] = $vibe->name;
+                            $vibeImages[] = asset($vibe->icon);
+                        }
+                    }
     
 
     // Profile image
@@ -1032,7 +1032,7 @@ if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
         'how_many' => $mainActivity->how_many,
         'interestCount' => $interestCount,
         'vibe_name' => $vibeNames,
-        'vibe_image' => $vibeimage,
+        'vibe_image' => $vibeImages,
         // 'vibe_icon' => $vibeIcons ?? '',
         'like_user' => $like_user,
         'expense_name' => $firstExpenseName,
@@ -1166,20 +1166,20 @@ public function foryouActivitydetailes(Request $request)
 
 
      
-    $vibeNames = '';
-    $vibeimage = '';
+                $vibeNames = [];
+                    $vibeImages = [];
 
-    $vibeIdsRaw = json_decode($mainActivity->vibe_id, true); // returns: ["1,2"]
-    if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
-        $vibeIdList = explode(',', $vibeIdsRaw[0]); // now [1, 2]
+                    $vibeIdsRaw = json_decode($mainActivity->vibe_id, true); 
+                    if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
+                        $vibeIdList = explode(',', $vibeIdsRaw[0]); 
 
-        $vibes = Vibes::whereIn('id', $vibeIdList)->get();
+                        $vibes = Vibes::whereIn('id', $vibeIdList)->get();
 
-        foreach ($vibes as $vibe) {
-            $vibeNames = $vibe->name; 
-            $vibeimage = asset($vibe->icon); 
-        }
-    }
+                        foreach ($vibes as $vibe) {
+                            $vibeNames[] = $vibe->name;
+                            $vibeImages[] = asset($vibe->icon);
+                        }
+                    }
 
     // Profile image
     $profileImages = json_decode($mainActivity->user->profile_image ?? '[]', true);
@@ -1209,7 +1209,7 @@ public function foryouActivitydetailes(Request $request)
         'how_many' => $mainActivity->how_many,
         'interestCount' => $interestCount,
         'vibe_name' => $vibeNames ?? '',
-        'vibe_image' => $vibeimage ?? '',
+        'vibe_image' => $vibeImages ?? '',
         // 'vibe_icon' => $mainActivity->vibe->icon ?? '',
         'like_user' => $like_user,
         'expense_name' => $firstExpenseName,
@@ -1513,20 +1513,20 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
         $activity->bg_color = $bgColor;
 
         
-        $vibeNames = '';
-        $vibeimage = '';
+                $vibeNames = [];
+                    $vibeImages = [];
 
-        $vibeIdsRaw = json_decode($activity->vibe_id, true); // returns: ["1,2"]
-        if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
-            $vibeIdList = explode(',', $vibeIdsRaw[0]); // now [1, 2]
+                    $vibeIdsRaw = json_decode($activity->vibe_id, true); 
+                    if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
+                        $vibeIdList = explode(',', $vibeIdsRaw[0]); 
 
-            $vibes = Vibes::whereIn('id', $vibeIdList)->get();
+                        $vibes = Vibes::whereIn('id', $vibeIdList)->get();
 
-            foreach ($vibes as $vibe) {
-                $vibeNames = $vibe->name; 
-                $vibeimage = asset($vibe->icon); 
-            }
-        }
+                        foreach ($vibes as $vibe) {
+                            $vibeNames[] = $vibe->name;
+                            $vibeImages[] = asset($vibe->icon);
+                        }
+                    }
         return [
             // 'id' => $activity->id,
             // 'user_id' => $activity->user_id,
@@ -1536,7 +1536,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             // 'image' => $imageUrl,
             'bg_color' => $activity->bg_color,
             'vibe_name' => $vibeNames ?? '',
-            'vibe_image' => $vibeimage ?? '',
+            'vibe_image' => $vibeImages ?? '',
             // 'vibe_icon' => $activity->vibe->icon ?? '',
             // 'user_id' => $userDetails->id,
             'user_name' => $userDetails->name,
@@ -1646,20 +1646,20 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
         $activity->bg_color = $bgColor;
 
         
-        $vibeNames = '';
-        $vibeimage = '';
+                $vibeNames = [];
+                    $vibeImages = [];
 
-        $vibeIdsRaw = json_decode($activity->vibe_id, true); // returns: ["1,2"]
-        if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
-            $vibeIdList = explode(',', $vibeIdsRaw[0]); // now [1, 2]
+                    $vibeIdsRaw = json_decode($activity->vibe_id, true); 
+                    if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
+                        $vibeIdList = explode(',', $vibeIdsRaw[0]); 
 
-            $vibes = Vibes::whereIn('id', $vibeIdList)->get();
+                        $vibes = Vibes::whereIn('id', $vibeIdList)->get();
 
-            foreach ($vibes as $vibe) {
-                $vibeNames = $vibe->name; 
-                $vibeimage = asset($vibe->icon); 
-            }
-        }
+                        foreach ($vibes as $vibe) {
+                            $vibeNames[] = $vibe->name;
+                            $vibeImages[] = asset($vibe->icon);
+                        }
+                    }
 
         return [
             // 'id' => $activity->id,
@@ -1670,7 +1670,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             // 'image' => $imageUrl,
             'bg_color' => $activity->bg_color,
             'vibe_name' => $vibeNames ?? '',
-            'vibe_image' => $vibeimage ?? '',
+            'vibe_image' => $vibeImages ?? '',
             // 'vibe_icon' => $activity->vibe->icon ?? '',
             // 'user_id' => $userDetails->id,
             'user_name' => $userDetails->name,
@@ -1836,28 +1836,29 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
         $imageUrl = $activity->image ? url('images/activities/' . $activity->image) : null;
 
          
-        $vibeNames = '';
-        $vibeimage = '';
+                $vibeNames = [];
+                    $vibeImages = [];
 
-        $vibeIdsRaw = json_decode($activity->vibe_id, true); // returns: ["1,2"]
-        if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
-            $vibeIdList = explode(',', $vibeIdsRaw[0]); // now [1, 2]
+                    $vibeIdsRaw = json_decode($activity->vibe_id, true); 
+                    if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
+                        $vibeIdList = explode(',', $vibeIdsRaw[0]); 
 
-            $vibes = Vibes::whereIn('id', $vibeIdList)->get();
+                        $vibes = Vibes::whereIn('id', $vibeIdList)->get();
 
-            foreach ($vibes as $vibe) {
-                $vibeNames = $vibe->name; 
-                $vibeimage = asset($vibe->icon); 
-            }
-        }
+                        foreach ($vibes as $vibe) {
+                            $vibeNames[] = $vibe->name;
+                            $vibeImages[] = asset($vibe->icon);
+                        }
+                    }
 
         return [
             'title' => $activity->title,
             'rendom' => $activity->rendom,
-            'location' => $activity->location,    
+            'location' => $activity->location, 
+            'activity_image' => asset($activity->image),   
             'bg_color' => $bgColor,
             'vibe_name' => $vibeNames ?? '',
-            'vibe_image' => $vibeimage ?? '',
+            'vibe_image' => $vibeImages ?? '',
             // 'vibe_icon' => $activity->vibe->icon ?? '',
             'user_name' => $userData['name'] ?? '',
             'user_profile_image' => $userData['profile_image'] ?? '',
@@ -2709,21 +2710,20 @@ public function friendcount_one(Request $request)
             $profileImages = json_decode($userDetails->profile_image, true);
             $profileImageUrl = isset($profileImages[1]) ? url('uploads/app/profile_images/' . $profileImages[1]) : null;
 
-                   $vibeNames = '';
-                $vibeimage = '';
+                                 $vibeNames = [];
+                    $vibeImages = [];
 
-                $vibeIdsRaw = json_decode($activity->vibe_id, true); // returns: ["1,2"]
-                if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
-                    $vibeIdList = explode(',', $vibeIdsRaw[0]); // now [1, 2]
+                    $vibeIdsRaw = json_decode($activity->vibe_id, true); 
+                    if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
+                        $vibeIdList = explode(',', $vibeIdsRaw[0]); 
 
-                    $vibes = Vibes::whereIn('id', $vibeIdList)->get();
+                        $vibes = Vibes::whereIn('id', $vibeIdList)->get();
 
-                    foreach ($vibes as $vibe) {
-                        $vibeNames = $vibe->name; 
-                        $vibeimage = asset($vibe->icon); 
+                        foreach ($vibes as $vibe) {
+                            $vibeNames[] = $vibe->name;
+                            $vibeImages[] = asset($vibe->icon);
+                        }
                     }
-                }
-
 
             return [
                 'title' => $activity->title,
@@ -2731,11 +2731,11 @@ public function friendcount_one(Request $request)
                 'location' => $activity->location,
                 'bg_color' => $bgColor,
                 'vibe_name' => $vibeNames ?? '',
-                'vibe_image' => $vibeimage ?? '',
+                'vibe_image' => $vibeImages ?? '',
                 // 'vibe_icon' => $activity->vibe->icon ?? '',
                 'user_name' => $userDetails->name,
-                'user_profile_image' => (!empty($activity->image))
-                ? asset($activity->image): $profileImageUrl,
+                'user_profile_image' => $profileImageUrl ?? '',
+            'activity_image' => asset($activity->image),
                 'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
             ];
         });
@@ -2991,7 +2991,7 @@ public function vibeactivitydetails(Request $request)
                     }
                 }
 
-                    $vibeNames = [];
+                $vibeNames = [];
                     $vibeImages = [];
 
                     $vibeIdsRaw = json_decode($activity->vibe_id, true); 

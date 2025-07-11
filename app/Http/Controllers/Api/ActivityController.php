@@ -3013,7 +3013,8 @@ public function vibeactivitydetails(Request $request)
                 'id' => $vibe->id,
                 'name' => $vibe->name,
                 'status' => $vibe->status,
-                'icon' => asset($vibe->icon),
+                'image' => asset($vibe->icon),
+                'icon' => $vibe->image,
                 'bg_color' => $bgColor, 
                 'activity_count' => $filteredActivities->count(),
             ];

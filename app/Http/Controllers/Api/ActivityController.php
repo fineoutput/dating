@@ -592,20 +592,14 @@ public function useractivitys(Request $request)
 
     $activities = Activity::orderBy('id', 'DESC')
         ->where('user_id', $user->id)
-        ->where('status', 2) 
-        ->whereDate('when_time', '>=', $todayDate->format('Y-m-d')) 
+        ->where('status', 2)
+        ->whereDate('when_time', '>=', $todayDate->format('Y-m-d'))
         ->where(function ($query) use ($todayDate, $currentTime) {
-            $query->where(function ($subQuery) use ($todayDate, $currentTime) {
-       
-               $rawTime = '1:45 pm'; 
-                $normalizedTime = preg_replace('/\s+/u', ' ', $rawTime); 
-                $endTime = Carbon::createFromFormat('g:i a', $normalizedTime)
-                    ->setDate($todayDate->year, $todayDate->month, $todayDate->day);
-     
-                $subQuery->where('end_time', '>=', $endTime);
-            });
-    
-            $query->where('when_time', '>=', $currentTime);  
+            $query->whereRaw("
+                STR_TO_DATE(CONCAT(DATE(when_time), ' ', end_time), '%Y-%m-%d %l:%i %p') >= ?
+            ", [$currentTime]);
+
+            $query->orWhere('when_time', '>=', $currentTime);
         })
         ->get();
     
@@ -717,16 +711,15 @@ public function useroldactivitys(Request $request)
     $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata
 
     $activities = Activity::orderBy('id', 'DESC')
-        ->where('user_id', $user->id)
-        ->where('status', 2)
-        ->where(function ($query) use ($currentTime) {
-            $query->whereDate('when_time', '<', $currentTime->toDateString()) // strictly before today
-                ->orWhere(function ($subQuery) use ($currentTime) {
-                    $subQuery->whereDate('when_time', '=', $currentTime->toDateString())
-                            ->whereTime('end_time', '<', $currentTime->toTimeString()); // same day, but ended before now
-                });
-        })
-        ->get();
+    ->where('user_id', $user->id)
+    ->where('status', 2)
+    ->where(function ($query) use ($currentTime) {
+        $query->whereDate('when_time', '<', $currentTime->toDateString()) // Past dates
+            ->orWhereRaw("
+                STR_TO_DATE(CONCAT(DATE(when_time), ' ', end_time), '%Y-%m-%d %l:%i %p') < ?
+            ", [$currentTime->toDateTimeString()]);
+    })
+    ->get();
     
     $filteredActivities = [];
     
@@ -836,21 +829,16 @@ public function foryouactivitys(Request $request)
     $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata
     $todayDate = Carbon::today('Asia/Kolkata');  // Today's date in Asia/Kolkata
 
-    $activities = Activity::orderBy('id', 'DESC')
-        ->where('user_id','!=', $users->id)
-        ->where('status', 2) 
-        ->whereDate('when_time', '>=', $todayDate->format('Y-m-d')) 
-        ->where(function ($query) use ($todayDate, $currentTime) {
-            $query->where(function ($subQuery) use ($todayDate, $currentTime) {
-       
-                $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
-     
-                $subQuery->where('end_time', '>=', $endTime);
-            });
-    
-            $query->where('when_time', '>=', $currentTime);  
-        })
-        ->get();
+$activities = Activity::orderBy('id', 'DESC')
+    ->where('user_id', '!=', $users->id)
+    ->where('status', 2)
+    ->where(function ($query) use ($todayDate, $currentTime) {
+        $query->whereDate('when_time', '>', $currentTime->toDateString())
+            ->orWhereRaw("
+                STR_TO_DATE(CONCAT(DATE(when_time), ' ', end_time), '%Y-%m-%d %l:%i %p') >= ?
+            ", [$currentTime->toDateTimeString()]);
+    })
+    ->get();
     
     $filteredActivities = [];
     
@@ -1184,20 +1172,35 @@ public function getActivitydetailes(Request $request)
     $currentTime = Carbon::now('Asia/Kolkata');
     $todayDate = Carbon::today('Asia/Kolkata');
 
-    $allActivities = Activity::where('id','!=',$mainActivity->id)->with('user', 'vibe')
-        ->orderBy('id', 'desc')
-        ->whereDate('when_time', '>=', $todayDate)
-        ->where('user_id', '!=', $user->id)->where(function ($query) use ($todayDate, $currentTime) {
-            $query->where(function ($subQuery) use ($todayDate, $currentTime) {
+    // $allActivities = Activity::where('id','!=',$mainActivity->id)->with('user', 'vibe')
+    //     ->orderBy('id', 'desc')
+    //     ->whereDate('when_time', '>=', $todayDate)
+    //     ->where('user_id', '!=', $user->id)->where(function ($query) use ($todayDate, $currentTime) {
+    //         $query->where(function ($subQuery) use ($todayDate, $currentTime) {
        
-                $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
+    //             $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
      
-                $subQuery->where('end_time', '>=', $endTime);
-            });
+    //             $subQuery->where('end_time', '>=', $endTime);
+    //         });
     
-            $query->where('when_time', '>=', $currentTime);  
-        })
-        ->get()
+    //         $query->where('when_time', '>=', $currentTime);  
+    //     })
+    //     ->get()
+
+    $allActivities = Activity::where('id', '!=', $mainActivity->id)
+    ->with('user', 'vibe')
+    ->orderBy('id', 'desc')
+    ->whereDate('when_time', '>=', $todayDate)
+    ->where('user_id', '!=', $user->id)
+    ->where(function ($query) use ($currentTime) {
+        $query->whereRaw("
+            STR_TO_DATE(CONCAT(DATE(when_time), ' ', end_time), '%Y-%m-%d %l:%i %p') >= ?
+        ", [$currentTime]);
+
+        $query->orWhere('when_time', '>=', $currentTime);
+    })
+    ->get()
+        
         ->map(function ($act) {
             $images = json_decode($act->user->profile_image ?? '[]', true);
             $img = isset($images[1]) ? asset('uploads/app/profile_images/' . $images[1]) : null;
@@ -1360,19 +1363,17 @@ public function foryouActivitydetailes(Request $request)
     $currentTime = Carbon::now('Asia/Kolkata');
     $todayDate = Carbon::today('Asia/Kolkata');
 
-    $allActivities = Activity::where('id','!=',$mainActivity->id)->with('user', 'vibe')
+    $allActivities = Activity::where('id', '!=', $mainActivity->id)
+        ->with('user', 'vibe')
         ->orderBy('id', 'desc')
-        ->where('user_id','!=', $user->id)
+        ->where('user_id', '!=', $user->id)
         ->whereDate('when_time', '>=', $todayDate)
-        ->where('user_id', '!=', $user->id)->where(function ($query) use ($todayDate, $currentTime) {
-            $query->where(function ($subQuery) use ($todayDate, $currentTime) {
-       
-                $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
-     
-                $subQuery->where('end_time', '>=', $endTime);
-            });
-    
-            $query->where('when_time', '>=', $currentTime);  
+        ->where(function ($query) use ($currentTime) {
+            $query->whereRaw("
+                STR_TO_DATE(CONCAT(DATE(when_time), ' ', end_time), '%Y-%m-%d %l:%i %p') >= ?
+            ", [$currentTime]);
+
+            $query->orWhere('when_time', '>=', $currentTime);
         })
         ->get()
         ->map(function ($act) {
@@ -1575,15 +1576,11 @@ public function foryouActivitydetailes(Request $request)
         foreach ($interestIds as $id) {
             $query->orWhere('interests_id', 'LIKE', '%"'.$id.'"%');
         }
-    })->where(function ($query) use ($todayDate, $currentTime) {
-        $query->where(function ($subQuery) use ($todayDate, $currentTime) {
-   
-            $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
- 
-            $subQuery->where('end_time', '>=', $endTime);
-        });
-
-        $query->where('when_time', '>=', $currentTime);  
+    })->where(function ($query) use ($currentTime) {
+        $query->whereDate('when_time', '>', $currentTime->toDateString())
+            ->orWhereRaw("
+                STR_TO_DATE(CONCAT(DATE(when_time), ' ', end_time), '%Y-%m-%d %l:%i %p') >= ?
+            ", [$currentTime->toDateTimeString()]);
     })
     ->get();
    
@@ -1702,23 +1699,21 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
     $currentTime = Carbon::now('Asia/Kolkata');
     $todayDate = Carbon::today('Asia/Kolkata');
 
-    $matchingActivities = Activity::orderBy('id','DESC')->where('user_id', '!=', $user->id)
-    ->where('status', 2)
-    ->where(function ($query) use ($interestIds) {
-        foreach ($interestIds as $id) {
-            $query->orWhere('interests_id', 'LIKE', '%"'.$id.'"%');
-        }
-    })->where(function ($query) use ($todayDate, $currentTime) {
-        $query->where(function ($subQuery) use ($todayDate, $currentTime) {
-   
-            $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
- 
-            $subQuery->where('end_time', '>=', $endTime);
-        });
-
-        $query->where('when_time', '>=', $currentTime);  
-    })
-    ->get();
+    $matchingActivities = Activity::orderBy('id','DESC')
+        ->where('user_id', '!=', $user->id)
+        ->where('status', 2)
+        ->where(function ($query) use ($interestIds) {
+            foreach ($interestIds as $id) {
+                $query->orWhere('interests_id', 'LIKE', '%"'.$id.'"%');
+            }
+        })
+        ->where(function ($query) use ($currentTime) {
+            $query->whereDate('when_time', '>', $currentTime->toDateString())
+                ->orWhereRaw("
+                    STR_TO_DATE(CONCAT(DATE(when_time), ' ', end_time), '%Y-%m-%d %l:%i %p') >= ?
+                ", [$currentTime->toDateTimeString()]);
+        })
+        ->get();
    
         // $matchingActivities = Activity::whereIn('interests_id', $interestIds)
         //                             ->where('user_id', '!=', $user->id)
@@ -1900,18 +1895,17 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
     $interestIds = OtherInterest::where('user_id', $user->id)->get();
     $activityIds = $interestIds->pluck('activity_id'); 
-    $matchingActivities = Activity::whereIn('id', $activityIds)->where('user_id','!=',$user->id)->where('status', 2)
-    ->where(function ($query) use ($todayDate, $currentTime) {
-        $query->where(function ($subQuery) use ($todayDate, $currentTime) {
-   
-            $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
- 
-            $subQuery->where('end_time', '>=', $endTime);
-        });
 
-        $query->where('when_time', '>=', $currentTime);  
-    })
-    ->get();
+    $matchingActivities = Activity::whereIn('id', $activityIds)
+        ->where('user_id', '!=', $user->id)
+        ->where('status', 2)
+        ->where(function ($query) use ($currentTime) {
+            $query->whereDate('when_time', '>', $currentTime->toDateString())
+                ->orWhereRaw("
+                    STR_TO_DATE(CONCAT(DATE(when_time), ' ', end_time), '%Y-%m-%d %l:%i %p') >= ?
+                ", [$currentTime->toDateTimeString()]);
+        })
+        ->get();
 
     if ($matchingActivities->isEmpty()) {
         return response()->json([
@@ -2751,11 +2745,10 @@ public function friendcount_one(Request $request)
     $todayDate = Carbon::today('Asia/Kolkata');
     
         $query = Activity::query();
-
         $query->where(function ($query) use ($todayDate, $currentTime) {
             $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')
                         ->setDate($todayDate->year, $todayDate->month, $todayDate->day);
-    
+
             $query->where(function ($subQuery) use ($endTime) {
                 $subQuery->where('end_time', '>=', $endTime);
             })->where('when_time', '>=', $currentTime);
@@ -2966,20 +2959,15 @@ public function vibeactivitydetails(Request $request)
             $currentTime = Carbon::now('Asia/Kolkata'); 
             $todayDate = Carbon::today('Asia/Kolkata');
             $activities = Activity::orderBy('id', 'DESC')
-            // ->where('vibe_id', 'LIKE', '%"'.$vibe->id.'"%')
-                ->where('status', 2)
-                ->where('user_id','!=',$user->id)
-                ->whereDate('when_time', '>=', $todayDate->format('Y-m-d'))->where(function ($query) use ($todayDate, $currentTime) {
-                    $query->where(function ($subQuery) use ($todayDate, $currentTime) {
-               
-                        $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
-             
-                        $subQuery->where('end_time', '>=', $endTime);
-                    });
-            
-                    $query->where('when_time', '>=', $currentTime);  
-                })
-                ->get()->filter(function ($activity) use ($vibe) {
+            ->where('status', 2)
+            ->where('user_id', '!=', $user->id)
+            ->where(function ($query) use ($currentTime) {
+                $query->whereDate('when_time', '>', $currentTime->toDateString())
+                    ->orWhereRaw("
+                        STR_TO_DATE(CONCAT(DATE(when_time), ' ', end_time), '%Y-%m-%d %l:%i %p') >= ?
+                    ", [$currentTime->toDateTimeString()]);
+            })
+            ->get()->filter(function ($activity) use ($vibe) {
         $vibeIdsRaw = json_decode($activity->vibe_id, true);
         if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
             $ids = explode(',', $vibeIdsRaw[0]); // ["1", "2"] → [1, 2]

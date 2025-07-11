@@ -2991,20 +2991,27 @@ public function vibeactivitydetails(Request $request)
                     }
                 }
 
-                        $vibeNames = '';
-                        $vibeimage = '';
+                      $vibeNames = '';
+                    $vibeImages = '';
 
-                        $vibeIdsRaw = json_decode($activity->vibe_id, true); // returns: ["1,2"]
-                        if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
-                            $vibeIdList = explode(',', $vibeIdsRaw[0]); // now [1, 2]
+                    $vibeIdsRaw = json_decode($activity->vibe_id, true); // returns: ["1,2"]
+                    if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
+                        $vibeIdList = explode(',', $vibeIdsRaw[0]); // now [1, 2]
 
-                            $vibes = Vibes::whereIn('id', $vibeIdList)->get();
+                        $vibes = Vibes::whereIn('id', $vibeIdList)->get();
 
-                            foreach ($vibes as $vibe) {
-                                $vibeNames = $vibe->name; 
-                                $vibeimage = asset($vibe->icon); 
-                            }
+                        $vibeNameArray = [];
+                        $vibeImageArray = [];
+
+                        foreach ($vibes as $vibe) {
+                            $vibeNameArray[] = $vibe->name;
+                            $vibeImageArray[] = asset($vibe->icon);
                         }
+
+                        // Join names with comma, images with something appropriate (optional)
+                        $vibeNames = implode(', ', $vibeNameArray);
+                        $vibeImages = implode(', ', $vibeImageArray); // Or use array if you need them separately
+                    }
 
 
                 return [
@@ -3016,7 +3023,7 @@ public function vibeactivitydetails(Request $request)
                     'bg_color' => $bgColor,
                     'how_many' => $activity->how_many,
                     'vibe_name' => $vibeNames ?? '',
-                    'vibe_image' => $vibeimage ?? '',
+                    'vibe_image' => $vibeImages ?? '',
                     // 'vibe_icon' => $activity->vibe->icon ?? '',
                     'user_name' => $user_rendom->name,
                      'user_profile_image' => $profileImageUrl ?? '',

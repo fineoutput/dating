@@ -2991,7 +2991,7 @@ public function vibeactivitydetails(Request $request)
                     }
                 }
 
-                     $vibeNames = [];
+                    $vibeNames = [];
                     $vibeImages = [];
 
                     $vibeIdsRaw = json_decode($activity->vibe_id, true); 
@@ -3000,17 +3000,10 @@ public function vibeactivitydetails(Request $request)
 
                         $vibes = Vibes::whereIn('id', $vibeIdList)->get();
 
-                        $vibeNameArray = [];
-                        $vibeImageArray = [];
-
                         foreach ($vibes as $vibe) {
-                            $vibeNameArray[] = '"' . $vibe->name . '"';
-                            $vibeImageArray[] = '"' . asset($vibe->icon) . '"';
+                            $vibeNames[] = $vibe->name;
+                            $vibeImages[] = asset($vibe->icon);
                         }
-
-                        // Join names and images with new lines
-                        $vibeNames = implode(",\n", $vibeNameArray);
-                        $vibeImages = implode(",\n", $vibeImageArray);
                     }
 
 

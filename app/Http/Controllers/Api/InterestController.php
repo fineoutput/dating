@@ -348,13 +348,13 @@ public function addconfirms(Request $request)
         ]);
     }
 
-    if ($activity->user_id == $user->id) {
-        return response()->json([
-            'message' => 'You cannot add interest to your own activity.',
-            'data' => [],
-            'status' => 201,
-        ]);
-    }
+    // if ($activity->user_id == $user->id) {
+    //     return response()->json([
+    //         'message' => 'You cannot add interest to your own activity.',
+    //         'data' => [],
+    //         'status' => 201,
+    //     ]);
+    // }
 
     $userIds = User::whereIn('rendom', $request->users)->pluck('id')->toArray();
 

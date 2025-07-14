@@ -594,6 +594,117 @@ public function useroldactivitys(Request $request)
 }
 
 
+
+public function userinterestactivitys(Request $request)
+{
+    $user = Auth::user();
+
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], 401);
+    }
+
+    $currentTime = Carbon::now('Asia/Kolkata');
+
+    // ✅ Get activity IDs from OtherInterest where confirm = 0
+    $activityIds = OtherInterest::where('user_id', $user->id)
+                    ->where('confirm', 0)
+                    ->pluck('activity_id')
+                    ->toArray();
+
+    if (empty($activityIds)) {
+        return response()->json([
+            'message' => 'No matching activities found',
+            'status'  => 200,
+            'data'    => [],
+        ]);
+    }
+
+    $activities = Activity::whereIn('id', $activityIds)
+                    ->orderBy('id', 'DESC')
+                    ->where('user_id', $user->id)
+                    ->get();
+
+    if ($activities->isEmpty()) {
+        return response()->json([
+            'message' => 'No activities found',
+            'status' => 200,
+            'data' => [],
+        ]);
+    }
+
+    // ✅ Profile Image decode (2nd image)
+    $profileImageUrl = null;
+    if ($user->profile_image) {
+        $profileImages = json_decode($user->profile_image, true);
+        if (!empty($profileImages) && isset($profileImages[1])) {
+            $profileImageUrl = url('uploads/app/profile_images/' . $profileImages[1]);
+        }
+    }
+
+    $activitiesData = [];
+
+    foreach ($activities as $activity) {
+        // bg_color logic
+        $hash = md5($activity->id);
+        $r = hexdec(substr($hash, 0, 2));
+        $g = hexdec(substr($hash, 2, 2));
+        $b = hexdec(substr($hash, 4, 2));
+        $lightenFactor = 0.5;
+        $r = round($r + (255 - $r) * $lightenFactor);
+        $g = round($g + (255 - $g) * $lightenFactor);
+        $b = round($b + (255 - $b) * $lightenFactor);
+        $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
+
+        // Vibes
+        $vibeNames = [];
+        $vibeImages = [];
+        $vibeIdsRaw = json_decode($activity->vibe_id, true);
+        if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
+            $vibeIdList = explode(',', $vibeIdsRaw[0]);
+            $vibes = Vibes::whereIn('id', $vibeIdList)->get();
+            foreach ($vibes as $vibe) {
+                $vibeNames[] = $vibe->name;
+                $vibeImages[] = asset($vibe->icon);
+            }
+        }
+
+        // Expense
+        $expenseIds = json_decode($activity->expense_id, true);
+        $firstExpenseName = null;
+        if (is_array($expenseIds) && count($expenseIds) > 0) {
+            $firstExpense = Expense::find($expenseIds[0]);
+            $firstExpenseName = $firstExpense->name ?? null;
+        }
+
+        $activitiesData[] = [
+            'rendom'             => $activity->rendom,
+            'when_time'          => $activity->when_time,
+            'end_time'           => $activity->end_time,
+            'title'              => $activity->title,
+            'location'           => $activity->location,
+            'bg_color'           => $bgColor,
+            'how_many'           => $activity->how_many,
+            'vibe_name'          => $vibeNames ?? '',
+            'vibe_image'         => $vibeImages ?? '',
+            'expense_name'       => $firstExpenseName ?? '',
+            'user_name'          => $user->name,
+            'user_profile_image' => $profileImageUrl ?? '',
+            'activity_image'     => asset($activity->image),
+            'user_time'          => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
+            'status'             => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
+        ];
+    }
+
+    return response()->json([
+        'message' => 'User activities with confirm = 0 fetched successfully',
+        'status' => 200,
+        'data' => $activitiesData,
+    ]);
+}
+
+
+
+
 public function foryouactivitys(Request $request)
 {
     $users = Auth::user();

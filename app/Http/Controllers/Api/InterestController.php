@@ -216,6 +216,138 @@ class InterestController extends Controller
 }
 
 
+public function addconfirms(Request $request)
+{
+    if (!Auth::check()) {
+        return response()->json([
+            'message' => 'Unauthorized. Please log in.',
+        ]);
+    }
+
+    $user = Auth::user();
+
+    // ✅ Validate request
+    $validator = Validator::make($request->all(), [
+        'rendom' => 'required|exists:activity_table,rendom',
+        'users' => 'required|array|min:1',
+        'users.*' => 'required|string',
+    ]);
+
+    if ($validator->fails()) {
+        $errors = [];
+        foreach ($validator->errors()->getMessages() as $field => $messages) {
+            $errors[$field] = $messages[0];
+            break;
+        }
+        return response()->json(['message' => $errors, 'data' => [], 'status' => 201], 200);
+    }
+
+    // ✅ Get activity
+    $activity = Activity::where('rendom', $request->rendom)->first();
+
+    if (!$activity) {
+        return response()->json([
+            'message' => 'Activity not found.',
+            'data' => [],
+            'status' => 404,
+        ]);
+    }
+
+    if ($activity->user_id == $user->id) {
+        return response()->json([
+            'message' => 'You cannot add interest to your own activity.',
+            'data' => [],
+            'status' => 201,
+        ]);
+    }
+
+    $userIds = User::whereIn('rendom', $request->users)->pluck('id')->toArray();
+
+    if (empty($userIds)) {
+        return response()->json([
+            'message' => 'No valid users found from provided rendom values.',
+            'data' => [],
+            'status' => 201,
+        ]);
+    }
+
+    // ✅ Step 2: Update OtherInterest records
+    $updated = OtherInterest::where('activity_id', $activity->id)
+        ->whereIn('user_id', $userIds)
+        ->update(['confirm' => 6]);
+
+    return response()->json([
+        'message' => $updated > 0 ? 'Confirm status updated.' : 'No matching interests found to update.',
+        'data' => [
+            'activity_rendom' => $request->rendom,
+            'user_ids_updated' => $userIds,
+            'records_updated' => $updated,
+        ],
+        'status' => 200,
+    ]);
+}
+
+
+
+public function getConfirmedUsers(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'rendom' => 'required|exists:activity_table,rendom',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'message' => $validator->errors()->first(),
+            'data' => [],
+            'status' => 422,
+        ]);
+    }
+
+    $activity = Activity::where('rendom', $request->rendom)->first();
+
+    if (!$activity) {
+        return response()->json([
+            'message' => 'Activity not found.',
+            'data' => [],
+            'status' => 404,
+        ]);
+    }
+
+    $confirmedUsers = OtherInterest::with('user')
+        ->where('activity_id', $activity->id)
+        ->where('confirm', 6)
+        ->get()
+        ->map(function ($interest) {
+            $user = $interest->user;
+            $profileImageUrl = null;
+
+         $profileImageUrl = null;
+                if ($user->profile_image) {
+                    $profileImages = json_decode($user->profile_image, true);
+
+                    if (!empty($profileImages) && isset($profileImages[1])) {
+                        $profileImageUrl = url('uploads/app/profile_images/' . $profileImages[1]);
+                    }
+                }
+
+            return [
+                'user_id'          => $user->id ?? null,
+                'user_name'        => $user->name ?? null,
+                'user_email'       => $user->email ?? null,
+                'confirm'          => $interest->confirm,
+                'profile_image'    => $profileImageUrl,
+            ];
+        });
+
+    return response()->json([
+        'message' => 'Confirmed users fetched successfully.',
+        'data'    => $confirmedUsers,
+        'status'  => 200,
+    ]);
+}
+
+
+
 public function removeinterest(Request $request)
 {
     if (!Auth::check()) {

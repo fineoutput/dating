@@ -676,6 +676,17 @@ $activities = Activity::whereIn('id', $activityIds)
             $firstExpenseName = $firstExpense->name ?? null;
         }
 
+           $authuser =  Auth::user();
+                    if($authuser){
+                        $liked_Act = LikeActivity::where('activity_id',$activity->id)->where('user_id',$authuser->id)->first();
+                    }
+
+                    if($liked_Act){
+                        $actlike = true;
+                    }else{
+                        $actlike = false;
+                    }
+
         $activitiesData[] = [
             'rendom'             => $activity->rendom,
             'when_time'          => $activity->when_time,
@@ -684,6 +695,7 @@ $activities = Activity::whereIn('id', $activityIds)
             'location'           => $activity->location,
             'bg_color'           => $bgColor,
             'how_many'           => $activity->how_many,
+            'like' => $actlike,
             'is_like' => false,
             'vibe_name'          => $vibeNames ?? '',
             'vibe_image'         => $vibeImages ?? '',
@@ -783,6 +795,17 @@ $activities = Activity::whereIn('id', $activityIds)
             $firstExpenseName = $firstExpense->name ?? null;
         }
 
+           $authuser =  Auth::user();
+                    if($authuser){
+                        $liked_Act = LikeActivity::where('activity_id',$activity->id)->where('user_id',$authuser->id)->first();
+                    }
+
+                    if($liked_Act){
+                        $actlike = true;
+                    }else{
+                        $actlike = false;
+                    }
+
         $activitiesData[] = [
             'rendom'             => $activity->rendom,
             'when_time'          => $activity->when_time,
@@ -791,6 +814,7 @@ $activities = Activity::whereIn('id', $activityIds)
             'location'           => $activity->location,
             'bg_color'           => $bgColor,
             'how_many'           => $activity->how_many,
+            'like' => $actlike,
             'is_like' => false,
             'vibe_name'          => $vibeNames ?? '',
             'vibe_image'         => $vibeImages ?? '',
@@ -886,12 +910,24 @@ $activities = Activity::whereIn('id', $activityIds)
             $firstExpenseName = $firstExpense->name ?? null;
         }
 
+           $authuser =  Auth::user();
+                    if($authuser){
+                        $liked_Act = LikeActivity::where('activity_id',$activity->id)->where('user_id',$authuser->id)->first();
+                    }
+
+                    if($liked_Act){
+                        $actlike = true;
+                    }else{
+                        $actlike = false;
+                    }
+
         $activitiesData[] = [
             'rendom'             => $activity->rendom,
             'when_time'          => $activity->when_time,
             'end_time'           => $activity->end_time,
             'title'              => $activity->title,
             'location'           => $activity->location,
+            'like' => $actlike,
             'is_like' => false,
             'bg_color'           => $bgColor,
             'how_many'           => $activity->how_many,
@@ -1018,6 +1054,17 @@ public function foryouactivitys(Request $request)
                         }
                     }
 
+                       $authuser =  Auth::user();
+                    if($authuser){
+                        $liked_Act = LikeActivity::where('activity_id',$activity->id)->where('user_id',$authuser->id)->first();
+                    }
+
+                    if($liked_Act){
+                        $actlike = true;
+                    }else{
+                        $actlike = false;
+                    }
+
         $activitiesData[] = [
             'rendom' => $activity->rendom,
             'when_time' => $activity->when_time,
@@ -1030,6 +1077,7 @@ public function foryouactivitys(Request $request)
             'vibe_image' => $vibeImages ?? '',
             // 'vibe_icon' => $activity->vibe->icon ?? '',
             'is_like' => false,
+            'like' => $actlike,
             'user_name' => $activityUser->name,
             'expense_name' => $firstExpenseName,
             'user_profile_image' => $profileImageUrl ?? '',
@@ -1704,6 +1752,17 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                             $vibeImages[] = asset($vibe->icon);
                         }
                     }
+
+                       $authuser =  Auth::user();
+                    if($authuser){
+                        $liked_Act = LikeActivity::where('activity_id',$activity->id)->where('user_id',$authuser->id)->first();
+                    }
+
+                    if($liked_Act){
+                        $actlike = true;
+                    }else{
+                        $actlike = false;
+                    }
         return [
             // 'id' => $activity->id,
             // 'user_id' => $activity->user_id,
@@ -1713,6 +1772,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             // 'image' => $imageUrl,
             'bg_color' => $activity->bg_color,
             'is_like' => false,
+            'like' => $actlike,
             'vibe_name' => $vibeNames ?? '',
             'vibe_image' => $vibeImages ?? '',
             // 'vibe_icon' => $activity->vibe->icon ?? '',
@@ -1836,6 +1896,17 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                         }
                     }
 
+                       $authuser =  Auth::user();
+                    if($authuser){
+                        $liked_Act = LikeActivity::where('activity_id',$activity->id)->where('user_id',$authuser->id)->first();
+                    }
+
+                    if($liked_Act){
+                        $actlike = true;
+                    }else{
+                        $actlike = false;
+                    }
+
         return [
             // 'id' => $activity->id,
             // 'user_id' => $activity->user_id,
@@ -1845,6 +1916,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             // 'image' => $imageUrl,
             'bg_color' => $activity->bg_color,
             'is_like' => false,
+            'like' => $actlike,
             'vibe_name' => $vibeNames ?? '',
             'vibe_image' => $vibeImages ?? '',
             // 'vibe_icon' => $activity->vibe->icon ?? '',
@@ -2034,6 +2106,17 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                         $firstExpenseName = $firstExpense->name ?? null;
                     }
 
+                       $authuser =  Auth::user();
+                    if($authuser){
+                        $liked_Act = LikeActivity::where('activity_id',$activity->id)->where('user_id',$authuser->id)->first();
+                    }
+
+                    if($liked_Act){
+                        $actlike = true;
+                    }else{
+                        $actlike = false;
+                    }
+
         return [
             'title' => $activity->title,
             'rendom' => $activity->rendom,
@@ -2042,6 +2125,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             'bg_color' => $bgColor,
             'vibe_name' => $vibeNames ?? '',
             'is_like' => false,
+            'like' => $actlike,
             'vibe_image' => $vibeImages ?? '',
             'expense_name' => $firstExpenseName ?? '',
             // 'vibe_icon' => $activity->vibe->icon ?? '',
@@ -2912,12 +2996,24 @@ public function friendcount_one(Request $request)
                         }
                     }
 
+                       $authuser =  Auth::user();
+                    if($authuser){
+                        $liked_Act = LikeActivity::where('activity_id',$activity->id)->where('user_id',$authuser->id)->first();
+                    }
+
+                    if($liked_Act){
+                        $actlike = true;
+                    }else{
+                        $actlike = false;
+                    }
+
             return [
                 'title' => $activity->title,
                 'rendom' => $activity->rendom,
                 'location' => $activity->location,
                 'bg_color' => $bgColor,
                 'is_like' => false,
+                'like' => $actlike,
                 'vibe_name' => $vibeNames ?? '',
                 'vibe_image' => $vibeImages ?? '',
                 // 'vibe_icon' => $activity->vibe->icon ?? '',
@@ -3204,6 +3300,16 @@ $activities = Activity::orderBy('id', 'DESC')
                         $firstExpense = Expense::find($expenseIds[0]);
                         $firstExpenseName = $firstExpense->name ?? null;
                     }
+               $authuser =  Auth::user();
+                    if($authuser){
+                        $liked_Act = LikeActivity::where('activity_id',$activity->id)->where('user_id',$authuser->id)->first();
+                    }
+
+                    if($liked_Act){
+                        $actlike = true;
+                    }else{
+                        $actlike = false;
+                    }
 
 
                 return [
@@ -3214,6 +3320,7 @@ $activities = Activity::orderBy('id', 'DESC')
                     'location' => $activity->location,
                     'bg_color' => $bgColor,
                     'is_like' => false,
+                    'like' => $actlike,
                     'how_many' => $activity->how_many,
                     'vibe_name' => $vibeNames ?? '',
                     'vibe_image' => $vibeImages ?? '',

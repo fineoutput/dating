@@ -430,6 +430,7 @@ public function getConfirmedUsers(Request $request)
                 'user_name'        => $user->name ?? null,
                 'user_email'       => $user->email ?? null,
                 'confirm'          => $interest->confirm,
+                'rendom'          => $user->rendom,
                 'profile_image'    => $profileImageUrl,
             ];
         });

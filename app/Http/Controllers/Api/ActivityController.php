@@ -33,244 +33,6 @@ use Illuminate\Support\Facades\Auth;
 
 class ActivityController extends Controller
 {
-    // public function activitystore(Request $request)
-    // {
-    //     if (!Auth::check()) {
-    //         return response()->json([
-    //             'message' => 'Unauthorized. Please log in.',
-    //         ], 401);
-    //     }
-    
-    //     $user = Auth::user();
-    
-    //     // Validation for incoming request
-    //     $validator = Validator::make($request->all(), [
-    //         'title' => 'required',
-    //         'location' => 'required',
-    //         'how_many' => 'required|integer',
-    //         'start_time' => 'nullable',
-    //         'end_time' => 'required',
-    //         'when_time' => 'required',
-    //         'interests_id' => 'nullable',
-    //         'vibe_id' => 'nullable',
-    //         'expense_id' => 'required',
-    //         'description' => 'required',
-    //         'other_activity' => 'nullable|string',
-    //         'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-    //         'amount' => 'required|numeric',
-    //     ]);
-    
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'message' => 'Validation failed',
-    //             'errors' => $validator->errors(),
-    //         ], 422);
-    //     }
-    
-    //     // Parse start_time and end_time, assuming the current date if only time is provided
-    //     // try {
-           
-    //     // } catch (\Exception $e) {
-    //     //     return response()->json([
-    //     //         'message' => 'Invalid time format. Expected H:i:s.',
-    //     //         'error' => $e->getMessage(),
-    //     //     ], 422);
-    //     // }
-    //     // $startTime = $this->parseTimeToDate($request->start_time);
-    //     // $endTime = $this->parseTimeToDate($request->end_time);
-    
-    //     $imagePath = null;
-    //     if ($request->hasFile('image')) {
-    //         $image = $request->file('image');
-    //         $imagePath = $image->move(public_path('images/activities'), $image->getClientOriginalName());
-    //         $imagePath = asset('images/activities/' . $image->getClientOriginalName());
-    //     }
-    
-    //     // Create the activity record
-    //     $activity = ActivityTemp::create([
-    //         'where_to' => $request->where_to,
-    //         'title' => $request->title,
-    //         'location' => $request->location,
-    //         'when_time' => $request->when_time,
-    //         'how_many' => $request->how_many,
-    //         'start_time' => $request->start_time,
-    //         'end_time' => $request->end_time,
-    //         'vibe_id' => $request->vibe_id,
-    //         'interests_id' => implode(',', (array)$request->interests_id), 
-    //         'expense_id' => implode(',', (array)$request->expense_id),
-    //         'status' => 1,
-    //         'description' => $request->description,
-    //         'other_activity' => $request->other_activity,
-    //         'user_id' => $user->id,
-    //         'image' => $imagePath,
-    //         'amount' => $request->amount, 
-    //     ]);
-
-    //     $activityData = $activity->toArray();
-    //     unset($activityData['created_at'], $activityData['updated_at']);
-    
-    //     return response()->json([
-    //         'message' => 'Activity created successfully',
-    //         'status' => 200,
-    //         'data' => $activityData, 
-    //     ], 200);
-    // }
-
-    // public function activitystore(Request $request)
-    // {
-    //     if (!Auth::check()) {
-    //         return response()->json([
-    //             'message' => 'Unauthorized. Please log in.',
-    //         ], 401);
-    //     }
-    
-    //     $user = Auth::user();
-    
-    //     // Validation for incoming request
-    //     $validator = Validator::make($request->all(), [
-    //         'title' => 'nullable',
-    //         'location' => 'nullable',
-    //         'how_many' => 'nullable|integer',
-    //         'start_time' => 'nullable',
-    //         'end_time' => 'nullable',
-    //         'when_time' => 'nullable',
-    //         'interests_id' => 'nullable', // It should be an array for multiple values
-    //         'vibe_id' => 'nullable',
-    //         'expense_id' => 'nullable', // It should be an array for multiple values
-    //         'description' => 'nullable',
-    //         'other_activity' => 'nullable|string',
-    //         'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-    //         'amount' => 'nullable|numeric',
-    //         'activity_id' => 'nullable|exists:activity_temp_table,id', // for update
-    //         'update_status' => 'nullable|in:update,final', // to handle status
-    //     ]);
-    
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'message' => 'Validation failed',
-    //             'errors' => $validator->errors(),
-    //         ], 422);
-    //     }
-    
-    //     // If activity_id exists, we are updating the activity
-    //     if ($request->has('activity_id') && $request->update_status == 'update') {
-    //         // Find the activity in ActivityTemp to update
-    //         $activityTemp = ActivityTemp::find($request->activity_id);
-    
-    //         if (!$activityTemp) {
-    //             return response()->json(['message' => 'Activity not found'], 404);
-    //         }
-    
-    //         // Update activity details
-    //         $activityTemp->user_id = $user->id;  // Always update user_id
-    //         $activityTemp->where_to = $request->where_to ?? $activityTemp->where_to;
-    //         $activityTemp->when_time = $request->when_time ?? $activityTemp->when_time;
-    //         $activityTemp->how_many = $request->how_many ?? $activityTemp->how_many;
-    //         $activityTemp->start_time = $request->start_time ?? $activityTemp->start_time;
-    //         $activityTemp->end_time = $request->end_time ?? $activityTemp->end_time;
-    //         $activityTemp->interests_id = isset($request->interests_id) ? implode(',', (array)$request->interests_id): $activityTemp->interests_id;  
-    //         $activityTemp->vibe_id = $request->vibe_id ?? $activityTemp->vibe_id;
-    //         $activityTemp->expense_id = isset($request->expense_id) ? implode(',', (array)$request->expense_id) : $activityTemp->expense_id;  // Handling multiple expense_id
-    //         $activityTemp->other_activity = $request->other_activity ?? $activityTemp->other_activity;
-    //         $activityTemp->status = 1;  // Keep status as 1 unless changed in final status
-    //         $activityTemp->title = $request->title ?? $activityTemp->title;
-    //         $activityTemp->description = $request->description ?? $activityTemp->description;
-    //         $activityTemp->location = $request->location ?? $activityTemp->location;
-    
-    //         if ($request->hasFile('image')) {
-    //             $image = $request->file('image');
-    //             $imagePath = $image->move(public_path('images/activities'), $image->getClientOriginalName());
-    //             $activityTemp->image = asset('images/activities/' . $image->getClientOriginalName());
-    //         }
-    
-    //         $activityTemp->amount = $request->amount ?? $activityTemp->amount;
-    
-    //         // Save updated data to ActivityTemp
-    //         $activityTemp->save();
-    
-    //         return response()->json([
-    //             'message' => 'Activity updated in ActivityTemp',
-    //             'status' => 200,
-    //             'data' => $activityTemp,
-    //         ], 200);
-    //     }
-    
-    //     // If update_status is final, move data to Activity table
-    //     if ($request->has('update_status') && $request->update_status == 'final') {
-    //         // Find the activity in ActivityTemp to finalize
-    //         $activityTemp = ActivityTemp::find($request->activity_id);
-    
-    //         if (!$activityTemp) {
-    //             return response()->json(['message' => 'Activity not found'], 404);
-    //         }
-    
-    //         // Create the final activity in the Activity table
-    //         $activity = Activity::create([
-    //             'user_id' => $activityTemp->user_id,
-    //             'where_to' => $activityTemp->where_to,
-    //             'when_time' => $activityTemp->when_time,
-    //             'how_many' => $activityTemp->how_many,
-    //             'start_time' => $activityTemp->start_time,
-    //             'end_time' => $activityTemp->end_time,
-    //             'interests_id' => $activityTemp->interests_id,
-    //             'vibe_id' => $activityTemp->vibe_id,
-    //             'expense_id' => $activityTemp->expense_id,
-    //             'status' => $activityTemp->status,
-    //             'title' => $activityTemp->title,
-    //             'description' => $activityTemp->description,
-    //             'location' => $activityTemp->location,
-    //             'other_activity' => $activityTemp->other_activity,
-    //             'image' => $activityTemp->image,
-    //             'amount' => $activityTemp->amount,
-    //         ]);
-    
-    //         // Optionally, delete the temporary activity after finalizing
-    //         $activityTemp->delete();
-    
-    //         return response()->json([
-    //             'message' => 'Activity moved to Activity table successfully',
-    //             'status' => 200,
-    //             'data' => $activity,
-    //         ], 200);
-    //     }
-    
-    //     // If activity_id does not exist and it's not an update or final status, create a new activity in ActivityTemp
-    //     $imagePath = null;
-    //     if ($request->hasFile('image')) {
-    //         $image = $request->file('image');
-    //         $imagePath = $image->move(public_path('images/activities'), $image->getClientOriginalName());
-    //         $imagePath = asset('images/activities/' . $image->getClientOriginalName());
-    //     }
-    
-    //     // Create a new activity in ActivityTemp
-    //     $activityTemp = ActivityTemp::create([
-    //         'user_id' => $user->id,
-    //         'where_to' => $request->where_to,
-    //         'title' => $request->title,
-    //         'location' => $request->location,
-    //         'when_time' => $request->when_time,
-    //         'how_many' => $request->how_many,
-    //         'start_time' => $request->start_time,
-    //         'end_time' => $request->end_time,
-    //         'interests_id' => isset($request->interests_id) ? implode(',', $request->interests_id) : null, // Handling multiple interests_id
-    //         'vibe_id' => $request->vibe_id,
-    //         'expense_id' => isset($request->expense_id) ? implode(',', $request->expense_id) : null, // Handling multiple expense_id
-    //         'status' => 1,
-    //         'description' => $request->description,
-    //         'other_activity' => $request->other_activity,
-    //         'image' => $imagePath,
-    //         'amount' => $request->amount,
-    //     ]);
-    
-    //     $activityData = $activityTemp->toArray();
-    //     unset($activityData['created_at'], $activityData['updated_at']);
-    
-    //     return response()->json([
-    //         'message' => 'Activity created successfully in ActivityTemp',
-    //         'status' => 200,
-    //         'data' => $activityData,
-    //     ], 200);
-    // }
 
 
   public function verifyCity(Request $request)
@@ -587,19 +349,18 @@ public function useractivitys(Request $request)
         return response()->json(['message' => 'User not authenticated'], 401);
     }
 
-    $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata
-    $todayDate = Carbon::today('Asia/Kolkata');  // Today's date in Asia/Kolkata
+    $currentTime = Carbon::now('Asia/Kolkata');  
+    $todayDate = Carbon::today('Asia/Kolkata'); 
+    $currentDateTime = Carbon::now('Asia/Kolkata')->format('Y-m-d H:i:s');
 
     $activities = Activity::orderBy('id', 'DESC')
         ->where('user_id', $user->id)
         ->where('status', 2)
         ->whereDate('when_time', '>=', $todayDate->format('Y-m-d'))
-        ->where(function ($query) use ($todayDate, $currentTime) {
+        ->where(function ($query) use ($currentDateTime) {
             $query->whereRaw("
-                STR_TO_DATE(CONCAT(DATE(when_time), ' ', end_time), '%Y-%m-%d %l:%i %p') >= ?
-            ", [$currentTime]);
-
-            $query->orWhere('when_time', '>=', $currentTime);
+                STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+            ", [$currentDateTime]);
         })
         ->get();
     
@@ -671,6 +432,13 @@ public function useractivitys(Request $request)
                         }
                     }
 
+                        $expenseIds = json_decode($activity->expense_id, true);
+                    $firstExpenseName = null;
+                    if (is_array($expenseIds) && count($expenseIds) > 0) {
+                        $firstExpense = Expense::find($expenseIds[0]);
+                        $firstExpenseName = $firstExpense->name ?? null;
+                    }
+
         $activitiesData[] = [
             'rendom' => $activity->rendom,
             'when_time' => $activity->when_time,
@@ -683,6 +451,7 @@ public function useractivitys(Request $request)
             'vibe_image' => $vibeImages ?? '',
             // 'vibe_icon' => $activity->vibe->icon ?? '',
             'user_name' => $user->name,
+            'expense_name' => $firstExpenseName ?? '',
            'user_profile_image' => $profileImageUrl ?? '',
             'activity_image' => asset($activity->image),
            'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
@@ -714,10 +483,10 @@ public function useroldactivitys(Request $request)
     ->where('user_id', $user->id)
     ->where('status', 2)
     ->where(function ($query) use ($currentTime) {
-        $query->whereDate('when_time', '<', $currentTime->toDateString()) // Past dates
+        $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
             ->orWhereRaw("
-                STR_TO_DATE(CONCAT(DATE(when_time), ' ', end_time), '%Y-%m-%d %l:%i %p') < ?
-            ", [$currentTime->toDateTimeString()]);
+                STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
+            ", [$currentTime]);
     })
     ->get();
     
@@ -826,19 +595,19 @@ public function foryouactivitys(Request $request)
         return response()->json(['message' => 'User not authenticated'], 401);
     }
 
-    $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata
-    $todayDate = Carbon::today('Asia/Kolkata');  // Today's date in Asia/Kolkata
+    $currentTime = Carbon::now('Asia/Kolkata'); 
+    $todayDate = Carbon::today('Asia/Kolkata');  
 
-$activities = Activity::orderBy('id', 'DESC')
-    ->where('user_id', '!=', $users->id)
-    ->where('status', 2)
-    ->where(function ($query) use ($todayDate, $currentTime) {
-        $query->whereDate('when_time', '>', $currentTime->toDateString())
-            ->orWhereRaw("
-                STR_TO_DATE(CONCAT(DATE(when_time), ' ', end_time), '%Y-%m-%d %l:%i %p') >= ?
-            ", [$currentTime->toDateTimeString()]);
-    })
-    ->get();
+    $activities = Activity::orderBy('id', 'DESC')
+        ->where('user_id', '!=', $users->id)
+        ->where('status', 2)
+        ->where(function ($query) use ($currentTime) {
+            $query->whereDate('when_time', '>', $currentTime->toDateString())
+                ->orWhereRaw("
+                    STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+                ", [$currentTime->format('Y-m-d H:i:s')]);
+        })
+        ->get();
     
     $filteredActivities = [];
     
@@ -1129,6 +898,8 @@ public function getActivitydetailes(Request $request)
             }else{
                 $alinters = false;
             }
+
+
     $mainActivityData = [
         'user_name' => $mainActivity->user->name ?? '',
         'rendom' => $mainActivity->rendom ?? '',
@@ -1187,20 +958,19 @@ public function getActivitydetailes(Request $request)
     //     })
     //     ->get()
 
-    $allActivities = Activity::where('id', '!=', $mainActivity->id)
+   $allActivities = Activity::where('id', '!=', $mainActivity->id)
     ->with('user', 'vibe')
     ->orderBy('id', 'desc')
-    ->whereDate('when_time', '>=', $todayDate)
+    ->whereDate('when_time', '>=', $todayDate->format('Y-m-d'))
     ->where('user_id', '!=', $user->id)
     ->where(function ($query) use ($currentTime) {
         $query->whereRaw("
-            STR_TO_DATE(CONCAT(DATE(when_time), ' ', end_time), '%Y-%m-%d %l:%i %p') >= ?
+            STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
         ", [$currentTime]);
 
         $query->orWhere('when_time', '>=', $currentTime);
     })
     ->get()
-        
         ->map(function ($act) {
             $images = json_decode($act->user->profile_image ?? '[]', true);
             $img = isset($images[1]) ? asset('uploads/app/profile_images/' . $images[1]) : null;
@@ -1363,19 +1133,19 @@ public function foryouActivitydetailes(Request $request)
     $currentTime = Carbon::now('Asia/Kolkata');
     $todayDate = Carbon::today('Asia/Kolkata');
 
-    $allActivities = Activity::where('id', '!=', $mainActivity->id)
-        ->with('user', 'vibe')
-        ->orderBy('id', 'desc')
-        ->where('user_id', '!=', $user->id)
-        ->whereDate('when_time', '>=', $todayDate)
-        ->where(function ($query) use ($currentTime) {
-            $query->whereRaw("
-                STR_TO_DATE(CONCAT(DATE(when_time), ' ', end_time), '%Y-%m-%d %l:%i %p') >= ?
-            ", [$currentTime]);
+   $allActivities = Activity::where('id', '!=', $mainActivity->id)
+    ->with('user', 'vibe')
+    ->orderBy('id', 'desc')
+    ->where('user_id', '!=', $user->id)
+    ->whereDate('when_time', '>=', $todayDate->format('Y-m-d'))
+    ->where(function ($query) use ($currentTime) {
+        $query->whereRaw("
+            STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+        ", [$currentTime]);
 
-            $query->orWhere('when_time', '>=', $currentTime);
-        })
-        ->get()
+        $query->orWhere('when_time', '>=', $currentTime);
+    })
+    ->get()
         ->map(function ($act) {
             $images = json_decode($act->user->profile_image ?? '[]', true);
             $img = isset($images[1]) ? asset('uploads/app/profile_images/' . $images[1]) : null;
@@ -1499,51 +1269,6 @@ public function foryouActivitydetailes(Request $request)
     
 
 
-    // public function findMatchingactivity(Request $request)
-    // {
-    //     $user = Auth::user(); 
-        
-    //     if (!$user) {
-    //         return response()->json(['message' => 'User not authenticated'], 401);
-    //     }
-        
-    //     $interestField = $user->interest; 
-    //     $interestFieldDecoded = json_decode($interestField, true);
-        
-    //     if (!is_array($interestFieldDecoded)) {
-    //         return response()->json(['message' => 'Invalid interest data'], 400);
-    //     }
-        
-    //     $interestIds = [];
-    //     foreach ($interestFieldDecoded as $item) {
-    //         $interestIds = array_merge($interestIds, explode(',', $item));
-    //     }
-        
-    //     $interestIds = array_map('trim', $interestIds);
-
-    //     $matchingActivities = Activity::whereIn('interests_id', $interestIds)
-    //                                     ->where('user_id', '!=', $user->id) 
-    //                                     ->get();
-        
-    //     if ($matchingActivities->isEmpty()) {
-    //         return response()->json(['message' => 'No matching activities found'], 404);
-    //     }
-
-    //     $activitiesWithUserDetails = $matchingActivities->map(function ($activity) {
-    //         $userDetails = User::find($activity->user_id);
-            
-    //         if ($userDetails) {
-    //             $activity->user_details = $userDetails;
-    //         }
-    //         return $activity;
-    //     });
-    //     return response()->json([
-    //         'message' => 'Matching activities found successfully',
-    //         'data' => $activitiesWithUserDetails,
-    //     ]);
-    // }
-
-
     public function findMatchingactivity(Request $request)
     {
         $user = Auth::user(); 
@@ -1570,17 +1295,19 @@ public function foryouActivitydetailes(Request $request)
     $currentTime = Carbon::now('Asia/Kolkata');
     $todayDate = Carbon::today('Asia/Kolkata');
 
-    $matchingActivities = Activity::orderBy('id','DESC')->where('user_id', '!=', $user->id)
+   $matchingActivities = Activity::orderBy('id','DESC')
+    ->where('user_id', '!=', $user->id)
     ->where('status', 2)
     ->where(function ($query) use ($interestIds) {
         foreach ($interestIds as $id) {
             $query->orWhere('interests_id', 'LIKE', '%"'.$id.'"%');
         }
-    })->where(function ($query) use ($currentTime) {
+    })
+    ->where(function ($query) use ($currentTime) {
         $query->whereDate('when_time', '>', $currentTime->toDateString())
             ->orWhereRaw("
-                STR_TO_DATE(CONCAT(DATE(when_time), ' ', end_time), '%Y-%m-%d %l:%i %p') >= ?
-            ", [$currentTime->toDateTimeString()]);
+                STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+            ", [$currentTime->format('Y-m-d H:i:s')]);
     })
     ->get();
    
@@ -1708,13 +1435,12 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             }
         })
         ->where(function ($query) use ($currentTime) {
-            $query->whereDate('when_time', '>', $currentTime->toDateString())
+            $query->whereDate('when_time', '>', substr($currentTime, 0, 10))
                 ->orWhereRaw("
-                    STR_TO_DATE(CONCAT(DATE(when_time), ' ', end_time), '%Y-%m-%d %l:%i %p') >= ?
-                ", [$currentTime->toDateTimeString()]);
+                    STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+                ", [$currentTime]);
         })
         ->get();
-   
         // $matchingActivities = Activity::whereIn('interests_id', $interestIds)
         //                             ->where('user_id', '!=', $user->id)
         //                             ->get();
@@ -1896,14 +1622,15 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
     $interestIds = OtherInterest::where('user_id', $user->id)->get();
     $activityIds = $interestIds->pluck('activity_id'); 
 
+  
     $matchingActivities = Activity::whereIn('id', $activityIds)
         ->where('user_id', '!=', $user->id)
         ->where('status', 2)
         ->where(function ($query) use ($currentTime) {
-            $query->whereDate('when_time', '>', $currentTime->toDateString())
+            $query->whereDate('when_time', '>', substr($currentTime, 0, 10))
                 ->orWhereRaw("
-                    STR_TO_DATE(CONCAT(DATE(when_time), ' ', end_time), '%Y-%m-%d %l:%i %p') >= ?
-                ", [$currentTime->toDateTimeString()]);
+                    STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+                ", [$currentTime]);
         })
         ->get();
 
@@ -2744,14 +2471,17 @@ public function friendcount_one(Request $request)
         $currentTime = Carbon::now('Asia/Kolkata');
     $todayDate = Carbon::today('Asia/Kolkata');
     
-        $query = Activity::query();
-        $query->where(function ($query) use ($todayDate, $currentTime) {
-            $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')
-                        ->setDate($todayDate->year, $todayDate->month, $todayDate->day);
+        $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')
+            ->setDate($todayDate->year, $todayDate->month, $todayDate->day)
+            ->format('Y-m-d H:i:s');
 
-            $query->where(function ($subQuery) use ($endTime) {
-                $subQuery->where('end_time', '>=', $endTime);
-            })->where('when_time', '>=', $currentTime);
+        $query = Activity::query();
+
+        $query->where(function ($query) use ($endTime, $currentTime) {
+            $query->whereRaw("
+                STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+            ", [$endTime])
+            ->where('when_time', '>=', $currentTime);
         });
 
         $filterApplied = false;
@@ -2956,16 +2686,18 @@ public function vibeactivitydetails(Request $request)
 
             // $activityCount = Activity::where('vibe_id', $vibe->id)->where('status', 2)->count();
 
-            $currentTime = Carbon::now('Asia/Kolkata'); 
+            // $currentTime = Carbon::now('Asia/Kolkata'); 
             $todayDate = Carbon::today('Asia/Kolkata');
-            $activities = Activity::orderBy('id', 'DESC')
+           $currentTime = Carbon::now('Asia/Kolkata')->format('Y-m-d H:i:s');
+
+        $activities = Activity::orderBy('id', 'DESC')
             ->where('status', 2)
             ->where('user_id', '!=', $user->id)
             ->where(function ($query) use ($currentTime) {
-                $query->whereDate('when_time', '>', $currentTime->toDateString())
+                $query->whereDate('when_time', '>', substr($currentTime, 0, 10))
                     ->orWhereRaw("
-                        STR_TO_DATE(CONCAT(DATE(when_time), ' ', end_time), '%Y-%m-%d %l:%i %p') >= ?
-                    ", [$currentTime->toDateTimeString()]);
+                        STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+                    ", [$currentTime]);
             })
             ->get()->filter(function ($activity) use ($vibe) {
         $vibeIdsRaw = json_decode($activity->vibe_id, true);
@@ -2979,6 +2711,7 @@ public function vibeactivitydetails(Request $request)
             $filteredActivities = [];
     
             foreach ($activities as $activity) {
+                
                 $whenTime = Carbon::parse($activity->when_time)->setTimezone('Asia/Kolkata');
     
                 try {
@@ -3027,22 +2760,23 @@ public function vibeactivitydetails(Request $request)
         $currentTime = Carbon::now('Asia/Kolkata'); 
         $todayDate = Carbon::today('Asia/Kolkata');
 
-        $activities = Activity::orderBy('id', 'DESC')
-            // ->where('vibe_id', 'LIKE', '%"'.$vibe->id.'"%')
-            ->where('status', 2)
-            ->where('user_id','!=',$user->id)
-            ->whereDate('when_time', '>=', $todayDate->format('Y-m-d'))
-            ->where(function ($query) use ($todayDate, $currentTime) {
-                $query->where(function ($subQuery) use ($todayDate, $currentTime) {
-           
-                    $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')->setDate($todayDate->year, $todayDate->month, $todayDate->day);
-         
-                    $subQuery->where('end_time', '>=', $endTime);
-                });
-        
-                $query->where('when_time', '>=', $currentTime);  
-            })
-            ->get()->filter(function ($activity) use ($vibe) {
+       $currentDateTime = Carbon::now('Asia/Kolkata')->format('Y-m-d H:i:s');
+
+$activities = Activity::orderBy('id', 'DESC')
+    // ->where('vibe_id', 'LIKE', '%"'.$vibe->id.'"%')
+    ->where('status', 2)
+    ->where('user_id', '!=', $user->id)
+    ->whereDate('when_time', '>=', $todayDate->format('Y-m-d'))
+    ->where(function ($query) use ($currentDateTime) {
+        $query->where(function ($subQuery) use ($currentDateTime) {
+            $subQuery->whereRaw("
+                STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+            ", [$currentDateTime]);
+        });
+
+        $query->orWhere('when_time', '>=', $currentDateTime);
+    })
+    ->get()->filter(function ($activity) use ($vibe) {
         $vibeIdsRaw = json_decode($activity->vibe_id, true);
         if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
             $ids = explode(',', $vibeIdsRaw[0]); // ["1", "2"] → [1, 2]
@@ -3054,6 +2788,8 @@ public function vibeactivitydetails(Request $request)
         $filteredActivities = [];
 
         foreach ($activities as $activity) {
+
+
             $whenTime = Carbon::parse($activity->when_time)->setTimezone('Asia/Kolkata');
 
             try {
@@ -3119,6 +2855,14 @@ public function vibeactivitydetails(Request $request)
                     }
 
 
+                        $expenseIds = json_decode($activity->expense_id, true);
+                    $firstExpenseName = null;
+                    if (is_array($expenseIds) && count($expenseIds) > 0) {
+                        $firstExpense = Expense::find($expenseIds[0]);
+                        $firstExpenseName = $firstExpense->name ?? null;
+                    }
+
+
                 return [
                     'rendom' => $activity->rendom,
                     'when_time' => $activity->when_time,
@@ -3129,6 +2873,7 @@ public function vibeactivitydetails(Request $request)
                     'how_many' => $activity->how_many,
                     'vibe_name' => $vibeNames ?? '',
                     'vibe_image' => $vibeImages ?? '',
+                    'expense_name' => $firstExpenseName ?? '',
                     // 'vibe_icon' => $activity->vibe->icon ?? '',
                     'user_name' => $user_rendom->name,
                      'user_profile_image' => $profileImageUrl ?? '',
@@ -3575,6 +3320,21 @@ public function pactup_request(Request $request)
 
 
 
-        
+
+    public function admincity(){
+
+        $cities = AdminCity::all()->map(function($city) {
+            return [
+                'city_name' => $city->city_name,
+                'status' => $city->status,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $cities
+        ]);
+
+    }
 
 }

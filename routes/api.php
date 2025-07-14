@@ -35,6 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user-old-activitys', [ActivityController::class, 'useroldactivitys']);
     Route::get('user-interest-activitys', [ActivityController::class, 'userinterestactivitys']);
     Route::get('user-confirm-activitys', [ActivityController::class, 'userconfirmactivitys']);
+    Route::get('user-liked-activitys', [ActivityController::class, 'likedactivitys']);
     Route::get('for-you-activitys', [ActivityController::class, 'foryouactivitys']);
   
     Route::get('find-matching-users-activity', [ActivityController::class, 'findMatchingactivity']);
@@ -48,6 +49,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('friend-count-one', [ActivityController::class, 'friendcount_one']);
 
     Route::post('add-interest', [InterestController::class, 'addinterest']);
+    Route::post('add-like', [InterestController::class, 'like_activity']);
+    Route::post('remove-like-activity', [InterestController::class, 'remove_like_activity']);
     Route::post('add-confirm', [InterestController::class, 'addconfirms']);
     Route::post('get-confirmed-users', [InterestController::class, 'getConfirmedUsers']);
     Route::post('remove-interest', [InterestController::class, 'removeinterest']);

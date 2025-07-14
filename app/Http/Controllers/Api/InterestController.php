@@ -16,6 +16,7 @@ use App\Models\Interest;
 use App\Models\OtherInterest;
 use App\Models\Vibes;
 use App\Models\Expense;
+use App\Models\LikeActivity;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
 
@@ -212,6 +213,100 @@ class InterestController extends Controller
             'message' => 'Failed to add interest. Please try again later.',
             'error'   => $e->getMessage(),
         ], 500);
+    }
+}
+
+
+
+
+public function like_activity(Request $request)
+{
+    $user = Auth::user();
+    if (!$user) {
+        return response()->json([
+            'message' => 'Unauthorized',
+            'status' => 401
+        ]);
+    }
+
+    $request->validate([
+        'activity_rendom' => 'required|exists:activity_table,rendom',
+    ]);
+
+    $activity = Activity::where('rendom', $request->activity_rendom)->first();
+
+    if (!$activity) {
+        return response()->json([
+            'message' => 'Activity not found',
+            'status' => 404,
+        ]);
+    }
+
+    $like = new LikeActivity();
+    $like->user_id = $user->id;
+    $like->activity_id = $activity->id;
+    $like->status = 1;
+    $like->save();
+
+    return response()->json([
+        'message' => 'Activity liked successfully',
+        'status' => 200,
+        'data' => [
+            'user_id' => $user->id,
+            'activity_id' => $activity->id,
+        ]
+    ]);
+}
+
+
+
+
+
+public function remove_like_activity(Request $request)
+{
+    $user = Auth::user();
+    if (!$user) {
+        return response()->json([
+            'message' => 'Unauthorized',
+            'status' => 401
+        ]);
+    }
+
+    $request->validate([
+        'activity_rendom' => 'required|exists:activity_table,rendom',
+    ]);
+
+    $activity = Activity::where('rendom', $request->activity_rendom)->first();
+
+    if (!$activity) {
+        return response()->json([
+            'message' => 'Activity not found',
+            'status' => 404,
+        ]);
+    }
+
+    $existingLike = LikeActivity::where('user_id', $user->id)
+                                ->where('activity_id', $activity->id)
+                                ->first();
+
+    if ($existingLike) {
+        $existingLike->status = 2;
+        $existingLike->save();
+
+        return response()->json([
+            'message' => 'Activity unliked successfully',
+            'status' => 200,
+            'data' => [
+                'user_id' => $user->id,
+                'activity_id' => $activity->id,
+                'status' => 2
+            ]
+        ]);
+    } else {
+        return response()->json([
+            'message' => 'Like not found for this activity',
+            'status' => 404,
+        ]);
     }
 }
 

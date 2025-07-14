@@ -605,24 +605,22 @@ public function userinterestactivitys(Request $request)
 
     $currentTime = Carbon::now('Asia/Kolkata');
 
-    // ✅ Get activity IDs from OtherInterest where confirm = 0
-    $activityIds = OtherInterest::where('user_id', $user->id)
+   $activityIds = OtherInterest::where('user_id', $user->id)
                     ->where('confirm', 0)
                     ->pluck('activity_id')
                     ->toArray();
 
-    if (empty($activityIds)) {
-        return response()->json([
-            'message' => 'No matching activities found',
-            'status'  => 200,
-            'data'    => [],
-        ]);
-    }
+if (empty($activityIds) || count($activityIds) == 0) {
+    return response()->json([
+        'message' => 'No matching activities found',
+        'status'  => 200,
+        'data'    => [],
+    ]);
+}
 
-    $activities = Activity::whereIn('id', $activityIds)
-                    ->orderBy('id', 'DESC')
-                    ->where('user_id', $user->id)
-                    ->get();
+$activities = Activity::whereIn('id', $activityIds)
+                ->orderBy('id', 'DESC')
+                ->get(); 
 
     if ($activities->isEmpty()) {
         return response()->json([

@@ -558,6 +558,13 @@ public function useroldactivitys(Request $request)
                         }
                     }
 
+                        $expenseIds = json_decode($activity->expense_id, true);
+                    $firstExpenseName = null;
+                    if (is_array($expenseIds) && count($expenseIds) > 0) {
+                        $firstExpense = Expense::find($expenseIds[0]);
+                        $firstExpenseName = $firstExpense->name ?? null;
+                    }
+
         $activitiesData[] = [
             'rendom' => $activity->rendom,
             'when_time' => $activity->when_time,
@@ -568,6 +575,7 @@ public function useroldactivitys(Request $request)
             'how_many' => $activity->how_many,
             'vibe_name' => $vibeNames ?? '',
             'vibe_image' => $vibeImages ?? '',
+            'expense_name' => $firstExpenseName ?? '',
             // 'vibe_icon' => $activity->vibe->icon ?? '',
             'user_name' => $user->name,
            'user_profile_image' => $profileImageUrl ?? '',
@@ -1694,6 +1702,13 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                         }
                     }
 
+                        $expenseIds = json_decode($activity->expense_id, true);
+                    $firstExpenseName = null;
+                    if (is_array($expenseIds) && count($expenseIds) > 0) {
+                        $firstExpense = Expense::find($expenseIds[0]);
+                        $firstExpenseName = $firstExpense->name ?? null;
+                    }
+
         return [
             'title' => $activity->title,
             'rendom' => $activity->rendom,
@@ -1702,6 +1717,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             'bg_color' => $bgColor,
             'vibe_name' => $vibeNames ?? '',
             'vibe_image' => $vibeImages ?? '',
+            'expense_name' => $firstExpenseName ?? '',
             // 'vibe_icon' => $activity->vibe->icon ?? '',
             'user_name' => $userData['name'] ?? '',
             'user_profile_image' => $userData['profile_image'] ?? '',

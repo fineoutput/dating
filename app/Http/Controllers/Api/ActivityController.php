@@ -712,7 +712,7 @@ public function userconfirmactivitys(Request $request)
     $currentTime = Carbon::now('Asia/Kolkata');
 
    $activityIds = OtherInterest::where('user_id', $user->id)
-                    ->where('confirm', 0)
+                    ->where('confirm', 1)
                     ->pluck('activity_id')
                     ->toArray();
 

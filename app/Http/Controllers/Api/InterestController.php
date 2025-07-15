@@ -262,6 +262,56 @@ public function like_activity(Request $request)
 
 
 
+// public function remove_like_activity(Request $request)
+// {
+//     $user = Auth::user();
+//     if (!$user) {
+//         return response()->json([
+//             'message' => 'Unauthorized',
+//             'status' => 401
+//         ]);
+//     }
+
+//     $request->validate([
+//         'activity_rendom' => 'required|exists:activity_table,rendom',
+//     ]);
+
+//     $activity = Activity::where('rendom', $request->activity_rendom)->first();
+
+//     if (!$activity) {
+//         return response()->json([
+//             'message' => 'Activity not found',
+//             'status' => 404,
+//         ]);
+//     }
+
+//     $existingLike = LikeActivity::where('user_id', $user->id)
+//                                 ->where('activity_id', $activity->id)
+//                                 ->first();
+
+//     if ($existingLike) {
+//         $existingLike->status = 2;
+//         $existingLike->save();
+
+//         return response()->json([
+//             'message' => 'Activity unliked successfully',
+//             'status' => 200,
+//             'data' => [
+//                 'user_id' => $user->id,
+//                 'activity_id' => $activity->id,
+//                 'status' => 2
+//             ]
+//         ]);
+//     } else {
+//         return response()->json([
+//             'message' => 'Like not found for this activity',
+//             'status' => 404,
+//         ]);
+//     }
+// }
+
+
+//first
 public function remove_like_activity(Request $request)
 {
     $user = Auth::user();
@@ -285,21 +335,18 @@ public function remove_like_activity(Request $request)
         ]);
     }
 
-    $existingLike = LikeActivity::where('user_id', $user->id)
-                                ->where('activity_id', $activity->id)
-                                ->first();
+    $updated = LikeActivity::where('user_id', $user->id)
+        ->where('activity_id', $activity->id)
+        ->update(['status' => 2]);
 
-    if ($existingLike) {
-        $existingLike->status = 2;
-        $existingLike->save();
-
+    if ($updated) {
         return response()->json([
             'message' => 'Activity unliked successfully',
             'status' => 200,
             'data' => [
                 'user_id' => $user->id,
                 'activity_id' => $activity->id,
-                'status' => $existingLike->status
+                'status' => 2
             ]
         ]);
     } else {
@@ -309,6 +356,7 @@ public function remove_like_activity(Request $request)
         ]);
     }
 }
+
 
 
 public function addconfirms(Request $request)

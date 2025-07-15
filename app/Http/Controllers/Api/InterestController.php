@@ -299,7 +299,7 @@ public function remove_like_activity(Request $request)
             'data' => [
                 'user_id' => $user->id,
                 'activity_id' => $activity->id,
-                'status' => 2
+                'status' => $existingLike->status
             ]
         ]);
     } else {

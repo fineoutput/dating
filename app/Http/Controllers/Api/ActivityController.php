@@ -3302,7 +3302,7 @@ $activities = Activity::orderBy('id', 'DESC')
                     }
                $authuser =  Auth::user();
                     if($authuser){
-                        $liked_Act = LikeActivity::where('activity_id',$activity->id)->where('user_id',$authuser->id)->first();
+                        $liked_Act = LikeActivity::where('activity_id',$activity->id)->where('user_id',$authuser->id)->where('status', 1)->first();
                     }
 
                     if($liked_Act){

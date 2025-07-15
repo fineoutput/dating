@@ -678,7 +678,7 @@ $activities = Activity::whereIn('id', $activityIds)
 
            $authuser =  Auth::user();
                     if($authuser){
-                        $liked_Act = LikeActivity::where('activity_id',$activity->id)->where('user_id',$authuser->id)->first();
+                        $liked_Act = LikeActivity::where('activity_id',$activity->id)->where('user_id',$authuser->id)->where('status', 1)->first();
                     }
 
                     if($liked_Act){
@@ -797,7 +797,7 @@ $activities = Activity::whereIn('id', $activityIds)
 
            $authuser =  Auth::user();
                     if($authuser){
-                        $liked_Act = LikeActivity::where('activity_id',$activity->id)->where('user_id',$authuser->id)->first();
+                        $liked_Act = LikeActivity::where('activity_id',$activity->id)->where('user_id',$authuser->id)->where('status', 1)->first();
                     }
 
                     if($liked_Act){
@@ -1898,7 +1898,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
                        $authuser =  Auth::user();
                     if($authuser){
-                        $liked_Act = LikeActivity::where('activity_id',$activity->id)->where('user_id',$authuser->id)->first();
+                        $liked_Act = LikeActivity::where('activity_id',$activity->id)->where('user_id',$authuser->id)->where('status', 1)->first();
                     }
 
                     if($liked_Act){
@@ -2998,7 +2998,7 @@ public function friendcount_one(Request $request)
 
                        $authuser =  Auth::user();
                     if($authuser){
-                        $liked_Act = LikeActivity::where('activity_id',$activity->id)->where('user_id',$authuser->id)->first();
+                        $liked_Act = LikeActivity::where('activity_id',$activity->id)->where('user_id',$authuser->id)->where('status', 1)->first();
                     }
 
                     if($liked_Act){

@@ -2718,29 +2718,24 @@ public function filteractivity(Request $request)
         $filterApplied = true;
     }
 
+
     if ($expense_id && is_array($expense_id)) {
-        $query->where(function ($q) use ($expense_id) {
-            foreach ($expense_id as $id) {
-                $q->orWhere('expense_id', 'like', '%"' . $id . '"%');
+    $query->where(function ($q) use ($expense_id) {
+        foreach ($expense_id as $id) {
+            $q->orWhere('expense_id', 'like', '%'.$id.'%');
+        }
+    });
+        $filterApplied = true;
+    }
+
+        if ($vibe_id && is_array($vibe_id)) {
+        $query->where(function ($q) use ($vibe_id) {
+            foreach ($vibe_id as $id) {
+                $q->orWhere('vibe_id', 'like', '%'.$id.'%');
             }
         });
         $filterApplied = true;
     }
-
-   if ($vibe_id) {
-    $vibe_id = is_array($vibe_id) ? $vibe_id : [$vibe_id]; // support both string and array input
-
-    $query->where(function ($q) use ($vibe_id) {
-        foreach ($vibe_id as $id) {
-            // Ensure the match works even if it's at the start, middle, or end
-            $q->orWhere('vibe_id', 'like', '%"%' . $id . ',%')
-              ->orWhere('vibe_id', 'like', '%,' . $id . '%"')
-              ->orWhere('vibe_id', 'like', '%"' . $id . '"%');
-        }
-    });
-
-    $filterApplied = true;
-}
 
 
 if ($date_type) {

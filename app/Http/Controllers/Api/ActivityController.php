@@ -1907,6 +1907,13 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
                         $actlike = false;
                     }
 
+                         $expenseIds = json_decode($activity->expense_id, true);
+    $firstExpenseName = null;
+    if (is_array($expenseIds) && count($expenseIds) > 0) {
+        $firstExpense = Expense::find($expenseIds[0]);
+        $firstExpenseName = $firstExpense->name ?? null;
+    }
+
         return [
             // 'id' => $activity->id,
             // 'user_id' => $activity->user_id,
@@ -1923,6 +1930,8 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             // 'user_id' => $userDetails->id,
             'user_name' => $userDetails->name,
             'user_profile_image' => $profileImageUrl,
+            'activity_image' => asset($activity->image),
+            'expense_name' => $firstExpenseName,
             // 'user_state' => $userDetails->state,
             // 'user_city' => $userDetails->city,
             'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'), 

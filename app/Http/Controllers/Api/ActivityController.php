@@ -2668,9 +2668,9 @@ public function filteractivity(Request $request)
     $location = $request->input('location');
     $when_time = $request->input('when_time');
     $end_time = $request->input('end_time');
-    $expense_id = $request->input('expense_id'); // Array e.g. ["1", "3"]
-    $vibe_id = $request->input('vibe_id'); // New filter - array
-    $date_type = $request->input('date_type'); // New input: Today, Tomorrow, Weekend
+    $expense_id = $request->input('expense_id'); 
+    $vibe_id = $request->input('vibe_id'); 
+    $date_type = $request->input('date_type'); 
 
     $currentTime = Carbon::now('Asia/Kolkata');
     $todayDate = Carbon::today('Asia/Kolkata');
@@ -2681,12 +2681,14 @@ public function filteractivity(Request $request)
 
     $query = Activity::query();
 
+    if (!$date_type || $date_type !== 'Today') {
     $query->where(function ($query) use ($endTime, $currentTime) {
         $query->whereRaw("
             STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
         ", [$endTime])
         ->where('when_time', '>=', $currentTime);
     });
+}
 
     $filterApplied = false;
 
@@ -2707,7 +2709,6 @@ public function filteractivity(Request $request)
         $filterApplied = true;
     }
 
-    // 🔹 Filter by expense_id
     if ($expense_id && is_array($expense_id)) {
         $query->where(function ($q) use ($expense_id) {
             foreach ($expense_id as $id) {
@@ -2717,30 +2718,41 @@ public function filteractivity(Request $request)
         $filterApplied = true;
     }
 
-    // 🔹 Filter by vibe_id (replacing interests_id)
-    if ($vibe_id && is_array($vibe_id)) {
-        $query->where(function ($q) use ($vibe_id) {
-            foreach ($vibe_id as $id) {
-                $q->orWhere('vibe_id', 'like', '%"' . $id . '"%');
-            }
+   if ($vibe_id) {
+    $vibe_id = is_array($vibe_id) ? $vibe_id : [$vibe_id]; // support both string and array input
+
+    $query->where(function ($q) use ($vibe_id) {
+        foreach ($vibe_id as $id) {
+            // Ensure the match works even if it's at the start, middle, or end
+            $q->orWhere('vibe_id', 'like', '%"%' . $id . ',%')
+              ->orWhere('vibe_id', 'like', '%,' . $id . '%"')
+              ->orWhere('vibe_id', 'like', '%"' . $id . '"%');
+        }
+    });
+
+    $filterApplied = true;
+}
+
+
+if ($date_type) {
+    $today = Carbon::now('Asia/Kolkata')->format('Y-m-d');
+    $tomorrow = Carbon::now('Asia/Kolkata')->addDay()->format('Y-m-d');
+    $saturday = Carbon::now('Asia/Kolkata')->next(Carbon::SATURDAY)->format('Y-m-d');
+    $sunday = Carbon::now('Asia/Kolkata')->next(Carbon::SUNDAY)->format('Y-m-d');
+
+    if ($date_type == 'Today') {
+        $query->where('when_time', $today);
+    } elseif ($date_type == 'Tomorrow') {
+        $query->where('when_time', $tomorrow);
+    } elseif ($date_type == 'Weekend') {
+        $query->where(function ($q) use ($saturday, $sunday) {
+            $q->where('when_time', $saturday)
+              ->orWhere('when_time', $sunday);
         });
-        $filterApplied = true;
     }
 
-    // 🔹 Filter by date_type
-    if ($date_type) {
-        if ($date_type == 'Today') {
-            $query->whereDate('when_time', Carbon::today('Asia/Kolkata'));
-        } elseif ($date_type == 'Tomorrow') {
-            $query->whereDate('when_time', Carbon::tomorrow('Asia/Kolkata'));
-        } elseif ($date_type == 'Weekend') {
-            $query->where(function ($q) {
-                $q->whereDate('when_time', Carbon::parse('next Saturday'))
-                  ->orWhereDate('when_time', Carbon::parse('next Sunday'));
-            });
-        }
-        $filterApplied = true;
-    }
+    $filterApplied = true;
+}
 
     if (!$filterApplied) {
         return response()->json([

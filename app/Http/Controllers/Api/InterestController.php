@@ -247,7 +247,7 @@ public function like_activity(Request $request)
                                 ->first();
 
 
-  if (!$existingLike) {
+  if ($existingLike) {
         return response()->json([
             'message' => 'Activity Allready liked',
             'status' => 201,

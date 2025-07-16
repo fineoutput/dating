@@ -242,6 +242,19 @@ public function like_activity(Request $request)
         ]);
     }
 
+      $existingLike = LikeActivity::where('user_id', $user->id)
+                                ->where('activity_id', $activity->id)->where('status', 1)
+                                ->first();
+
+
+  if (!$existingLike) {
+        return response()->json([
+            'message' => 'Activity Allready liked',
+            'status' => 201,
+        ]);
+    }
+
+
     $like = new LikeActivity();
     $like->user_id = $user->id;
     $like->activity_id = $activity->id;
@@ -286,7 +299,7 @@ public function remove_like_activity(Request $request)
     }
 
     $existingLike = LikeActivity::where('user_id', $user->id)
-                                ->where('activity_id', $activity->id)
+                                ->where('activity_id', $activity->id)->where('status', 1)
                                 ->first();
 
     if ($existingLike) {

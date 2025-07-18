@@ -15,9 +15,10 @@ class UserSubscription extends Model
         'plan_id',  
         'expire_days',  
         'is_active',
-    'activated_at',
-    'expires_at',
-    'order_id'
+        'activated_at',
+        'expires_at',
+        'order_id',
+        'type'
     ];
 
 

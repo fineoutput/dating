@@ -98,8 +98,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::post('/subscribe', [CashfreeController::class, 'createSubscriptionOrder']);
 
     Route::post('/create-subscription-order', [CashfreeController::class, 'createSubscriptionOrder']);
+    Route::post('/create-subscription-order-activitys', [CashfreeController::class, 'createSubscriptionOrderActivitys']);
 
     Route::post('/verify-payment', [CashfreeController::class, 'verifyPayment']);
+    Route::post('/verify-payment-activitys', [CashfreeController::class, 'verifyPaymentActivitys']);
 
     Route::post('/update-confirm', [ActivityController::class, 'updateConfirm']);
     Route::post('/update-pactup', [ActivityController::class, 'acceptpactup']);

@@ -18,6 +18,7 @@ use App\Models\Activity;
 use App\Models\CoinCategory;
 use App\Models\ActivityTemp;
 use App\Models\OtherInterest;
+use App\Models\DatingSubscription;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
@@ -27,6 +28,16 @@ use Illuminate\Support\Facades\Auth;
 class SubscriptionController extends Controller
 {
   
+     public function datingsubscriptionlists()
+    {
+        $subscriptions = DatingSubscription::where('status', 1)->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $subscriptions,
+        ]);
+    }
+
     public function subscriptionlists(Request $request)
     {
         $user = Auth::user();

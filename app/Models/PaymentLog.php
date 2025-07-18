@@ -5,19 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class UserSubscription extends Model
+class PaymentLog extends Model
 {
     use HasFactory;
-    protected $table = 'user_subscription';
-    protected $fillable = [
-        'user_id',  
-        'amount',  
-        'plan_id',  
-        'expire_days',  
-        'is_active',
-    'activated_at',
-    'expires_at',
-    'order_id'
+    protected $table = 'payment_log';
+   protected $fillable = [
+        'order_id',
+        'user_id',
+        'amount',
+        'status',
+        'event_type',
+        'raw_response',
     ];
 
 

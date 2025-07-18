@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ActivityController;
 use App\Http\Controllers\Api\DatingController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\SubscriptionController;
+use App\Http\Controllers\Api\CashfreeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -92,6 +93,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/get-user-data', [DatingController::class, 'getUserData']);
 
     Route::get('/coin-categories', [SubscriptionController::class, 'subscriptionlist']);
+    Route::get('/dating-subscription-list', [SubscriptionController::class, 'datingsubscriptionlists']);
+
+    // Route::post('/subscribe', [CashfreeController::class, 'createSubscriptionOrder']);
+
+    Route::post('/create-subscription-order', [CashfreeController::class, 'createSubscriptionOrder']);
+
+    Route::post('/verify-payment', [CashfreeController::class, 'verifyPayment']);
 
     Route::post('/update-confirm', [ActivityController::class, 'updateConfirm']);
     Route::post('/update-pactup', [ActivityController::class, 'acceptpactup']);
@@ -105,6 +113,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });   
 
 Route::get('interest', [InterestController::class, 'interest']);
+Route::post('cashfree/webhook', [CashfreeController::class, 'handleWebhook']);
 
 
 Route::get('vibes', [InterestController::class, 'vibes']);

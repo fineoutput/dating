@@ -19,11 +19,13 @@ use App\Models\ActivitySubscription;
 use App\Models\ActivityTemp;
 use App\Models\AdminCity;
 use App\Models\Chat;
+use App\Models\CoinCategory;
 use App\Models\Cupid;
 use App\Models\LikeActivity;
 use App\Models\SlideLike;
 use Illuminate\Support\Facades\Http;
 use App\Models\OtherInterest;
+use App\Models\UserSubscription;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -109,83 +111,188 @@ class ActivityController extends Controller
 
     public function activitystore(Request $request)
     {
-        if (!Auth::check()) {
-            return response()->json([
-                'message' => 'Unauthorized. Please log in.',
-            ], 401);
-        }
+        // if (!Auth::check()) {
+        //     return response()->json([
+        //         'message' => 'Unauthorized. Please log in.',
+        //     ], 401);
+        // }
     
-        $user = Auth::user();
+        // $user = Auth::user();
 
-        if ($user->subscription == 0) {
+        // if ($user->subscription == 0) {
 
-            $currentDate = now();
-            $sevenDaysAgo = now()->subWeek();
+        //     $currentDate = now();
+        //     $sevenDaysAgo = now()->subWeek();
 
-            $activityCount = Activity::where('user_id', $user->id)
-                ->whereBetween('created_at', [$sevenDaysAgo, $currentDate])
-                ->count();
-                $activitysubscriptioncount =  ActivitySubscription::orderBy('id','DESC')->first();
+        //     $activityCount = Activity::where('user_id', $user->id)
+        //         ->whereBetween('created_at', [$sevenDaysAgo, $currentDate])
+        //         ->count();
+        //         $activitysubscriptioncount =  ActivitySubscription::orderBy('id','DESC')->first();
   
-            if ($activityCount >= $activitysubscriptioncount->activity_count) {
-                return response()->json([
-                    'message' => 'You can only create up to activities per week due to your subscription.',
-                    'status' => 201,
-                ], 201);
-            }
+        //     if ($activityCount >= $activitysubscriptioncount->activity_count) {
+        //         return response()->json([
+        //             'message' => 'You can only create up to activities per week due to your subscription.',
+        //             'status' => 201,
+        //         ], 201);
+        //     }
     
+        //     $validator = Validator::make($request->all(), [
+        //         'title' => 'nullable',
+        //         'location' => 'nullable',
+        //         'rendom' => 'nullable',
+        //         'how_many' => 'nullable|integer',   
+        //         'start_time' => 'nullable',
+        //         'end_time' => 'nullable',
+        //         'when_time' => 'nullable',
+        //         // 'interests_id' => 'nullable',
+        //         // 'interests_id.*' => 'integer',
+        //         'vibe_id' => 'nullable',
+        //         'expense_id' => 'nullable',  
+        //         'description' => 'nullable',
+        //         'other_activity' => 'nullable|string',
+        //         'image' => 'nullable',
+        //         'amount' => 'nullable|numeric',
+        //         'activity_id' => 'nullable|exists:activity_temp_table,id', 
+        //         'friend_rendom' => 'nullable', 
+        //         'update_status' => 'nullable|in:update,final', 
+        //     ]);
+        // } else {
+        //     // When subscription is not 0, there is no limit to activities or interests.
+        //     $validator = Validator::make($request->all(), [
+        //         'title' => 'nullable',
+        //         'rendom' => 'nullable',
+        //         'location' => 'nullable',
+        //         'how_many' => 'nullable|integer',
+        //         'start_time' => 'nullable',
+        //         'end_time' => 'nullable',
+        //         'when_time' => 'nullable',
+        //         // 'interests_id' => 'nullable',
+        //         'vibe_id' => 'nullable',
+        //         'expense_id' => 'nullable',  
+        //         'description' => 'nullable',
+        //         'other_activity' => 'nullable|string',
+        //         'image' => 'nullable',
+        //         'amount' => 'nullable|numeric',
+        //         'friend_rendom' => 'nullable',
+        //         'activity_id' => 'nullable|exists:activity_temp_table,id', 
+        //         'update_status' => 'nullable|in:update,final', 
+        //     ]);
+        // }
+    
+        // // Handle validation errors
+        // if ($validator->fails()) {
+        //     return response()->json([
+        //         'message' => 'Validation failed',
+        //         'errors' => $validator->errors(),
+        //         'status' => 201,
+        //     ], 422);
+        // }
+    
+         if (!Auth::check()) {
+                return response()->json([
+                    'message' => 'Unauthorized. Please log in.',
+                ], 401);
+            }
+
+            $user = Auth::user();
+            $now = Carbon::now('Asia/Kolkata');
+
+            // Check active subscription for 'Activitys' type
+            $activeSubscription = UserSubscription::where('user_id', $user->id)
+                ->where('type', 'Activitys')
+                ->where('is_active', 1)
+                ->where('activated_at', '<=', $now)
+                ->where('expires_at', '>=', $now)
+                ->first();
+
+            if ($activeSubscription) {
+                // Subscribed user — get monthly_activities_coin limit from plan
+                $coinCategory = CoinCategory::find($activeSubscription->plan_id);
+                $allowedCount = $coinCategory ? (int)$coinCategory->monthly_activities_coin : 0;
+
+                $startDate = Carbon::parse($user->created_at)->startOfDay();
+                $nowStartOfDay = $now->copy()->startOfDay();
+
+                $currentIntervalStart = $startDate;
+                $exceeded = false;
+
+                while ($currentIntervalStart->lessThanOrEqualTo($nowStartOfDay)) {
+                    $currentIntervalEnd = $currentIntervalStart->copy()->addDays(30)->subSecond();
+
+                    // Count activities created in current 30-day interval
+                    $activityCount = Activity::where('user_id', $user->id)
+                        ->whereBetween('created_at', [$currentIntervalStart, $currentIntervalEnd])
+                        ->count();
+
+                    if ($activityCount >= $allowedCount) {
+                        $exceeded = true;
+                        break;
+                    }
+
+                    $currentIntervalStart = $currentIntervalEnd->copy()->addSecond();
+                }
+
+                if ($exceeded) {
+                    return response()->json([
+                        'message' => 'You have used all your activity coins for this month. Please renew or upgrade your plan.',
+                        'data' => [
+                            'interval_start' => $currentIntervalStart->toDateString(),
+                            'interval_end' => $currentIntervalEnd->toDateString(),
+                            'activities_created' => $activityCount,
+                            'allowed_activities' => $allowedCount,
+                        ],
+                        'status' => 403,
+                    ]);
+                }
+            } else {
+                    // Free user — weekly activity_count limit check with timezone aware
+                    $currentDate = $now;  // use same $now with Asia/Kolkata timezone
+                    $sevenDaysAgo = $now->copy()->subWeek();
+
+                    $activityCount = Activity::where('user_id', $user->id)
+                        ->whereBetween('created_at', [$sevenDaysAgo, $currentDate])
+                        ->count();
+
+                    $activitysubscriptioncount = ActivitySubscription::orderBy('id', 'DESC')->first();
+
+                    if ($activityCount >= $activitysubscriptioncount->activity_count) {
+                        return response()->json([
+                            'message' => 'You can only create up to ' . $activitysubscriptioncount->activity_count . ' activities per week due to your subscription.',
+                            'status' => 201,
+                        ], 201);
+                    }
+                }
+
+            // Now continue with your existing validation & processing logic without any other changes
+
+            // Validation rules remain the same for both subscription and free users:
             $validator = Validator::make($request->all(), [
                 'title' => 'nullable',
                 'location' => 'nullable',
                 'rendom' => 'nullable',
-                'how_many' => 'nullable|integer',   
-                'start_time' => 'nullable',
-                'end_time' => 'nullable',
-                'when_time' => 'nullable',
-                // 'interests_id' => 'nullable',
-                // 'interests_id.*' => 'integer',
-                'vibe_id' => 'nullable',
-                'expense_id' => 'nullable',  
-                'description' => 'nullable',
-                'other_activity' => 'nullable|string',
-                'image' => 'nullable',
-                'amount' => 'nullable|numeric',
-                'activity_id' => 'nullable|exists:activity_temp_table,id', 
-                'friend_rendom' => 'nullable', 
-                'update_status' => 'nullable|in:update,final', 
-            ]);
-        } else {
-            // When subscription is not 0, there is no limit to activities or interests.
-            $validator = Validator::make($request->all(), [
-                'title' => 'nullable',
-                'rendom' => 'nullable',
-                'location' => 'nullable',
                 'how_many' => 'nullable|integer',
                 'start_time' => 'nullable',
                 'end_time' => 'nullable',
                 'when_time' => 'nullable',
-                // 'interests_id' => 'nullable',
                 'vibe_id' => 'nullable',
-                'expense_id' => 'nullable',  
+                'expense_id' => 'nullable',
                 'description' => 'nullable',
                 'other_activity' => 'nullable|string',
                 'image' => 'nullable',
                 'amount' => 'nullable|numeric',
+                'activity_id' => 'nullable|exists:activity_temp_table,id',
                 'friend_rendom' => 'nullable',
-                'activity_id' => 'nullable|exists:activity_temp_table,id', 
-                'update_status' => 'nullable|in:update,final', 
+                'update_status' => 'nullable|in:update,final',
             ]);
-        }
-    
-        // Handle validation errors
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-                'status' => 201,
-            ], 422);
-        }
-    
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors(),
+                    'status' => 201,
+                ], 422);
+            }
+
         // If activity_id exists, we are updating the activity
         if ($request->has('rendom') && $request->update_status == 'update') {
             $activityTemp = ActivityTemp::where('rendom',$request->rendom)->first();

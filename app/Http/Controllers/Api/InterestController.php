@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Validator;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Mail\OtpMail;
 use App\Models\Activity;
+use App\Models\ActivitySubscription;
+use App\Models\CoinCategory;
 use App\Models\Interest;
 use App\Models\OtherInterest;
 use App\Models\Vibes;
@@ -19,7 +21,8 @@ use App\Models\Expense;
 use App\Models\LikeActivity;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
-
+use Carbon\Carbon;
+use App\Models\UserSubscription;
 
 
 class InterestController extends Controller
@@ -118,17 +121,231 @@ class InterestController extends Controller
 
 
 
-    public function addinterest(Request $request)
+//     public function addinterest(Request $request)
+// {
+//     if (!Auth::check()) {
+//         return response()->json([
+//             'message' => 'Unauthorized. Please log in.',
+//         ]);
+//     }
+
+//     $user = Auth::user();
+//     // return $user->created_date;
+//     $now = Carbon::now('Asia/Kolkata');
+//     $activeSubscription = UserSubscription::where('user_id', $user->id)
+//     ->where('type', 'Activitys')
+//     ->where('is_active', 1)
+//     ->where('activated_at', '<=', $now)
+//     ->where('expires_at', '>=', $now)
+//     ->first();
+
+//      $startDate = Carbon::parse($user->created_at)->startOfDay();
+
+//     $now = Carbon::now()->startOfDay();
+
+//     // Last subscription se allowed count le lo
+//     $ActivitySubscription = ActivitySubscription::orderBy('id', 'desc')->first();
+//     $allowedCount = $ActivitySubscription ? $ActivitySubscription->interests_count : 0;
+
+//     $currentIntervalStart = $startDate;
+
+//     while ($currentIntervalStart->lessThanOrEqualTo($now)) {
+//         $currentIntervalEnd = $currentIntervalStart->copy()->addDays(30)->subSecond();
+
+//         $count = OtherInterest::where('user_id', $user->id)
+//                     ->where('created_at', '>=', $currentIntervalStart)
+//                     ->where('created_at', '<=', $currentIntervalEnd)
+//                     ->count();
+
+//         if ($count > $allowedCount) {
+//             return response()->json([
+//                 'message' => 'Please purchase plan',
+//                 'interval_start' => $currentIntervalStart->toDateString(),
+//                 'interval_end' => $currentIntervalEnd->toDateString(),
+//                 'interest_count' => $count,
+//                 'allowed_interest_count' => $allowedCount,
+//             ], 403);
+//         }
+
+//         $currentIntervalStart = $currentIntervalEnd->copy()->addSecond();
+//     }
+
+//     return response()->json([
+//         'message' => 'User is within allowed interest limits for all intervals',
+//     ]);
+
+
+//     // Validate input
+//     $validator = Validator::make($request->all(), [
+//         'rendom' => 'required|exists:activity_table,rendom',
+//     ]);
+
+//     if ($validator->fails()) {
+//         $errors = [];
+//         foreach ($validator->errors()->getMessages() as $field => $messages) {
+//             $errors[$field] = $messages[0];
+//             break;
+//         }
+//         return response()->json(['message' => $errors, 'data' => [], 'status' => 201], 200);
+//     }
+
+//     // Get activity using rendom
+//     $activity = Activity::where('rendom', $request->rendom)->first();
+
+//     if (!$activity) {
+//         return response()->json([
+//             'message' => 'Activity not found.',
+//             'data' => [],
+//             'status' => 404,
+//         ]);
+//     }
+
+//     // Prevent user from liking their own activity
+//     if ($activity->user_id == $user->id) {
+//         return response()->json([
+//             'message' => 'You cannot add interest to your own activity.',
+//             'data' => [],
+//             'status' => 201,
+//         ]);
+//     }
+
+//     // Check existing interest (including confirm=5)
+//     $existingInterest = OtherInterest::where('user_id', $user->id)
+//                                     ->where('activity_id', $activity->id)
+//                                     ->first();
+
+//     if ($existingInterest) {
+//         if ($existingInterest->confirm == 5) {
+//             // User had removed interest before, now reactivate it
+//             $existingInterest->confirm = 0;
+//             $existingInterest->save();
+
+//             return response()->json([
+//                 'message' => 'Interest re-activated successfully.',
+//                 'status'  => 200,
+//                 'data'    => [
+//                     'user_rendom'     => $user->rendom,
+//                     'activity_rendom' => $request->rendom,
+//                     'confirm'         => $existingInterest->confirm,
+//                 ],
+//             ]);
+//         } else {
+//             return response()->json([
+//                 'message' => 'Interest already added.',
+//                 'data' => [],
+//                 'status' => 200,
+//             ]);
+//         }
+//     }
+
+//     try {
+//         $otherInterest = OtherInterest::create([
+//             'user_id'     => $user->id,
+//             'activity_id' => $activity->id,
+//             'user_id_1'   => $activity->user_id,
+//             'confirm'     => 0,
+//         ]);
+
+//         return response()->json([
+//             'message' => 'Interest added successfully',
+//             'status'  => 200,
+//             'data'    => [
+//                 'user_rendom'     => $user->rendom,
+//                 'activity_rendom' => $request->rendom,
+//                 'confirm'         => $otherInterest->confirm,
+//             ],
+//         ]);
+//     } catch (\Exception $e) {
+//         return response()->json([
+//             'message' => 'Failed to add interest. Please try again later.',
+//             'error'   => $e->getMessage(),
+//         ], 500);
+//     }
+// }
+
+
+public function addinterest(Request $request)
 {
     if (!Auth::check()) {
         return response()->json([
             'message' => 'Unauthorized. Please log in.',
-        ]);
+        ], 401);
     }
 
     $user = Auth::user();
+    $now = Carbon::now('Asia/Kolkata');
 
-    // Validate input
+    // Check active subscription
+    $activeSubscription = UserSubscription::where('user_id', $user->id)
+        ->where('type', 'Activitys')
+        ->where('is_active', 1)
+        ->where('activated_at', '<=', $now)
+        ->where('expires_at', '>=', $now)
+        ->first();
+
+    $startDate = Carbon::parse($user->created_at)->startOfDay();
+    $nowStartOfDay = Carbon::now('Asia/Kolkata')->startOfDay();
+
+    // Determine allowed interest count based on subscription or free plan
+    $allowedCount = 0;
+
+    if ($activeSubscription) {
+        $coinCategory = CoinCategory::find($activeSubscription->plan_id);
+        if ($coinCategory) {
+            $allowedCount = $coinCategory->monthly_interests_coin;
+        } else {
+            // If plan_id not found in CoinCategory, fallback to free plan limit
+            $ActivitySubscription = ActivitySubscription::orderBy('id', 'desc')->first();
+            $allowedCount = $ActivitySubscription ? $ActivitySubscription->interests_count : 0;
+        }
+    } else {
+        // No active subscription, use free plan limit
+        $ActivitySubscription = ActivitySubscription::orderBy('id', 'desc')->first();
+        $allowedCount = $ActivitySubscription ? $ActivitySubscription->interests_count : 0;
+    }
+
+    $currentIntervalStart = $startDate;
+
+    while ($currentIntervalStart->lessThanOrEqualTo($nowStartOfDay)) {
+        $currentIntervalEnd = $currentIntervalStart->copy()->addDays(30)->subSecond();
+
+        $count = OtherInterest::where('user_id', $user->id)
+                    ->where('created_at', '>=', $currentIntervalStart)
+                    ->where('created_at', '<=', $currentIntervalEnd)
+                    ->count();
+
+                    if ($count >= $allowedCount) {
+                        if ($activeSubscription) {
+                            // Subscription wali user hai aur limit cross ki
+                            return response()->json([
+                                'message' => 'You have used all your interest coins for this month.',
+                                'data' => [
+                                    'interval_start' => $currentIntervalStart->toDateString(),
+                                    'interval_end' => $currentIntervalEnd->toDateString(),
+                                    'interest_count' => $count,
+                                    'allowed_interest_count' => $allowedCount,
+                                ],
+                                'status' => 200,
+                            ], 201);
+                        } else {
+                            // Free plan user, limit cross kiya
+                            return response()->json([
+                                'message' => 'Please purchase plan',
+                                'data' => [
+                                    'interval_start' => $currentIntervalStart->toDateString(),
+                                    'interval_end' => $currentIntervalEnd->toDateString(),
+                                    'interest_count' => $count,
+                                    'allowed_interest_count' => $allowedCount,
+                                ],
+                                'status' => 200,
+                            ], 201);
+                        }
+                    }
+
+        $currentIntervalStart = $currentIntervalEnd->copy()->addSecond();
+    }
+
+    // Validation for request input
     $validator = Validator::make($request->all(), [
         'rendom' => 'required|exists:activity_table,rendom',
     ]);
@@ -142,7 +359,7 @@ class InterestController extends Controller
         return response()->json(['message' => $errors, 'data' => [], 'status' => 201], 200);
     }
 
-    // Get activity using rendom
+    // Fetch activity by rendom
     $activity = Activity::where('rendom', $request->rendom)->first();
 
     if (!$activity) {
@@ -169,7 +386,7 @@ class InterestController extends Controller
 
     if ($existingInterest) {
         if ($existingInterest->confirm == 5) {
-            // User had removed interest before, now reactivate it
+            // Reactivate interest
             $existingInterest->confirm = 0;
             $existingInterest->save();
 
@@ -191,6 +408,7 @@ class InterestController extends Controller
         }
     }
 
+    // Create new interest
     try {
         $otherInterest = OtherInterest::create([
             'user_id'     => $user->id,

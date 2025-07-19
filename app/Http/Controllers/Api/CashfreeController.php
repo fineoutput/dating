@@ -265,7 +265,7 @@ public function verifyPayment(Request $request)
             $subscription->update([
                 'is_active' => true,
                 'activated_at' => now(),
-                'expires_at' => $expire_time ?? now()->addDays($subscription->expire_days),
+                'expires_at' => $expire_time ?? now()->addDays(30),
             ]);
         }
 

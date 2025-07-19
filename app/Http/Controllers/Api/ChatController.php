@@ -16,9 +16,11 @@ use Illuminate\Support\Facades\Validator;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Mail\OtpMail;
 use App\Models\Activity;
+use App\Models\CoinCategory;
 use App\Models\Cupid;
 use App\Models\OtherInterest;
 use App\Models\SlideLike;
+use App\Models\UserSubscription;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -28,71 +30,8 @@ use Illuminate\Support\Facades\Auth;
 class ChatController extends Controller
 {
 
-    // public function sendMessage(Request $request)
-    // {
-    //     $request->validate([
-    //         'receiver_rendom' => 'required',
-    //         'message' => 'required|string|max:255',
-    //     ]);
-    
-        
-    //     $receiver_rendom = User::where('rendom',$request->receiver_rendom)->first();
-    //     if (!$receiver_rendom) {
-    //         return response()->json([
-    //             'message' => 'User Not Found',
-    //             'data' => [],
-    //             'status' => 200,
-    //         ], 200);
-    //     }
 
-    //     $generatedCodes = [];
-
-    //     function generateUniqueCode(&$generatedCodes) {
-    //         $randomCode = rand(100000, 999999);
-
-    //         while (in_array($randomCode, $generatedCodes)) {
-    //             $randomCode = rand(100000, 999999);
-    //         }
-
-    //         $generatedCodes[] = $randomCode;
-        
-    //         return $randomCode;
-    //     }
-
-    //     $code = generateUniqueCode($generatedCodes);
-
-    //     $chat = Chat::create([
-    //         'sender_id' => Auth::id(),
-    //         'receiver_id' => $receiver_rendom->id,
-    //         'message' => $request->message,
-    //         'status' => 'sent',
-    //         'rendom' => $code,
-    //     ]);
-    
-    //     // Format the created_at time into a human-readable format
-    //     $timeAgo = Carbon::parse($chat->created_at)->diffForHumans();
-    //     $rendom_1 = User::where('id',$chat->sender_id)->first();
-    //     $rendom_2 = User::where('id',$chat->receiver_id)->first();
-    //     // Prepare the response data
-    //     $chatArray = [
-    //         // 'id' => $chat->id,
-    //         'sender_rendom' => $rendom_1->rendom,
-    //         'receiver_rendom' => $rendom_2->rendom,
-    //         'message' => $chat->message,
-    //         'rendom' => $chat->rendom,
-    //         'status' => $chat->status,
-    //         'sent_time' => $timeAgo,  
-    //     ];
-    
-    //     return response()->json([
-    //         'message' => 'Message sent successfully.',
-    //         'data' => $chatArray,
-    //         'status' => 200,
-    //     ]);
-    // }
-
-
-    public function sendMessage(Request $request)
+ public function sendMessage(Request $request)
 {
     $request->validate([
         'receiver_rendom' => 'required',
@@ -101,111 +40,228 @@ class ChatController extends Controller
         'chat_type' => 'required',
     ]);
 
-    // Get the current user
     $sender = Auth::user();
+    $now = Carbon::now('Asia/Kolkata');
 
-    $receiver_rendom = User::where('rendom', $request->receiver_rendom)->first();
-    if (!$receiver_rendom) {
+    $receiver = User::where('rendom', $request->receiver_rendom)->first();
+    if (!$receiver) {
         return response()->json([
             'message' => 'User Not Found',
             'data' => [],
             'status' => 200,
-        ], 200);
+        ]);
     }
 
-    $message_count = ActivitySubscription::orderBy('id','DESC')->first(); 
-    $dating_message_count = DatingSubscription::orderBy('id','DESC')->first(); 
+    $activeSubscription = UserSubscription::where('user_id', $sender->id)
+        ->where('type', 'Activitys')
+        ->where('is_active', 1)
+        ->where('activated_at', '<=', $now)
+        ->where('expires_at', '>=', $now)
+        ->first();
 
-    $message_count_1 = (int) $message_count->message_count ?? ''; 
-    $message_count_2 = (int) $dating_message_count->swipe_message ?? ''; 
+    $allowedCount = 0;
+    if ($activeSubscription) {
+        $coinCategory = CoinCategory::find($activeSubscription->plan_id);
+        if ($coinCategory) {
+            $allowedCount = $coinCategory->interest_messages_coin; 
+        } else {
+            $activitySub = ActivitySubscription::orderBy('id', 'desc')->first();
+            $allowedCount = $activitySub ? (int)$activitySub->message_count : 0;
+        }
+    } else {
+        $activitySub = ActivitySubscription::orderBy('id', 'desc')->first();
+        $allowedCount = $activitySub ? (int)$activitySub->message_count : 0;
+    }
 
+    $startDate = Carbon::parse($sender->created_at)->startOfDay();
+    $nowStartOfDay = $now->copy()->startOfDay();
 
+    $currentIntervalStart = $startDate;
 
-    $type = $request->input('type');
+    while ($currentIntervalStart->lessThanOrEqualTo($nowStartOfDay)) {
+        $currentIntervalEnd = $currentIntervalStart->copy()->addDays(30)->subSecond();
 
-    if($type == 0){
-    if ($sender->subscription == 0) {
-
-        $messagesSentThisWeek = Chat::where('sender_id', $sender->id)
-            ->whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+        $count = Chat::where('sender_id', $sender->id)
+            ->where('chat_type', 'activity')
+            ->whereBetween('created_at', [$currentIntervalStart, $currentIntervalEnd])
             ->count();
 
+        if ($count >= $allowedCount) {
+            $messageText = $activeSubscription
+                ? 'You have used all your message coins for this month. Please purchase or renew your plan.'
+                : 'Please subscribe to send more messages.';
 
-        if ($messagesSentThisWeek >= $message_count_1) {
             return response()->json([
-                'message' => 'Subscribe to send more messages.',
-                'data' => [],
+                'message' => $messageText,
+                'data' => [
+                    'interval_start' => $currentIntervalStart->toDateString(),
+                    'interval_end' => $currentIntervalEnd->toDateString(),
+                    'messages_sent' => $count,
+                    'allowed_messages' => $allowedCount,
+                ],
                 'status' => 200,
-            ], 200);
-        }
-    }
-}
-else{
-    if ($sender->subscription == 0) {
-
-        $messagesSentThisWeek = Chat::where('sender_id', $sender->id)
-            ->whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
-            ->count();
-
-
-        if ($messagesSentThisWeek >= $message_count_2) {
-            return response()->json([
-                'message' => 'Subscribe to send more messages for dating.',
-                'data' => [],
-                'status' => 200,
-            ], 200);
-        }
-    }
-}
-
-
-    $generatedCodes = [];
-    function generateUniqueCode(&$generatedCodes) {
-        $randomCode = rand(100000, 999999);
-
-        while (in_array($randomCode, $generatedCodes)) {
-            $randomCode = rand(100000, 999999);
+            ]);
         }
 
-        $generatedCodes[] = $randomCode;
-        return $randomCode;
+        $currentIntervalStart = $currentIntervalEnd->copy()->addSecond();
     }
 
-    // Generate a unique code for the message
-    $code = generateUniqueCode($generatedCodes);
+    if ($receiver->id == $sender->id) {
+        return response()->json([
+            'message' => 'You cannot send message to yourself.',
+            'data' => [],
+            'status' => 400,
+        ]);
+    }
 
-    // Create the chat record
+    $code = rand(100000, 999999);
+
+    while (Chat::where('rendom', $code)->exists()) {
+        $code = rand(100000, 999999);
+    }
+
     $chat = Chat::create([
         'sender_id' => $sender->id,
-        'receiver_id' => $receiver_rendom->id,
+        'receiver_id' => $receiver->id,
         'message' => $request->message,
         'status' => 'sent',
         'rendom' => $code,
         'chat_type' => $request->chat_type,
     ]);
 
-    // Format the created_at time into a human-readable format
+    // Format sent time
     $timeAgo = Carbon::parse($chat->created_at)->diffForHumans();
-    $rendom_1 = User::where('id', $chat->sender_id)->first();
-    $rendom_2 = User::where('id', $chat->receiver_id)->first();
-
-    // Prepare the response data
-    $chatArray = [
-        'sender_rendom' => $rendom_1->rendom,
-        'receiver_rendom' => $rendom_2->rendom,
-        'message' => $chat->message,
-        'rendom' => $chat->rendom,
-        'chat_type' => $chat->chat_type,
-        'status' => $chat->status,
-        'sent_time' => $timeAgo,
-    ];
 
     return response()->json([
         'message' => 'Message sent successfully.',
-        'data' => $chatArray,
+        'data' => [
+            'sender_rendom' => $sender->rendom,
+            'receiver_rendom' => $receiver->rendom,
+            'message' => $chat->message,
+            'rendom' => $chat->rendom,
+            'chat_type' => $chat->chat_type,
+            'status' => $chat->status,
+            'sent_time' => $timeAgo,
+        ],
         'status' => 200,
     ]);
 }
+
+
+//     public function sendMessage(Request $request)
+// {
+//     $request->validate([
+//         'receiver_rendom' => 'required',
+//         'message' => 'required|string|max:255',
+//         'type' => 'required',
+//         'chat_type' => 'required',
+//     ]);
+
+//     // Get the current user
+//     $sender = Auth::user();
+
+//     $receiver_rendom = User::where('rendom', $request->receiver_rendom)->first();
+//     if (!$receiver_rendom) {
+//         return response()->json([
+//             'message' => 'User Not Found',
+//             'data' => [],
+//             'status' => 200,
+//         ], 200);
+//     }
+
+//     $message_count = ActivitySubscription::orderBy('id','DESC')->first(); 
+//     $dating_message_count = DatingSubscription::orderBy('id','DESC')->first(); 
+
+//     $message_count_1 = (int) $message_count->message_count ?? ''; 
+//     $message_count_2 = (int) $dating_message_count->swipe_message ?? ''; 
+
+
+
+//     $type = $request->input('type');
+
+//     if($type == 0){
+//     if ($sender->subscription == 0) {
+
+//         $messagesSentThisWeek = Chat::where('sender_id', $sender->id)
+//             ->whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+//             ->count();
+
+
+//         if ($messagesSentThisWeek >= $message_count_1) {
+//             return response()->json([
+//                 'message' => 'Subscribe to send more messages.',
+//                 'data' => [],
+//                 'status' => 200,
+//             ], 200);
+//         }
+//     }
+// }
+// else{
+//     if ($sender->subscription == 0) {
+
+//         $messagesSentThisWeek = Chat::where('sender_id', $sender->id)
+//             ->whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+//             ->count();
+
+
+//         if ($messagesSentThisWeek >= $message_count_2) {
+//             return response()->json([
+//                 'message' => 'Subscribe to send more messages for dating.',
+//                 'data' => [],
+//                 'status' => 200,
+//             ], 200);
+//         }
+//     }
+// }
+
+
+//     $generatedCodes = [];
+//     function generateUniqueCode(&$generatedCodes) {
+//         $randomCode = rand(100000, 999999);
+
+//         while (in_array($randomCode, $generatedCodes)) {
+//             $randomCode = rand(100000, 999999);
+//         }
+
+//         $generatedCodes[] = $randomCode;
+//         return $randomCode;
+//     }
+
+//     // Generate a unique code for the message
+//     $code = generateUniqueCode($generatedCodes);
+
+//     // Create the chat record
+//     $chat = Chat::create([
+//         'sender_id' => $sender->id,
+//         'receiver_id' => $receiver_rendom->id,
+//         'message' => $request->message,
+//         'status' => 'sent',
+//         'rendom' => $code,
+//         'chat_type' => $request->chat_type,
+//     ]);
+
+//     // Format the created_at time into a human-readable format
+//     $timeAgo = Carbon::parse($chat->created_at)->diffForHumans();
+//     $rendom_1 = User::where('id', $chat->sender_id)->first();
+//     $rendom_2 = User::where('id', $chat->receiver_id)->first();
+
+//     // Prepare the response data
+//     $chatArray = [
+//         'sender_rendom' => $rendom_1->rendom,
+//         'receiver_rendom' => $rendom_2->rendom,
+//         'message' => $chat->message,
+//         'rendom' => $chat->rendom,
+//         'chat_type' => $chat->chat_type,
+//         'status' => $chat->status,
+//         'sent_time' => $timeAgo,
+//     ];
+
+//     return response()->json([
+//         'message' => 'Message sent successfully.',
+//         'data' => $chatArray,
+//         'status' => 200,
+//     ]);
+// }
 
 
 public function getMessages(Request $request)

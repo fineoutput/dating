@@ -63,7 +63,7 @@ public function verifyPayment(Request $request)
         ]
     );
 
-    if ($payment_status === 'ACTIVE') {
+    if (in_array($payment_status, ['ACTIVE', 'PAID'])) {
         $subscription = UserSubscription::where('order_id', $order_id)->first();
 
         if ($subscription && (!$subscription->is_active ?? true)) {
@@ -258,7 +258,7 @@ public function verifyPayment(Request $request)
         ]
     );
 
-    if ($payment_status === 'ACTIVE') {
+    if (in_array($payment_status, ['ACTIVE', 'PAID'])) {
         $subscription = UserSubscription::where('order_id', $order_id)->first();
 
         if ($subscription && (!$subscription->is_active ?? true)) {

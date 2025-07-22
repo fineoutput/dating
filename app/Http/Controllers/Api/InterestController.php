@@ -325,7 +325,7 @@ public function addinterest(Request $request)
                                     'interest_count' => $count,
                                     'allowed_interest_count' => $allowedCount,
                                 ],
-                                'status' => 200,
+                                'status' => 203,
                             ], 201);
                         } else {
                             // Free plan user, limit cross kiya
@@ -337,7 +337,7 @@ public function addinterest(Request $request)
                                     'interest_count' => $count,
                                     'allowed_interest_count' => $allowedCount,
                                 ],
-                                'status' => 200,
+                                'status' => 203,
                             ], 201);
                         }
                     }

@@ -99,7 +99,7 @@ class ChatController extends Controller
                     'messages_sent' => $count,
                     'allowed_messages' => $allowedCount,
                 ],
-                'status' => 200,
+                'status' => 203,
             ]);
         }
 

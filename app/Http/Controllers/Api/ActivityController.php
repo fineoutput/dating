@@ -241,7 +241,7 @@ class ActivityController extends Controller
                             'activities_created' => $activityCount,
                             'allowed_activities' => $allowedCount,
                         ],
-                        'status' => 403,
+                        'status' => 203,
                     ]);
                 }
             } else {
@@ -258,7 +258,7 @@ class ActivityController extends Controller
                     if ($activityCount >= $activitysubscriptioncount->activity_count) {
                         return response()->json([
                             'message' => 'You can only create up to ' . $activitysubscriptioncount->activity_count . ' activities per week due to your subscription.',
-                            'status' => 201,
+                            'status' => 203,
                         ], 201);
                     }
                 }

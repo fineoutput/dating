@@ -740,18 +740,32 @@ $activities = Activity::whereIn('id', $activityIds)
     }
 
     // ✅ Profile Image decode (2nd image)
-    $profileImageUrl = null;
-    if ($user->profile_image) {
-        $profileImages = json_decode($user->profile_image, true);
-        if (!empty($profileImages) && isset($profileImages[1])) {
-            $profileImageUrl = url('uploads/app/profile_images/' . $profileImages[1]);
-        }
-    }
+    // $profileImageUrl = null;
+    // if ($user->profile_image) {
+    //     $profileImages = json_decode($user->profile_image, true);
+    //     if (!empty($profileImages) && isset($profileImages[1])) {
+    //         $profileImageUrl = url('uploads/app/profile_images/' . $profileImages[1]);
+    //     }
+    // }
 
     $activitiesData = [];
 
     foreach ($activities as $activity) {
+
+  $activityUser = User::find($activity->user_id);
+
+        $profileImageUrl = null;
+        if ($activityUser && $activityUser->profile_image) {
+            $profileImages = json_decode($activityUser->profile_image, true);
+
+            if (!empty($profileImages) && isset($profileImages[1])) {
+                $profileImageUrl = url('uploads/app/profile_images/' . $profileImages[1]);
+            }
+        }
+        
         // bg_color logic
+
+
         $hash = md5($activity->id);
         $r = hexdec(substr($hash, 0, 2));
         $g = hexdec(substr($hash, 2, 2));
@@ -859,17 +873,30 @@ $activities = Activity::whereIn('id', $activityIds)
     }
 
     // ✅ Profile Image decode (2nd image)
-    $profileImageUrl = null;
-    if ($user->profile_image) {
-        $profileImages = json_decode($user->profile_image, true);
-        if (!empty($profileImages) && isset($profileImages[1])) {
-            $profileImageUrl = url('uploads/app/profile_images/' . $profileImages[1]);
-        }
-    }
+    // $profileImageUrl = null;
+    // if ($user->profile_image) {
+    //     $profileImages = json_decode($user->profile_image, true);
+    //     if (!empty($profileImages) && isset($profileImages[1])) {
+    //         $profileImageUrl = url('uploads/app/profile_images/' . $profileImages[1]);
+    //     }
+    // }
 
     $activitiesData = [];
 
     foreach ($activities as $activity) {
+
+          $activityUser = User::find($activity->user_id);
+
+        $profileImageUrl = null;
+        if ($activityUser && $activityUser->profile_image) {
+            $profileImages = json_decode($activityUser->profile_image, true);
+
+            if (!empty($profileImages) && isset($profileImages[1])) {
+                $profileImageUrl = url('uploads/app/profile_images/' . $profileImages[1]);
+            }
+        }
+
+
         // bg_color logic
         $hash = md5($activity->id);
         $r = hexdec(substr($hash, 0, 2));

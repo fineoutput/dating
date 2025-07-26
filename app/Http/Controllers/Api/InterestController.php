@@ -13,6 +13,7 @@ use Laravel\Sanctum\PersonalAccessToken;
 use App\Mail\OtpMail;
 use App\Models\Activity;
 use App\Models\ActivitySubscription;
+use App\Models\Chat;
 use App\Models\CoinCategory;
 use App\Models\Interest;
 use App\Models\OtherInterest;

@@ -714,10 +714,18 @@ public function userinterestactivitys(Request $request)
 
     $currentTime = Carbon::now('Asia/Kolkata');
 
-   $activityIds = OtherInterest::where('user_id', $user->id)
-                    ->where('confirm', 0)
-                    ->pluck('activity_id')
-                    ->toArray();
+//    $activityIds = OtherInterest::where('user_id', $user->id)
+//                     ->where('confirm', 0)
+//                     ->pluck('activity_id')
+//                     ->toArray();
+
+        $activityIds = OtherInterest::where('user_id', $user->id)
+            ->where(function($query) {
+                $query->where('confirm', 0)
+                    ->orWhere('confirm', 4);
+            })
+            ->pluck('activity_id')
+            ->toArray();
 
 if (empty($activityIds) || count($activityIds) == 0) {
     return response()->json([
@@ -850,7 +858,8 @@ public function userconfirmactivitys(Request $request)
 $activityIds = OtherInterest::where('user_id', $user->id)
     ->where(function($query) {
         $query->where('confirm', 1)
-              ->orWhere('confirm', 2);
+              ->orWhere('confirm', 2)
+              ->orWhere('confirm', 3);
     })
     ->pluck('activity_id')
     ->toArray();

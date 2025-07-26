@@ -441,11 +441,7 @@ public function addinterest(Request $request)
                     'user_rendom'     => $user->rendom,
                     'activity_rendom' => $request->rendom,
                     'confirm'         => $existingInterest->confirm,
-                      'allowed_messages' => $allowedCount,
-                        'messages_sent' => $messagesSent,
-                        'remaining_messages' => max(0, $allowedCount - $messagesSent),
-                        'interval_start' => $currentIntervalStart->toDateString(),
-                        'interval_end' => $currentIntervalStart->copy()->addDays(30)->subSecond()->toDateString(),
+                     
                                 ],
             ]);
         } else {
@@ -473,6 +469,11 @@ public function addinterest(Request $request)
                 'user_rendom'     => $user->rendom,
                 'activity_rendom' => $request->rendom,
                 'confirm'         => $otherInterest->confirm,
+                 'allowed_messages' => $allowedCount,
+                        'messages_sent' => $messagesSent,
+                        'remaining_messages' => max(0, $allowedCount - $messagesSent),
+                        'interval_start' => $currentIntervalStart->toDateString(),
+                        'interval_end' => $currentIntervalStart->copy()->addDays(30)->subSecond()->toDateString(),
             ],
         ]);
     } catch (\Exception $e) {

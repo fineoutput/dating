@@ -384,6 +384,49 @@ public function addinterest(Request $request)
                                     ->where('activity_id', $activity->id)
                                     ->first();
 
+                                    
+    $userId = Auth::id();
+     $now = Carbon::now('Asia/Kolkata');
+
+    // Step 1: Get subscription info
+    $activeSubscription = UserSubscription::where('user_id', $userId)
+        ->where('type', 'Activitys')
+        ->where('is_active', 1)
+        ->where('activated_at', '<=', $now)
+        ->where('expires_at', '>=', $now)
+        ->first();
+
+    $allowedCount = 0;
+
+    if ($activeSubscription) {
+        $coinCategory = CoinCategory::find($activeSubscription->plan_id);
+        $allowedCount = $coinCategory ? $coinCategory->interest_messages_coin : 0;
+    } else {
+        $activitySub = ActivitySubscription::orderBy('id', 'desc')->first();
+        $allowedCount = $activitySub ? (int)$activitySub->message_count : 0;
+    }
+
+    // Step 2: Calculate current 30-day interval based on user creation
+    $user = User::find($userId);
+    $startDate = Carbon::parse($user->created_at)->startOfDay();
+    $nowStartOfDay = $now->copy()->startOfDay();
+    $currentIntervalStart = $startDate;
+    $messagesSent = 0;
+
+    while ($currentIntervalStart->lessThanOrEqualTo($nowStartOfDay)) {
+        $currentIntervalEnd = $currentIntervalStart->copy()->addDays(30)->subSecond();
+
+        if ($now->between($currentIntervalStart, $currentIntervalEnd)) {
+            $messagesSent = Chat::where('sender_id', $userId)
+                ->where('chat_type', 'activity')
+                ->whereBetween('created_at', [$currentIntervalStart, $currentIntervalEnd])
+                ->count();
+            break;
+        }
+
+        $currentIntervalStart = $currentIntervalEnd->copy()->addSecond();
+    }
+
     if ($existingInterest) {
         if ($existingInterest->confirm == 5) {
             // Reactivate interest
@@ -397,7 +440,12 @@ public function addinterest(Request $request)
                     'user_rendom'     => $user->rendom,
                     'activity_rendom' => $request->rendom,
                     'confirm'         => $existingInterest->confirm,
-                ],
+                      'allowed_messages' => $allowedCount,
+                        'messages_sent' => $messagesSent,
+                        'remaining_messages' => max(0, $allowedCount - $messagesSent),
+                        'interval_start' => $currentIntervalStart->toDateString(),
+                        'interval_end' => $currentIntervalStart->copy()->addDays(30)->subSecond()->toDateString(),
+                                ],
             ]);
         } else {
             return response()->json([

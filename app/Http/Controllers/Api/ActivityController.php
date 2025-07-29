@@ -3733,14 +3733,18 @@ public function acceptpactup(Request $request)
         return response()->json([
             'message' => 'Confirm updated successfully to',
             'status' => 200,
-            'data' => [],
+            'data' => [
+                'status' => true,
+            ],
         ], 200);
     }
 
     return response()->json([
         'message' => 'No matching record in OtherInterest table.',
         'status' => 201,
-        'data' => [],
+        'data' => [
+             'status' => false,
+        ],
 ], 201);
 }
 

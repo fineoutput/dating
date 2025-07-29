@@ -3646,32 +3646,31 @@ public function updateConfirm(Request $request)
     
     // return $user->id;
 
-    $otherInterest = OtherInterest::where('user_id', $user->id)->where('activity_id',$activity_rendom_1->id)->first();
+ $otherInterest = OtherInterest::where('user_id', $user->id)
+    ->where('activity_id', $activity_rendom_1->id)
+    ->first();
 
-    $alredyInterest = OtherInterest::where('user_id', $user->id)->where('activity_id',$activity_rendom_1->id)->where('confirm',2)->first();
+if ($otherInterest && $otherInterest->confirm == 2) {
+    return response()->json([
+        'message' => 'You have already sent Pactup.',
+        'status' => 200,
+        'data' => [
+            'status' => true,
+        ],
+    ]);
+}
 
-    if ($alredyInterest) {
-        return response()->json([
-            'message' => 'You have already sent Pactup.',
-            'status' => 200,
-            'data' => [
-                'status' => true,
-            ],
-        ], 200);
-    }
+if ($otherInterest) {
+    $otherInterest->update(['confirm' => 2]);
 
-
-    if ($otherInterest) {
-        $otherInterest->update(['confirm' => 2]);
-
-        return response()->json([
-            'message' => 'Confirm updated successfully to',
-            'status' => 200,
-            'data' => [
-                 'status' => false,
-            ],
-        ], 200);
-    }
+    return response()->json([
+        'message' => 'Confirm updated successfully.',
+        'status' => 200,
+        'data' => [
+            'status' => false,
+        ],
+    ]);
+}
 
     return response()->json([
         'message' => 'No matching record in OtherInterest table.',

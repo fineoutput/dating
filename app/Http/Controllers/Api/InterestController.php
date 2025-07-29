@@ -380,6 +380,8 @@ public function addinterest(Request $request)
         ]);
     }
 
+    $activity_user = User::find($activity->user_id);
+
     // Check existing interest (including confirm=5)
     $existingInterest = OtherInterest::where('user_id', $user->id)
                                     ->where('activity_id', $activity->id)
@@ -468,6 +470,7 @@ public function addinterest(Request $request)
             'data'    => [
                 'user_rendom'     => $user->rendom,
                 'activity_rendom' => $request->rendom,
+                'activity_user' => $activity_user->rendom,
                 'confirm'         => $otherInterest->confirm,
                  'allowed_messages' => $allowedCount,
                         'messages_sent' => $messagesSent,

@@ -1119,16 +1119,22 @@ public function removeinterest(Request $request)
 
     $howMany = $activity->how_many;
 
-    $interests = OtherInterest::with('user') // eager load user
-        ->where('activity_id', $activity->id)
-        ->where('confirm', 0)
-        ->get();
+    $interests = OtherInterest::with('user') 
+    ->where('activity_id', $activity->id)
+    ->where(function($query) {
+        $query->where('confirm', 0)
+              ->orWhere('confirm', 4);
+    })
+    ->get();
 
-    $confirm = OtherInterest::with('user')
-        ->where('activity_id', $activity->id)
-        ->where('confirm', 1)
-        ->take($howMany)
-        ->get();
+$confirm = OtherInterest::with('user')
+    ->where('activity_id', $activity->id)
+    ->where(function($query) {
+        $query->where('confirm', 1)
+              ->orWhere('confirm', 3);
+    })
+    ->take($howMany)
+    ->get();
 
     if ($interests->isEmpty() && $confirm->isEmpty()) {
         return response()->json([
@@ -1204,7 +1210,7 @@ public function removeinterest(Request $request)
 
         if (!$activity_rendom) {
             return response()->json([
-                'message' => 'Data Not Found',
+                'message' => 'Activity Not Found',
                 'data' => [],
                 'status' => 201,
         ], 200);

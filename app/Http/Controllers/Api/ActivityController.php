@@ -3643,8 +3643,6 @@ public function updateConfirm(Request $request)
     ], 201);
     }
 
-    
-    // return $user->id;
 
  $otherInterest = OtherInterest::where('user_id', $user->id)
     ->where('activity_id', $activity_rendom_1->id)
@@ -3683,9 +3681,7 @@ if ($otherInterest) {
 public function acceptpactup(Request $request)
 {
     $request->validate([
-        'random' => 'required|string', 
-        'type' => 'required', 
-        'activity_id' => 'required', 
+        'random' => 'required|string',  
     ]);
 
     $random = $request->input('random');
@@ -3698,7 +3694,39 @@ public function acceptpactup(Request $request)
     $user = User::where('rendom', $random)->first();
     // $activity_id = Activity::where('rendom', $activity_rendom)->first();
 
-    if (!$activity_id) {
+  
+
+
+    if($pactup == null){
+
+        $otherInterest = OtherInterest::where(function($query) use ($user) {
+        $query->where('user_id', $user->id)
+            ->orWhere('user_id_1', $user->id);
+        })->where('confirm', 2)
+        ->get();
+
+        
+       $data = [];
+
+        foreach ($otherInterest as $interest) {
+            $activity = Activity::find($interest->activity_id);
+
+            $data[] = [
+                'user_name' => $user->name,
+                'activity_title' => $activity->title ?? null,
+                'activity_id' => $activity->id ?? null,
+            ];
+        }
+
+        return response()->json([
+            'message' => 'Data fetched successfully.',
+            'status' => 200,
+            'data' => $data,
+        ], 200);
+
+    }else{
+
+          if (!$activity_id) {
         return response()->json([
         'message' => 'Activity not found',
         'data'=>[],
@@ -3714,15 +3742,11 @@ public function acceptpactup(Request $request)
     ], 201);
     }
 
-    
-    // return $user->id;
-
-    // $otherInterest = OtherInterest::where('user_id', $user->id)->orWhere('user_id_1', $user->id)->where('activity_id',$activity_id)->first();
     $otherInterest = OtherInterest::where(function($query) use ($user, $activity_id) {
     $query->where('user_id', $user->id)
           ->orWhere('user_id_1', $user->id);
-})->where('activity_id', $activity_id)
-  ->first();
+    })->where('activity_id', $activity_id)
+    ->first();
   
     if ($otherInterest) {
         if($pactup == 'accept'){
@@ -3737,6 +3761,7 @@ public function acceptpactup(Request $request)
                 'status' => true,
             ],
         ], 200);
+    }
     }
 
     return response()->json([

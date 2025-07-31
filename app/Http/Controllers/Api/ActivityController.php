@@ -3718,11 +3718,19 @@ public function acceptpactup(Request $request)
             ];
         }
 
+        if($data){
         return response()->json([
             'message' => 'Data fetched successfully.',
             'status' => 200,
             'data' => $data,
         ], 200);
+        }else{
+            return response()->json([
+                'message' => 'No data found.',
+                'status' => 201,
+                'data' => [],
+            ], 201);
+        }
 
     }else{
 

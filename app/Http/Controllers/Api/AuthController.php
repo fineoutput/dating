@@ -1264,6 +1264,36 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
             'status' => 200
         ]);
     }
+
+        
+   public function updateCity(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+
+        // Validate request
+        $validator = Validator::make($request->all(), [
+            'admin_city' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        $user->admin_city = $request->admin_city;
+        $user->save();
+
+        return response()->json([
+            'message' => 'Location updated successfully',
+            'data' => [
+                'admin_city' => $user->admin_city,
+            ],
+            'status' => 200
+        ]);
+    }
         
         
         

@@ -67,6 +67,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user-profile', [AuthController::class, 'userprofile']);
     
     Route::post('update-profile', [AuthController::class, 'updateProfile']);
+    Route::post('update-city', [AuthController::class, 'updateCity']);
     Route::post('update-latlong', [AuthController::class, 'updatelatlong']);
 
 

@@ -29,6 +29,7 @@ class User extends Authenticatable
         'profile_image',
         'state',
         'city',
+        'admin_city',
         'status',
         'latitude', 
         'longitude', 

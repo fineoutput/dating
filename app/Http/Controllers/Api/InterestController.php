@@ -825,7 +825,7 @@ public function removeinterest(Request $request)
     if ($existingInterest) {
       
         $existingInterest->confirm = 5;
-        $existingInterest->save();
+        $existingInterest->delete();
 
         return response()->json([
             'message' => 'Interest updated to confirm = 5.',

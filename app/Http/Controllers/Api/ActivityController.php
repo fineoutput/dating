@@ -195,6 +195,12 @@ class ActivityController extends Controller
             }
 
             $user = Auth::user();
+            if ($user->admin_city == null) {
+                return response()->json([
+                    'message' => 'City Not Selected',
+                    'status' => 200,
+                ], 200);
+            }
             $now = Carbon::now('Asia/Kolkata');
 
             // Check active subscription for 'Activitys' type

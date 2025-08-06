@@ -1006,6 +1006,50 @@ public function updateCupidMatch(Request $request)
 }
 
 
+
+    public function matched_user(Request $request){
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+
+        $matchedUsers = SlideLike::where('matched_user', $user->id)
+            ->where('liked_user', 1)
+            ->get();
+
+        if ($matchedUsers->isEmpty()) {
+            return response()->json([
+                'message' => 'No matched users found',
+                'status' => 200,
+                'data' => [],
+            ], 200);
+        }
+
+        $matchedUserDetails = $matchedUsers->map(function ($slideLike) {
+            $matchingUser = User::find($slideLike->matching_user);
+            if (!$matchingUser) {
+                return null; 
+            }
+            
+            $images = json_decode($matchingUser->profile_image, true);
+            $imagePath = is_array($images) && count($images) ? reset($images) : null;
+
+            return [
+                'id' => $matchingUser->id,
+                'name' => $matchingUser->name,
+                'rendom' => $matchingUser->rendom,
+                'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+            ];
+        })->filter(); 
+
+        return response()->json([
+            'message' => 'Matched users found successfully',
+            'status' => 200,
+            'data' => $matchedUserDetails->values(),
+        ], 200);
+    }
+
     public function handleUserInteractions(Request $request)
         {
             $user = Auth::user();

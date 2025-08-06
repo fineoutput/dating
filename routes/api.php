@@ -87,6 +87,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/subscription-list', [SubscriptionController::class, 'subscriptionlists']);
 
     Route::post('user-interactions', [DatingController::class, 'handleUserInteractions']);
+    Route::get('matched-user', [DatingController::class, 'matched_user']);
 
     Route::get('user-interactions-count', [DatingController::class, 'getUserInteractionsCount']);
 

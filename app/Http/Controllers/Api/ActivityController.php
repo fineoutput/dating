@@ -3930,6 +3930,7 @@ public function pactup_request(Request $request)
 
         $cities = AdminCity::all()->map(function($city) {
             return [
+                'id' => $city->id,
                 'city_name' => $city->city_name,
                 'status' => $city->status,
             ];

@@ -442,18 +442,80 @@ class ActivityController extends Controller
             'data' => $activityData,
         ], 200);
     }   
+
+
+   public function activityedit(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Unauthorized. Please log in.',
+            ], 401);
+        }
+
+        $user = Auth::user();
+
+        $activity = Activity::where('user_id', $user->id)
+                            ->where('id', $request->activity_id)
+                            ->first();
+
+        if (!$activity) {
+            return response()->json([
+                'message' => 'Activity not found or unauthorized.',
+            ], 404);
+        }
+
+        $activity->where_to = $request->where_to ?? $activity->where_to;
+        $activity->when_time = $request->when_time ?? $activity->when_time;
+        $activity->how_many = $request->how_many ?? $activity->how_many;
+        $activity->start_time = $request->start_time ?? $activity->start_time;
+        $activity->end_time = $request->end_time ?? $activity->end_time;
+        $activity->friend_rendom = $request->friend_rendom ?? $activity->friend_rendom;
+
+        $activity->interests_id = isset($user->interest) ? implode(',', (array)$user->interest) : $activity->interests_id;
+        $activity->vibe_id = isset($request->vibe_id) ? implode(',', (array)$request->vibe_id) : $activity->vibe_id;
+        $activity->expense_id = isset($request->expense_id) ? implode(',', (array)$request->expense_id) : $activity->expense_id;
+
+        $activity->other_activity = $request->other_activity ?? $activity->other_activity;
+        $activity->status = 2;
+        $activity->title = $request->title ?? $activity->title;
+        $activity->description = $request->description ?? $activity->description;
+        $activity->location = $request->location ?? $activity->location;
+        $activity->amount = $request->amount ?? $activity->amount;
+
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $destinationPath = public_path('activity_images');
+
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+
+            $image->move($destinationPath, $imageName);
+
+            $activity->image = 'activity_images/' . $imageName;
+        }
+
+
+        $activity->save();
+
+        return response()->json([
+            'message' => 'Activity updated successfully.',
+            'activity' => $activity,
+        ]);
+    }
     
 
-private function parseTimeToDate($time)
-{
-    $todayDate = Carbon::today()->format('Y-m-d');
-    $dateTime = $todayDate . ' ' . $time;
-    try {
-        return Carbon::createFromFormat('Y-m-d H:i:s', $dateTime)->format('Y-m-d H:i:s');
-    } catch (\Exception $e) {
-        throw new \Exception('Invalid time format.');
+  private function parseTimeToDate($time)
+    {
+        $todayDate = Carbon::today()->format('Y-m-d');
+        $dateTime = $todayDate . ' ' . $time;
+        try {
+            return Carbon::createFromFormat('Y-m-d H:i:s', $dateTime)->format('Y-m-d H:i:s');
+        } catch (\Exception $e) {
+            throw new \Exception('Invalid time format.');
+        }
     }
-}
 
 public function useractivitys(Request $request)
 {

@@ -29,6 +29,7 @@ Route::post('login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('activity-store', [ActivityController::class, 'activitystore']);
+    Route::post('activity-edit', [ActivityController::class, 'activityedit']);
     Route::get('activitys', [ActivityController::class, 'activitys']);
     Route::post('get-activity-detaile', [ActivityController::class, 'getActivitydetailes']);
     Route::post('for-you-activity-detaile', [ActivityController::class, 'foryouActivitydetailes']);

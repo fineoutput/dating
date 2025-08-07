@@ -1123,6 +1123,8 @@ public function removeinterest(Request $request)
     ->where('activity_id', $activity->id)
     ->where(function($query) {
         $query->where('confirm', 0)
+              ->where('confirm', 1)
+              ->where('confirm', 2)
               ->orWhere('confirm', 4);
     })
     ->get();
@@ -1130,8 +1132,7 @@ public function removeinterest(Request $request)
 $confirm = OtherInterest::with('user')
     ->where('activity_id', $activity->id)
     ->where(function($query) {
-        $query->where('confirm', 1)
-              ->orWhere('confirm', 3);
+        $query->Where('confirm', 3);
     })
     ->take($howMany)
     ->get();

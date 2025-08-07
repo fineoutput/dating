@@ -473,19 +473,26 @@ class DatingController extends Controller
     }
 
     // Modify the query to add conditions for the filters
-    $matchingUsers = User::where(function ($query) use ($interestIds) {
-        foreach ($interestIds as $interestId) {
-            $query->orWhere('interest', 'like', "%$interestId%");
-        }
-    })
-    ->where('id', '!=', $user->id)
-    ->when($minAge && $maxAge, function ($query) use ($minAge, $maxAge) {
-        return $query->whereBetween('age', [$minAge, $maxAge]);
-    })
-    ->when($lookingFor, function ($query) use ($lookingFor) {
-        return $query->where('looking_for', 'like', "%$lookingFor%");
-    })
-    ->get();
+  $excludedUserIds = SlideLike::where('matched_user', $user->id)
+    ->where('liked_user', 1)
+    ->pluck('matching_user') // Assuming `matching_user` is the other user's ID
+    ->toArray();
+
+// Step 2: Filter matching users, excluding matched ones
+$matchingUsers = User::where(function ($query) use ($interestIds) {
+    foreach ($interestIds as $interestId) {
+        $query->orWhere('interest', 'like', "%$interestId%");
+    }
+})
+->where('id', '!=', $user->id)
+->whereNotIn('id', $excludedUserIds) // ✅ Exclude already matched users
+->when($minAge && $maxAge, function ($query) use ($minAge, $maxAge) {
+    return $query->whereBetween('age', [$minAge, $maxAge]);
+})
+->when($lookingFor, function ($query) use ($lookingFor) {
+    return $query->where('looking_for', 'like', "%$lookingFor%");
+})
+->get();
     // return $matchingUsers;
 
     if ($matchingUsers->isEmpty()) {

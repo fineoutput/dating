@@ -1007,48 +1007,59 @@ public function updateCupidMatch(Request $request)
 
 
 
-    public function matched_user(Request $request){
-        $user = Auth::user();
+ public function matched_user(Request $request)
+{
+    $user = Auth::user();
 
-        if (!$user) {
-            return response()->json(['message' => 'User not authenticated'], 401);
-        }
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], 401);
+    }
 
-        $matchedUsers = SlideLike::where('matched_user', $user->id)
-            ->where('liked_user', 1)
-            ->get();
+    $userLatitude = $user->latitude;
+    $userLongitude = $user->longitude;
 
-        if ($matchedUsers->isEmpty()) {
-            return response()->json([
-                'message' => 'No matched users found',
-                'status' => 200,
-                'data' => [],
-            ], 200);
-        }
+    $matchedUsers = SlideLike::where('matched_user', $user->id)
+        ->where('liked_user', 1)
+        ->get();
 
-        $matchedUserDetails = $matchedUsers->map(function ($slideLike) {
-            $matchingUser = User::find($slideLike->matching_user);
-            if (!$matchingUser) {
-                return null; 
-            }
-            
-            $images = json_decode($matchingUser->profile_image, true);
-            $imagePath = is_array($images) && count($images) ? reset($images) : null;
-
-            return [
-                'id' => $matchingUser->id,
-                'name' => $matchingUser->name,
-                'rendom' => $matchingUser->rendom,
-                'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
-            ];
-        })->filter(); 
-
+    if ($matchedUsers->isEmpty()) {
         return response()->json([
-            'message' => 'Matched users found successfully',
+            'message' => 'No matched users found',
             'status' => 200,
-            'data' => $matchedUserDetails->values(),
+            'data' => [],
         ], 200);
     }
+
+    $matchedUserDetails = $matchedUsers->map(function ($slideLike) use ($userLatitude, $userLongitude) {
+        $matchingUser = User::find($slideLike->matching_user);
+        if (!$matchingUser) {
+            return null; 
+        }
+
+        $images = json_decode($matchingUser->profile_image, true);
+        $imagePath = is_array($images) && count($images) ? reset($images) : null;
+
+        // Calculate distance
+        $matchedLatitude = $matchingUser->latitude;
+        $matchedLongitude = $matchingUser->longitude;
+        $distance = $this->calculateDistance($userLatitude, $userLongitude, $matchedLatitude, $matchedLongitude);
+
+        return [
+            'id' => $matchingUser->id,
+            'name' => $matchingUser->name,
+            'age' => $matchingUser->age,
+            'rendom' => $matchingUser->rendom,
+            'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+            'distance' => round($distance) . ' km',
+        ];
+    })->filter();
+
+    return response()->json([
+        'message' => 'Matched users found successfully',
+        'status' => 200,
+        'data' => $matchedUserDetails->values(),
+    ], 200);
+}
 
     public function handleUserInteractions(Request $request)
         {

@@ -1454,6 +1454,49 @@ public function getActivitydetailes(Request $request)
         'rendom' => 'required',
     ]);
 
+    
+$userId = Auth::id();
+$now = Carbon::now('Asia/Kolkata');
+
+// Get allowed interest count
+$activeSubscription = UserSubscription::where('user_id', $userId)
+    ->where('type', 'Activitys')
+    ->where('is_active', 1)
+    ->where('activated_at', '<=', $now)
+    ->where('expires_at', '>=', $now)
+    ->first();
+
+$allowedInterest = 0;
+
+if ($activeSubscription) {
+    $coinCategory = CoinCategory::find($activeSubscription->plan_id);
+    $allowedInterest = $coinCategory ? $coinCategory->monthly_interests_coin : 0;
+} else {
+    $ActivitySubscription = ActivitySubscription::orderBy('id', 'desc')->first();
+    $allowedInterest = $ActivitySubscription ? $ActivitySubscription->interests_count : 0;
+}
+
+// Calculate current interval from user's creation date
+$startDate = Carbon::parse($user->created_at)->startOfDay();
+$nowStartOfDay = $now->copy()->startOfDay();
+$currentIntervalStart = $startDate;
+$interestCount = 0;
+
+while ($currentIntervalStart->lessThanOrEqualTo($nowStartOfDay)) {
+    $currentIntervalEnd = $currentIntervalStart->copy()->addDays(30)->subSecond();
+
+    if ($now->between($currentIntervalStart, $currentIntervalEnd)) {
+        $interestCount = OtherInterest::where('user_id', $userId)
+            ->whereBetween('created_at', [$currentIntervalStart, $currentIntervalEnd])
+            ->count();
+        break;
+    }
+
+    $currentIntervalStart = $currentIntervalEnd->copy()->addSecond();
+}
+
+$remainingInterests = max(0, $allowedInterest - $interestCount);
+
     // 🔹 1. Main activity from rendom
     $mainActivity = Activity::with('user', 'vibe')->where('rendom', $request->rendom)->first();
 
@@ -1526,6 +1569,7 @@ public function getActivitydetailes(Request $request)
         'already_interest' => $alinters,
         'status' => $mainActivity->status,
         'amount' => $mainActivity->amount,
+        'remainingInterests' => $remainingInterests ?? 0,
 
     ];
 

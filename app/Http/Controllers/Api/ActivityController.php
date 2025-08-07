@@ -455,7 +455,7 @@ class ActivityController extends Controller
         $user = Auth::user();
 
         $activity = Activity::where('user_id', $user->id)
-                            ->where('id', $request->activity_id)
+                            ->where('rendom', $request->activity_rendom)
                             ->first();
 
         if (!$activity) {

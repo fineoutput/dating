@@ -811,6 +811,19 @@ class AuthController extends Controller
 {
     $user = Auth::user();
 
+    
+
+    $attendUsers = OtherInterest::where('user_id', $user->id)
+        ->where('confirm', 6)
+        ->count();
+
+    $ghostUsers = OtherInterest::where('user_id', $user->id)
+        ->where('confirm', 3)
+        ->count();
+
+    $hostedActivity = Activity::where('user_id', $user->id)
+        ->count();
+
     $matchingActivities = Activity::where('user_id', $user->id)
                                 ->where('status', 2)
                                 ->get();
@@ -987,6 +1000,9 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
         'address' => $user->address ?? '',
         'location' => $locationString,
         'friend_count' => $userList->count() + $likeUserList->count() + $matchedUsers->count(),
+        'attendUsers' => $attendUsers,
+        'ghostUsers' => $ghostUsers,
+        'hostedActivity' => $hostedActivity,
     ];
 
     return response()->json([

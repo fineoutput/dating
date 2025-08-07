@@ -449,6 +449,19 @@ class DatingController extends Controller
         return response()->json(['message' => 'Invalid interest data'], 400);
     }
 
+    
+
+    $attendUsers = OtherInterest::where('user_id', $user->id)
+        ->where('confirm', 6)
+        ->count();
+
+    $ghostUsers = OtherInterest::where('user_id', $user->id)
+        ->where('confirm', 3)
+        ->count();
+
+    $hostedActivity = Activity::where('user_id', $user->id)
+        ->count();
+
     $interestIds = [];
     foreach ($interestFieldDecoded as $item) {
         $interestIds = array_merge($interestIds, explode(',', $item));
@@ -570,6 +583,9 @@ if (is_array($profileImages)) {
                 'message' => $message ? $message->message : null,
                 'message_status' => $message ? $message->status : null,
                 'distance' => round($distance) . ' km', 
+                'attendUsers' => $attendUsers,
+                'ghostUsers' => $ghostUsers,
+                'hostedActivity' => $hostedActivity,
             ];
 
             $usersWithInterests[] = $userData;
@@ -1187,6 +1203,18 @@ public function updateCupidMatch(Request $request)
 
 $activityIds = $matchingActivities->pluck('id'); 
 
+
+    $attendUsers = OtherInterest::where('user_id', $user->id)
+        ->where('confirm', 6)
+        ->count();
+
+    $ghostUsers = OtherInterest::where('user_id', $user->id)
+        ->where('confirm', 3)
+        ->count();
+
+    $hostedActivity = Activity::where('user_id', $user->id)
+        ->count();
+
 $interestIds = OtherInterest::whereIn('activity_id', $activityIds)->get();
 
 $userDetailsFromInterest = $interestIds->pluck('user_id');
@@ -1336,6 +1364,9 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
                     'interest' => $interests,
                     'status' => $user->status,
                     'profile_images' => $imageUrls,
+                    'attendUsers' => $attendUsers,
+                    'ghostUsers' => $ghostUsers,
+                    'hostedActivity' => $hostedActivity,
                     'friend_count' => $userList->count() + $likeUserList->count() + $matchedUsers->count(),
                 ];
         

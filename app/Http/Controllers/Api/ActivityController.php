@@ -501,7 +501,8 @@ class ActivityController extends Controller
 
         return response()->json([
             'message' => 'Activity updated successfully.',
-            'activity' => $activity,
+            'data' => $activity,
+            'status' => 200,
         ]);
     }
     

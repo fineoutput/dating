@@ -75,6 +75,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('find-matching-users-interest', [DatingController::class, 'findMatchingUsers']);
     Route::post('matching-users-detailes', [DatingController::class, 'MatchingUsersdetailes']);
+    Route::post('dating-preference', [DatingController::class, 'datingpreference']);
     Route::post('find-swipe', [DatingController::class, 'findswipe']);
 
     Route::post('/cupidmatch', [DatingController::class, 'cupidmatch']);

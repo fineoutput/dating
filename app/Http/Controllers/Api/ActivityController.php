@@ -108,6 +108,11 @@ class ActivityController extends Controller
         ]);
     }
     
+  private function isJson($string)
+    {
+        json_decode($string);
+        return json_last_error() === JSON_ERROR_NONE;
+    }
 
     public function activitystore(Request $request)
     {
@@ -318,7 +323,11 @@ class ActivityController extends Controller
             $activityTemp->how_many = $request->how_many ?? $activityTemp->how_many;
             $activityTemp->start_time = $request->start_time ?? $activityTemp->start_time;
             $activityTemp->end_time = $request->end_time ?? $activityTemp->end_time;
-            $activityTemp->friend_rendom = $request->friend_rendom ?? $activityTemp->friend_rendom;
+            $activityTemp->friend_rendom = $request->has('friend_rendom')
+            ? (is_string($request->friend_rendom) && $this->isJson($request->friend_rendom)
+                ? implode(',', json_decode($request->friend_rendom, true))
+                : $request->friend_rendom)
+            : $activityTemp->friend_rendom;
             $activityTemp->interests_id = isset($user->interest) ? implode(',', (array)$user->interest) : $user->interest;
             // $activityTemp->vibe_id = $request->vibe_id ?? $activityTemp->vibe_id;
             $activityTemp->vibe_id = isset($request->vibe_id) ? implode(',', (array)$request->vibe_id) : $activityTemp->vibe_id;
@@ -420,7 +429,9 @@ class ActivityController extends Controller
             'location' => $request->location,
             'when_time' => $request->when_time,
             'how_many' => $request->how_many,
-            'friend_rendom' => $request->friend_rendom,
+            'friend_rendom' => is_string($request->friend_rendom) && $this->isJson($request->friend_rendom)
+    ? implode(',', json_decode($request->friend_rendom, true))
+    : $request->friend_rendom,
             'start_time' => $request->start_time,
             'end_time' => $request->end_time,
             'interests_id' => isset($user->interests_id) ? implode(',', (array)$user->interests_id) : null,  // Handling multiple interests_id

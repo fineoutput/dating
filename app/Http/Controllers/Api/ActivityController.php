@@ -2960,6 +2960,8 @@ public function filteractivity(Request $request)
         ->format('Y-m-d H:i:s');
 
     $query = Activity::query();
+    
+    $filterApplied = false;
 
     if (!$date_type || $date_type !== 'Today') {
     $query->where(function ($query) use ($endTime, $currentTime) {
@@ -2970,8 +2972,11 @@ public function filteractivity(Request $request)
     });
 }
 
-    $filterApplied = false;
 
+    if ($query) {
+        $query->where('user_id', '!=',Auth::id());
+        $filterApplied = true;
+    }
     if ($location) {
         $query->where('location', 'like', '%' . $location . '%');
         $filterApplied = true;

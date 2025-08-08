@@ -371,10 +371,7 @@ class ActivityController extends Controller
             ], 200);
             }
     
-            // Create the final activity in the Activity table
-            // $randomNumber = rand(100000, 999999);
-            // return  $activityTemp->rendom;
-// return $activityTemp->friend_rendom;
+          
             $activity = Activity::create([
                 'user_id' => $activityTemp->user_id,
                 'where_to' => $activityTemp->where_to,
@@ -396,7 +393,6 @@ class ActivityController extends Controller
                 'rendom' => $activityTemp->rendom,
             ]); 
     
-            // Optionally, delete the temporary activity after finalizing
             $activityTemp->delete();
             $activity->makeHidden(['created_at', 'updated_at', 'deleted_at','user_id','id']);
     
@@ -1511,6 +1507,13 @@ $remainingInterests = max(0, $allowedInterest - $interestCount);
     // 🔹 1. Main activity from rendom
     $mainActivity = Activity::with('user', 'vibe')->where('rendom', $request->rendom)->first();
 
+    $friendRendoms = explode(',', $mainActivity->friend_rendom);
+
+    $friends = User::whereIn('rendom', $friendRendoms)->get(['first_name', 'rendom']);
+
+    $friendNames = $friends->pluck('first_name');
+
+
     if (!$mainActivity) {
         return response()->json([
             'message' => 'Activity Not Found',
@@ -1580,6 +1583,7 @@ $remainingInterests = max(0, $allowedInterest - $interestCount);
         'already_interest' => $alinters,
         'status' => $mainActivity->status,
         'amount' => $mainActivity->amount,
+        'host_name' => $friendNames,
         'remainingInterests' => $remainingInterests ?? 0,
 
     ];

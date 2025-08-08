@@ -374,7 +374,7 @@ class ActivityController extends Controller
             // Create the final activity in the Activity table
             // $randomNumber = rand(100000, 999999);
             // return  $activityTemp->rendom;
-
+// return $activityTemp->friend_rendom;
             $activity = Activity::create([
                 'user_id' => $activityTemp->user_id,
                 'where_to' => $activityTemp->where_to,

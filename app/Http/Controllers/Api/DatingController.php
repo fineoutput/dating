@@ -1547,7 +1547,7 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
         $request->validate([
             'user_rendom' => 'required|string',
             'reasons' => 'nullable|array',
-            'reasons.*' => 'string|max:255',
+            'reasons.*' => 'string',
             'status' => 'nullable|integer',
         ]);
 

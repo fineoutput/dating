@@ -1509,9 +1509,9 @@ $remainingInterests = max(0, $allowedInterest - $interestCount);
 
     $friendRendoms = explode(',', $mainActivity->friend_rendom);
 
-    $friends = User::whereIn('rendom', $friendRendoms)->get(['first_name', 'rendom']);
+    $friends = User::whereIn('rendom', $friendRendoms)->get(['name', 'rendom']);
 
-    $friendNames = $friends->pluck('first_name');
+    $friendNames = $friends->pluck('name');
 
 
     if (!$mainActivity) {

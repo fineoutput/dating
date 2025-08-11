@@ -95,6 +95,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     Route::post('/get-user-data', [DatingController::class, 'getUserData']);
+    Route::post('/report-user', [DatingController::class, 'reportUser']);
 
     Route::get('/coin-categories', [SubscriptionController::class, 'subscriptionlist']);
     Route::get('/dating-subscription-list', [SubscriptionController::class, 'datingsubscriptionlists']);

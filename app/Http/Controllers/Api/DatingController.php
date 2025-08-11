@@ -18,6 +18,7 @@ use App\Models\Vibes;
 use App\Models\Activity;
 use App\Models\SlideLike;
 use App\Models\OtherInterest;
+use App\Models\Report;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
@@ -1538,7 +1539,44 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
                 ]);
             }
         }
-        
+
+
+
+
+    public function reportUser(Request $request)
+        {
+            $request->validate([
+                'user_rendom' => 'required|string',
+                'reason' => 'nullable|string|max:255',
+            ]);
+
+            $reportingUser = Auth::user();
+            if (!$reportingUser) {
+                return response()->json(['message' => 'User not authenticated'], 401);
+            }
+
+            $reportedUser = User::where('rendom', $request->user_rendom)->first();
+            if (!$reportedUser) {
+                return response()->json(['message' => 'Reported user not found'], 404);
+            }
+
+            // Create a new report
+            $report = new Report();
+            $report->reporting_user_id = $reportingUser->id;
+            $report->reported_user_id = $reportedUser->id;
+            $report->reason = $request->reason;
+            $report->status = $request->status;
+            $report->save();
+
+            return response()->json([
+                'message' => 'User reported successfully',
+                'status' => 200,
+                'data' => [
+                    'report_id' => $report->id,
+                    'reported_user_rendom' => $reportedUser->rendom,
+                ],
+            ]);
+                
 
 
 

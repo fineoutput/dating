@@ -1358,6 +1358,64 @@ public function updateCupidMatch(Request $request)
 
 
 
+//  public function matched_user(Request $request)
+//     {
+//         $user = Auth::user();
+
+//         if (!$user) {
+//             return response()->json(['message' => 'User not authenticated'], 401);
+//         }
+
+//         $userLatitude = $user->latitude;
+//         $userLongitude = $user->longitude;
+
+//         $matchedUsers = SlideLike::where('matched_user', $user->id)
+//             ->where('liked_user', 1)
+//             ->get();
+
+//         if ($matchedUsers->isEmpty()) {
+//             return response()->json([
+//                 'message' => 'No matched users found',
+//                 'status' => 200,
+//                 'data' => [],
+//             ], 200);
+//         }
+
+//         $matchedUserDetails = $matchedUsers->map(function ($slideLike) use ($userLatitude, $userLongitude) {
+//             $matchingUser = User::find($slideLike->matching_user);
+//             if (!$matchingUser) {
+//                 return null;
+//             }
+
+//             $images = json_decode($matchingUser->profile_image, true);
+//             $imagePath = is_array($images) && count($images) ? reset($images) : null;
+
+//             // Calculate distance
+//             $matchedLatitude = $matchingUser->latitude;
+//             $matchedLongitude = $matchingUser->longitude;
+//             $distance = $this->calculateDistance($userLatitude, $userLongitude, $matchedLatitude, $matchedLongitude);
+
+//             return [
+//                 'id' => $matchingUser->id,
+//                 'name' => $matchingUser->name,
+//                 'age' => $matchingUser->age,
+//                 'rendom' => $matchingUser->rendom,
+//                 'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+//                 'distance' => round($distance) . ' km',
+//             ];
+//         })
+//         ->filter()
+//         ->unique('id')
+//         ->values();   
+
+//         return response()->json([
+//             'message' => 'Matched users found successfully',
+//             'status' => 200,
+//             'data' => $matchedUserDetails,
+//         ], 200);
+//     }
+
+
  public function matched_user(Request $request)
     {
         $user = Auth::user();
@@ -1366,9 +1424,15 @@ public function updateCupidMatch(Request $request)
             return response()->json(['message' => 'User not authenticated'], 401);
         }
 
+        // 1. Get list of users reported by the authenticated user
+        $reportedUserIds = Report::where('reporting_user_id', $user->id)
+            ->pluck('reported_user_id')
+            ->toArray();
+
         $userLatitude = $user->latitude;
         $userLongitude = $user->longitude;
 
+        // 2. Get all matched users (from SlideLike table)
         $matchedUsers = SlideLike::where('matched_user', $user->id)
             ->where('liked_user', 1)
             ->get();
@@ -1378,19 +1442,20 @@ public function updateCupidMatch(Request $request)
                 'message' => 'No matched users found',
                 'status' => 200,
                 'data' => [],
-            ], 200);
+            ]);
         }
 
-        $matchedUserDetails = $matchedUsers->map(function ($slideLike) use ($userLatitude, $userLongitude) {
+        // 3. Loop through matched users and filter out reported ones
+        $matchedUserDetails = $matchedUsers->map(function ($slideLike) use ($userLatitude, $userLongitude, $reportedUserIds) {
             $matchingUser = User::find($slideLike->matching_user);
-            if (!$matchingUser) {
+
+            if (!$matchingUser || in_array($matchingUser->id, $reportedUserIds)) {
                 return null;
             }
 
             $images = json_decode($matchingUser->profile_image, true);
             $imagePath = is_array($images) && count($images) ? reset($images) : null;
 
-            // Calculate distance
             $matchedLatitude = $matchingUser->latitude;
             $matchedLongitude = $matchingUser->longitude;
             $distance = $this->calculateDistance($userLatitude, $userLongitude, $matchedLatitude, $matchedLongitude);
@@ -1404,15 +1469,15 @@ public function updateCupidMatch(Request $request)
                 'distance' => round($distance) . ' km',
             ];
         })
-        ->filter()
-        ->unique('id')
-        ->values();   
+        ->filter()         // remove nulls
+        ->unique('id')     // unique matched users
+        ->values();        // reset array keys
 
         return response()->json([
             'message' => 'Matched users found successfully',
             'status' => 200,
             'data' => $matchedUserDetails,
-        ], 200);
+        ]);
     }
 
     public function handleUserInteractions(Request $request)

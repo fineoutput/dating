@@ -18,6 +18,7 @@ use App\Models\Chat;
 use App\Models\Cupid;
 use App\Models\OtherInterest;
 use App\Models\SlideLike;
+use App\Models\UserSubscription;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -1159,9 +1160,21 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
             'looking_for' => $request->looking_for,
         ];
 
-        if ($user->subscription == 1 && $request->has('interest') && is_array($request->interest)) {
+          $now = Carbon::now('Asia/Kolkata');
+
+            $activeSubscription = UserSubscription::where('user_id', $user->id)
+                ->where('type', 'Activitys')
+                ->where('is_active', 1)
+                ->where('activated_at', '<=', $now)
+                ->where('expires_at', '>=', $now)
+                ->first();
+
+        if ($activeSubscription && $request->has('interest') && is_array($request->interest)) {
             $updateData['interest'] = json_encode($request->interest); 
         }
+        // if ($user->subscription == 1 && $request->has('interest') && is_array($request->interest)) {
+        //     $updateData['interest'] = json_encode($request->interest); 
+        // }
 
         if ($request->has('about')) {
             $updateData['about'] = $request->about;

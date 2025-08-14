@@ -1541,6 +1541,7 @@ $remainingInterests = max(0, $allowedInterest - $interestCount);
 
    $vibeNames = [];
                     $vibeImages = [];
+                    $vibeid = [];
 
                     $vibeIdsRaw = json_decode($mainActivity->vibe_id, true); 
                     if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
@@ -1550,6 +1551,7 @@ $remainingInterests = max(0, $allowedInterest - $interestCount);
 
                         foreach ($vibes as $vibe) {
                             $vibeNames[] = $vibe->name;
+                            $vibeid[] = $vibe->id;
                             $vibeImages[] = asset($vibe->icon);
                         }
                     }
@@ -1586,6 +1588,7 @@ $remainingInterests = max(0, $allowedInterest - $interestCount);
         'interestCount' => $interestCount,
         'vibe_name' => $vibeNames,
         'vibe_image' => $vibeImages,
+        'vibeid' => $vibeid,
         // 'vibe_icon' => $vibeIcons ?? '',
         'like_user' => $like_user,
         'expense_name' => $firstExpenseName,

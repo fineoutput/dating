@@ -1123,7 +1123,7 @@ public function removeinterest(Request $request)
     ->where('activity_id', $activity->id)
     ->where(function($query) {
         $query->where('confirm', 0)
-              ->orWhere('confirm', 1)
+            //   ->orWhere('confirm', 1)
               ->orWhere('confirm', 2)
               ->orWhere('confirm', 4);
     })
@@ -1133,6 +1133,14 @@ $confirm = OtherInterest::with('user')
     ->where('activity_id', $activity->id)
     ->where(function($query) {
         $query->Where('confirm', 3);
+    })
+    ->take($howMany)
+    ->get();
+
+$indiscusion = OtherInterest::with('user')
+    ->where('activity_id', $activity->id)
+    ->where(function($query) {
+        $query->Where('confirm', 1);
     })
     ->take($howMany)
     ->get();
@@ -1180,6 +1188,7 @@ $confirm = OtherInterest::with('user')
 
     $interestsArray = $interests->map($mapUserInterest);
     $confirmArray = $confirm->map($mapUserInterest);
+    $indiscusionArray = $indiscusion->map($mapUserInterest);
 
     return response()->json([
         'message' => 'User interests fetched successfully',
@@ -1187,6 +1196,7 @@ $confirm = OtherInterest::with('user')
         'data' => [
             'interests' => $interestsArray,
             'confirmed' => $confirmArray,
+            'indiscusion' => $indiscusionArray,
         ],
     ]);
 }

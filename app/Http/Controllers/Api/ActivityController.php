@@ -489,7 +489,7 @@ class ActivityController extends Controller
         $activity->description = $request->description ?? $activity->description;
         $activity->location = $request->location ?? $activity->location;
         $activity->amount = $request->amount ?? $activity->amount;
-        $activity->update_count = 1;
+        $activity->update_count = $request->update_count ?? '';
 
         if ($request->hasFile('image')) {
             $image = $request->file('image');
@@ -507,13 +507,13 @@ class ActivityController extends Controller
 
 
         $activity->save();
-}else{
-    return response()->json([
-            'message' => 'You Alredy Update Your Activity.',
-            'data' => $activity,
-            'status' => 208,
-        ]);
-}
+        }else{
+            return response()->json([
+                    'message' => 'You have already updated your activity once.',
+                    'data' => $activity,
+                    'status' => 208,
+                ]);
+        }
 
         return response()->json([
             'message' => 'Activity updated successfully.',

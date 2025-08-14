@@ -1130,6 +1130,7 @@ public function removeinterest(Request $request)
     ->get();
 
 $confirm = OtherInterest::with('user')
+
     ->where('activity_id', $activity->id)
     ->where(function($query) {
         $query->Where('confirm', 3);
@@ -1145,13 +1146,14 @@ $indiscusion = OtherInterest::with('user')
     ->take($howMany)
     ->get();
 
-    if ($interests->isEmpty() && $confirm->isEmpty()) {
+if ($interests->isEmpty() && $confirm->isEmpty() && $indiscusion->isEmpty()) {
         return response()->json([
             'message' => 'No interests found for this activity.',
             'status' => 200,
             'data' => [
                 'interests' => [],
                 'confirmed' => [],
+                'indiscusion' => [],
             ],
         ]);
     }

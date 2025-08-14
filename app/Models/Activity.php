@@ -28,6 +28,7 @@ class Activity extends Model
         'amount',
         'image',
         'rendom',
+        'update_count',
     ];
 
 

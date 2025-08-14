@@ -471,6 +471,7 @@ class ActivityController extends Controller
             ], 404);
         }
 
+        if (!is_null($activity) && is_null($activity->update_count)) {
         $activity->where_to = $request->where_to ?? $activity->where_to;
         $activity->when_time = $request->when_time ?? $activity->when_time;
         $activity->how_many = $request->how_many ?? $activity->how_many;
@@ -488,6 +489,7 @@ class ActivityController extends Controller
         $activity->description = $request->description ?? $activity->description;
         $activity->location = $request->location ?? $activity->location;
         $activity->amount = $request->amount ?? $activity->amount;
+        $activity->update_count = 1;
 
         if ($request->hasFile('image')) {
             $image = $request->file('image');
@@ -505,6 +507,13 @@ class ActivityController extends Controller
 
 
         $activity->save();
+}else{
+    return response()->json([
+            'message' => 'You Alredy Update Your Activity.',
+            'data' => $activity,
+            'status' => 200,
+        ]);
+}
 
         return response()->json([
             'message' => 'Activity updated successfully.',

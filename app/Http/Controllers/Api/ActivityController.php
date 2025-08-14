@@ -203,8 +203,8 @@ class ActivityController extends Controller
             if ($user->admin_city == null) {
                 return response()->json([
                     'message' => 'City Not Selected',
-                    'status' => 200,
-                ], 200);
+                    'status' => 202,
+                ], 202);
             }
             $now = Carbon::now('Asia/Kolkata');
 

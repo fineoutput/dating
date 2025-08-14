@@ -998,6 +998,7 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
         'profile_images' => $imageUrls,
         'about' => $user->about ?? '',
         'address' => $user->address ?? '',
+        'city' => $user->city->city ?? '',
         'location' => $locationString,
         'friend_count' => $userList->count() + $likeUserList->count() + $matchedUsers->count(),
         'attendUsers' => $attendUsers,

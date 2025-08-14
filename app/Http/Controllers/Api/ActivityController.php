@@ -510,7 +510,7 @@ class ActivityController extends Controller
         }else{
             return response()->json([
                     'message' => 'You have already updated your activity once.',
-                    'data' => $activity,
+                    // 'data' => $activity,
                     'status' => 208,
                 ]);
         }
@@ -1593,6 +1593,7 @@ $remainingInterests = max(0, $allowedInterest - $interestCount);
         'like_user' => $like_user,
         'expense_name' => $firstExpenseName,
         'already_interest' => $alinters,
+        'already_update' => $mainActivity->update_count ?? 0,
         'status' => $mainActivity->status,
         'amount' => $mainActivity->amount,
         'host_name' => $friendNames,

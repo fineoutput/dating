@@ -1141,7 +1141,7 @@ $confirm = OtherInterest::with('user')
 $indiscusion = OtherInterest::with('user')
     ->where('activity_id', $activity->id)
     ->where(function($query) {
-        $query->Where('confirm', 1);
+        $query->Where('confirm', 1)->orWhere('confirm', 3);
     })
     ->take($howMany)
     ->get();

@@ -43,13 +43,16 @@ class User extends Authenticatable
 
     public function city()
     {
-        return $this->belongsTo(City::class, 'admin_city', 'id');
+        return $this->belongsTo(AdminCity::class, 'admin_city', 'id');
     }
 
     public function interests()
     {
         return $this->hasOne(Interest::class ,'id','interest');
     }
+
+
+
 
 
     /**

@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Validator;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Mail\OtpMail;
 use App\Models\Activity;
+use App\Models\AdminCity;
 use App\Models\Chat;
 use App\Models\Cupid;
 use App\Models\OtherInterest;
@@ -809,7 +810,7 @@ class AuthController extends Controller
 
     public function userprofile(Request $request)
 {
-    $user = Auth::user();
+    $user = Auth::user()->load('city');
 
     
 
@@ -985,6 +986,8 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
         }
     }
 
+    $cities = AdminCity::where('id', $user->admin_city)->first();
+
     // Final response
     $userData = [
         'number' => $user->number,
@@ -998,7 +1001,7 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
         'profile_images' => $imageUrls,
         'about' => $user->about ?? '',
         'address' => $user->address ?? '',
-        'city' => $user->city->city ?? '',
+        'city' => $cities->city_name ?? '',
         'location' => $locationString,
         'friend_count' => $userList->count() + $likeUserList->count() + $matchedUsers->count(),
         'attendUsers' => $attendUsers,

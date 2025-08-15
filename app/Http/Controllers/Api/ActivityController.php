@@ -3024,15 +3024,11 @@ public function friendcount_one(Request $request)
                     ->orderBy('id', 'DESC')
                     ->first();
 
-         if($userItem->interest_activity_id){           
         $chat_message = Chat::where('sender_id', $user->id)
                     ->where('receiver_id', $userItem->id)
                     ->where('activity_id', $userItem->interest_activity_id)
                     ->orderBy('id', 'DESC')
                     ->first();
-                    }else{
-                     $chat_message = null;   
-                    }
 
         return [
             'id' => $userItem->id,

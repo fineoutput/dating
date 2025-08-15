@@ -472,7 +472,7 @@ class ActivityController extends Controller
             ], 404);
         }
 
-        if (!is_null($activity) && is_null($activity->update_count)) {
+        if (!is_null($activity) && $activity->update_count == 0) {
         $activity->where_to = $request->where_to ?? $activity->where_to;
         $activity->when_time = $request->when_time ?? $activity->when_time;
         $activity->how_many = $request->how_many ?? $activity->how_many;

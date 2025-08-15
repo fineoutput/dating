@@ -16,6 +16,7 @@ class Chat extends Model
         'status',
         'rendom',
         'chat_type',
+        'activity_id'
     ];
 
     public function sender()

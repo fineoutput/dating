@@ -3024,6 +3024,12 @@ public function friendcount_one(Request $request)
                     ->orderBy('id', 'DESC')
                     ->first();
 
+        $chat_message = Chat::where('sender_id', $user->id)
+                    ->where('receiver_id', $userItem->id)
+                    ->where('activity_id', $userItem->interest_activity_id)
+                    ->orderBy('id', 'DESC')
+                    ->first();
+
         return [
             'id' => $userItem->id,
             'user_rendom' => $userItem->rendom,
@@ -3032,6 +3038,7 @@ public function friendcount_one(Request $request)
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
             'form' => 'activity',
             'last_message' => $chat->message ?? null,
+            'activity_message' => $chat_message->message ?? null,
         ];
     });
 

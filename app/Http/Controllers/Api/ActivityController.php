@@ -391,6 +391,7 @@ class ActivityController extends Controller
                 'image' => $activityTemp->image,
                 'amount' => $activityTemp->amount,
                 'rendom' => $activityTemp->rendom,
+                'update_count' => 0,
             ]); 
     
             $activityTemp->delete();

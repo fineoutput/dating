@@ -38,7 +38,7 @@ class ChatController extends Controller
         'message' => 'required|string|max:255',
         'type' => 'required',
         'chat_type' => 'required',
-        'activity_id' => 'required',
+        'activity_id' => 'nullable',
     ]);
 
     $sender = Auth::user();
@@ -121,8 +121,12 @@ class ChatController extends Controller
         $code = rand(100000, 999999);
     }
 
-        $mainActivity = Activity::where('rendom', $request->activity_id)->first();
+      $mainActivity = '';
 
+    if($request->activity_id){
+        $mainActivity = Activity::where('rendom', $request->activity_id)->first();
+    }
+    
     $chat = Chat::create([
         'sender_id' => $sender->id,
         'receiver_id' => $receiver->id,
@@ -130,7 +134,7 @@ class ChatController extends Controller
         'status' => 'sent',
         'rendom' => $code,
         'chat_type' => $request->chat_type,
-        'activity_id' => $mainActivity->id,
+        'activity_id' => $mainActivity->id ?? '',
     ]);
 
     // Format sent time

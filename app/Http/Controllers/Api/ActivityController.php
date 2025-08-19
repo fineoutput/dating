@@ -411,29 +411,29 @@ class ActivityController extends Controller
             ]); 
 
             if (!empty($activityTemp->friend_number)) {
-            $phoneNumbers = array_filter(explode(',', $activityTemp->friend_number));
+                $phoneNumbers = array_filter(array_map('trim', explode(',', $activityTemp->friend_number)));
 
-            if (!empty($phoneNumbers)) {
-                $matchingUsers = User::whereIn('phone_no', $phoneNumbers)->get();
+                if (!empty($phoneNumbers)) {
+                    $matchingUsers = User::whereIn('phone_no', $phoneNumbers)->get();
 
-                foreach ($matchingUsers as $matchedUser) {
+                    foreach ($matchingUsers as $matchedUser) {
+                        $exists = OtherInterest::where('user_id', $user->id)
+                            ->where('user_id_1', $matchedUser->id)
+                            ->where('activity_id', $activity->id)
+                            ->exists();
 
-                    $exists = OtherInterest::where('user_id', $user->id)
-                        ->where('user_id_1', $matchedUser->id)
-                        ->where('activity_id', $activity->id)
-                        ->exists();
-
-                    if (!$exists) {
-                        OtherInterest::create([
-                            'user_id'     => $user->id,        
-                            'activity_id' => $activity->id,
-                            'user_id_1'   => $matchedUser->id,    
-                            'confirm'     => 6,
-                        ]);
+                        if (!$exists) {
+                            OtherInterest::create([
+                                'user_id'     => $user->id,
+                                'activity_id' => $activity->id,
+                                'user_id_1'   => $matchedUser->id,
+                                'confirm'     => 0,
+                            ]);
+                        }
                     }
                 }
             }
-        }
+
 
     
             $activityTemp->delete();

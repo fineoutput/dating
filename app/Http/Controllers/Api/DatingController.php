@@ -1479,7 +1479,7 @@ public function updateCupidMatch(Request $request)
             if (
                 !$matchingUser || 
                 in_array($matchingUser->id, $reportedUserIds) || 
-                $matchingUser->id == $user->id // 💡 Skip if matched user is the same as authenticated user
+                $matchingUser->id == $user->id 
             ) {
                 return null;
             }

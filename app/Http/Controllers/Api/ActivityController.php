@@ -333,6 +333,16 @@ class ActivityController extends Controller
             )
             : $activityTemp->friend_rendom;
 
+            $activityTemp->friend_number = $request->has('friend_number')
+            ? (
+                is_string($request->friend_number) && $this->isJson($request->friend_number)
+                    ? (is_array(json_decode($request->friend_number, true))
+                        ? implode(',', json_decode($request->friend_number, true))
+                        : $request->friend_number)
+                    : $request->friend_number
+            )
+            : $activityTemp->friend_number;
+
             $activityTemp->interests_id = isset($user->interest) ? implode(',', (array)$user->interest) : $user->interest;
             // $activityTemp->vibe_id = $request->vibe_id ?? $activityTemp->vibe_id;
             $activityTemp->vibe_id = isset($request->vibe_id) ? implode(',', (array)$request->vibe_id) : $activityTemp->vibe_id;
@@ -388,6 +398,7 @@ class ActivityController extends Controller
                 'vibe_id' => $activityTemp->vibe_id,
                 'expense_id' => $activityTemp->expense_id,
                 'friend_rendom' => $activityTemp->friend_rendom,
+                'friend_number' => $activityTemp->friend_number,
                 'status' => $activityTemp->status,
                 'title' => $activityTemp->title,
                 'description' => $activityTemp->description,

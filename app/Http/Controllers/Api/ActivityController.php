@@ -324,10 +324,15 @@ class ActivityController extends Controller
             $activityTemp->start_time = $request->start_time ?? $activityTemp->start_time;
             $activityTemp->end_time = $request->end_time ?? $activityTemp->end_time;
             $activityTemp->friend_rendom = $request->has('friend_rendom')
-            ? (is_string($request->friend_rendom) && $this->isJson($request->friend_rendom)
-                ? implode(',', json_decode($request->friend_rendom, true))
-                : $request->friend_rendom)
+            ? (
+                is_string($request->friend_rendom) && $this->isJson($request->friend_rendom)
+                    ? (is_array(json_decode($request->friend_rendom, true))
+                        ? implode(',', json_decode($request->friend_rendom, true))
+                        : $request->friend_rendom)
+                    : $request->friend_rendom
+            )
             : $activityTemp->friend_rendom;
+
             $activityTemp->interests_id = isset($user->interest) ? implode(',', (array)$user->interest) : $user->interest;
             // $activityTemp->vibe_id = $request->vibe_id ?? $activityTemp->vibe_id;
             $activityTemp->vibe_id = isset($request->vibe_id) ? implode(',', (array)$request->vibe_id) : $activityTemp->vibe_id;

@@ -25,6 +25,7 @@ Route::post('signup', [AuthController::class, 'signup']);
 Route::post('verify_auth_otp', [AuthController::class, 'verify_auth_otp']);
 Route::post('login', [AuthController::class, 'login']);
 
+Route::get('phone-numbers', [AuthController::class, 'getPhoneNumbers']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);

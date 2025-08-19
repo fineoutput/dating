@@ -20,6 +20,8 @@ use App\Models\OtherInterest;
 use App\Models\SlideLike;
 use App\Models\UserSubscription;
 use Illuminate\Support\Facades\Mail;
+
+use Illuminate\Http\JsonResponse;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log; 
@@ -742,6 +744,16 @@ class AuthController extends Controller
         return response()->json(['message' => 'No authenticated user found'], 401);
     }
     
+     public function getPhoneNumbers(): JsonResponse
+    {
+        $phoneNumbers = User::pluck('number'); // or whatever your column name is
+
+        return response()->json([
+            'message' => 'Successfully logged out',
+                'data' =>$phoneNumbers,
+                'status'=>200
+        ]);
+    }
 
    
  

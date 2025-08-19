@@ -428,19 +428,13 @@ class ActivityController extends Controller
                             'user_id'     => $user->id,        
                             'activity_id' => $activity->id,
                             'user_id_1'   => $matchedUser->id,    
-                            'confirm'     => 0,
+                            'confirm'     => 6,
                         ]);
                     }
                 }
             }
         }
 
-            $otherInterest = OtherInterest::create([
-                'user_id'     => $user->id,
-                'activity_id' => $activity->id,
-                'user_id_1'   => $activity->user_id,
-                'confirm'     => 0,
-            ]);
     
             $activityTemp->delete();
             $activity->makeHidden(['created_at', 'updated_at', 'deleted_at','user_id','id']);

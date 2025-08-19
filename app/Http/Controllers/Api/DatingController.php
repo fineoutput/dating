@@ -1446,10 +1446,41 @@ public function updateCupidMatch(Request $request)
         }
 
         // 3. Loop through matched users and filter out reported ones
-        $matchedUserDetails = $matchedUsers->map(function ($slideLike) use ($userLatitude, $userLongitude, $reportedUserIds) {
+        // $matchedUserDetails = $matchedUsers->map(function ($slideLike) use ($userLatitude, $userLongitude, $reportedUserIds) {
+        //     $matchingUser = User::find($slideLike->matching_user);
+
+        //     if (!$matchingUser || in_array($matchingUser->id, $reportedUserIds)) {
+        //         return null;
+        //     }
+
+        //     $images = json_decode($matchingUser->profile_image, true);
+        //     $imagePath = is_array($images) && count($images) ? reset($images) : null;
+
+        //     $matchedLatitude = $matchingUser->latitude;
+        //     $matchedLongitude = $matchingUser->longitude;
+        //     $distance = $this->calculateDistance($userLatitude, $userLongitude, $matchedLatitude, $matchedLongitude);
+
+        //     return [
+        //         'id' => $matchingUser->id,
+        //         'name' => $matchingUser->name,
+        //         'age' => $matchingUser->age,
+        //         'rendom' => $matchingUser->rendom,
+        //         'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+        //         'distance' => round($distance) . ' km',
+        //     ];
+        // })
+        // ->filter()         // remove nulls
+        // ->unique('id')     // unique matched users
+        // ->values();        // reset array keys
+
+            $matchedUserDetails = $matchedUsers->map(function ($slideLike) use ($user, $userLatitude, $userLongitude, $reportedUserIds) {
             $matchingUser = User::find($slideLike->matching_user);
 
-            if (!$matchingUser || in_array($matchingUser->id, $reportedUserIds)) {
+            if (
+                !$matchingUser || 
+                in_array($matchingUser->id, $reportedUserIds) || 
+                $matchingUser->id == $user->id // 💡 Skip if matched user is the same as authenticated user
+            ) {
                 return null;
             }
 
@@ -1469,9 +1500,9 @@ public function updateCupidMatch(Request $request)
                 'distance' => round($distance) . ' km',
             ];
         })
-        ->filter()         // remove nulls
-        ->unique('id')     // unique matched users
-        ->values();        // reset array keys
+        ->filter()
+        ->unique('id')
+        ->values();
 
         return response()->json([
             'message' => 'Matched users found successfully',

@@ -424,9 +424,9 @@ class ActivityController extends Controller
 
                         if (!$exists) {
                             OtherInterest::create([
-                                'user_id'     => $user->id,
+                                'user_id_1'     => $user->id,
                                 'activity_id' => $activity->id,
-                                'user_id_1'   => $matchedUser->id,
+                                'user_id'   => $matchedUser->id,
                                 'confirm'     => 6,
                             ]);
                         }
@@ -983,7 +983,7 @@ public function userinterestnumber(Request $request)
 
         $currentTime = Carbon::now('Asia/Kolkata');
 
-            $activityIds = OtherInterest::where('user_id_1', $user->id)
+            $activityIds = OtherInterest::where('user_id', $user->id)
                 ->where(function($query) {
                     $query->where('confirm', 6);
                 })
@@ -4179,8 +4179,8 @@ public function acceptnumber(Request $request)
 
         $otherInterest = OtherInterest::where(function ($query) use ($user, $authUser) {
             $query->where(function($q) use ($user, $authUser) {
-                $q->where('user_id', $authUser->id)
-                ->where('user_id_1', $user->id);
+                $q->where('user_id_1', $authUser->id)
+                ->where('user_id', $user->id);
             })->orWhere(function($q) use ($user, $authUser) {
                 $q->where('user_id', $user->id)
                 ->where('user_id_1', $authUser->id);

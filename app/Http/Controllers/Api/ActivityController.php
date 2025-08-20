@@ -4179,8 +4179,8 @@ public function acceptnumber(Request $request)
 
         $otherInterest = OtherInterest::where(function ($query) use ($user, $authUser) {
             $query->where(function($q) use ($user, $authUser) {
-                $q->where('user_id_1', $authUser->id)
-                ->where('user_id', $user->id);
+                $q->where('user_id', $authUser->id)
+                ->where('user_id_1', $user->id);
             })->orWhere(function($q) use ($user, $authUser) {
                 $q->where('user_id', $user->id)
                 ->where('user_id_1', $authUser->id);

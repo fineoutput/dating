@@ -4146,107 +4146,69 @@ if ($otherInterest) {
 
 
 public function acceptnumber(Request $request)
-{
-    $request->validate([
-        'random' => 'required|string',  
-    ]);
+ {
+        $request->validate([
+            'random' => 'required|string',
+            'type' => 'required|in:accept,reject',
+            'activity_rendom' => 'required|string',
+        ]);
 
-    $random = $request->input('random');
-    $pactup = $request->input('type');
-    $activity_rendom = $request->input('activity_rendom');
-    // return $activity_id;
+        $random = $request->input('random');
+        $type = $request->input('type');
+        $activity_random = $request->input('activity_rendom');
 
+        $user = User::where('rendom', $random)->first(); // Fix spelling here
+        $authUser = Auth::user();
+        $activity = Activity::where('rendom', $activity_random)->first(); // Fix spelling
 
-
-    $user = User::where('rendom', $random)->first();
-    $activity_id = Activity::where('rendom', $activity_rendom)->first();
-
-  
-
-
-    if($pactup == null){
-
-        $otherInterest = OtherInterest::where(function($query) use ($user) {
-        $query->where('user_id', $user->id)
-            ->orWhere('user_id_1', $user->id);
-        })->where('confirm', 2)
-        ->get();
-
-        
-       $data = [];
-
-        foreach ($otherInterest as $interest) {
-            $activity = Activity::find($interest->activity_id);
-
-            $data[] = [
-                'user_name' => $user->name,
-                'activity_title' => $activity->title ?? null,
-                'activity_id' => $activity->id ?? null,
-            ];
-        }
-
-        if($data){
-        return response()->json([
-            'message' => 'Data fetched successfully.',
-            'status' => 200,
-            'data' => $data,
-        ], 200);
-        }else{
+        if (!$activity) {
             return response()->json([
-                'message' => 'No data found.',
-                'status' => 201,
+                'message' => 'Activity not found.',
+                'status' => 404,
                 'data' => [],
-            ], 201);
+            ], 404);
         }
 
-    }else{
-
-          if (!$activity_id) {
-        return response()->json([
-        'message' => 'Activity not found',
-        'data'=>[],
-        'status'=>201
-    ], 200);
-    }
-
-    if (!$user) {
-        return response()->json([
-            'message' => 'User not found.',
-            'status' => 201,
-            'data' => [],
-    ], 201);
-    }
-
-    $otherInterest = OtherInterest::where(function($query) use ($user, $activity_id) {
-    $query->where('user_id', $user->id)
-          ->orWhere('user_id_1', $user->id);
-    })->where('activity_id', $activity_id)
-    ->first();
-  
-    if ($otherInterest) {
-        if($pactup == 'accept'){
-         $otherInterest->update(['confirm' => 3]);
-        }else{
-         $otherInterest->update(['confirm' => 4]);
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found.',
+                'status' => 404,
+                'data' => [],
+            ], 404);
         }
+
+        $otherInterest = OtherInterest::where(function ($query) use ($user, $authUser) {
+            $query->where(function($q) use ($user, $authUser) {
+                $q->where('user_id', $authUser->id)
+                ->where('user_id_1', $user->id);
+            })->orWhere(function($q) use ($user, $authUser) {
+                $q->where('user_id', $user->id)
+                ->where('user_id_1', $authUser->id);
+            });
+        })->where('activity_id', $activity->id)->first();
+
+        if ($otherInterest) {
+            $otherInterest->update([
+                'confirm' => $type === 'accept' ? 3 : 4
+            ]);
+
+            return response()->json([
+                'message' => 'Confirmation updated successfully.',
+                'status' => 200,
+                'data' => [
+                    'status' => true,
+                ],
+            ], 200);
+        }
+
         return response()->json([
-            'message' => 'Confirm updated successfully to',
-            'status' => 200,
+            'message' => 'No matching record in OtherInterest table.',
+            'status' => 404,
             'data' => [
-                'status' => true,
+                'status' => false,
             ],
-        ], 200);
-    }
-    }
-
-    return response()->json([
-        'message' => 'No matching record in OtherInterest table.',
-        'status' => 201,
-        'data' => [
-             'status' => false,
-        ],
-], 201);
-}
+        ], 404);
+ }
 
 
 public function acceptpactup(Request $request)

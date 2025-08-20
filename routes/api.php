@@ -112,7 +112,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/update-confirm', [ActivityController::class, 'updateConfirm']);
     Route::post('/update-pactup', [ActivityController::class, 'acceptpactup']);
-    Route::post('/update-number', [ActivityController::class, 'acceptnumber']);
+    Route::post('update-number', [ActivityController::class, 'acceptnumber']);
 
     Route::get('user-interest', [InterestController::class, 'userinterest']);
     Route::get('pactup-request', [ActivityController::class, 'pactup_request']);

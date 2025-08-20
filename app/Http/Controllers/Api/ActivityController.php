@@ -1073,6 +1073,7 @@ public function userinterestnumber(Request $request)
 
             $activitiesData[] = [
                 'rendom'             => $activity->rendom,
+                'user_rendom'        => $activityUser->rendom,
                 'when_time'          => $activity->when_time,
                 'end_time'           => $activity->end_time,
                 'title'              => $activity->title,

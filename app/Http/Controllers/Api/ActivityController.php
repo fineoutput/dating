@@ -427,7 +427,7 @@ class ActivityController extends Controller
                                 'user_id'     => $user->id,
                                 'activity_id' => $activity->id,
                                 'user_id_1'   => $matchedUser->id,
-                                'confirm'     => 0,
+                                'confirm'     => 6,
                             ]);
                         }
                     }

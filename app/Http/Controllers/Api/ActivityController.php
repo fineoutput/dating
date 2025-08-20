@@ -4152,13 +4152,13 @@ public function acceptnumber(Request $request)
 
     $random = $request->input('random');
     $pactup = $request->input('type');
-    $activity_id = $request->input('activity_id');
+    $activity_rendom = $request->input('activity_rendom');
     // return $activity_id;
 
 
 
     $user = User::where('rendom', $random)->first();
-    // $activity_id = Activity::where('rendom', $activity_rendom)->first();
+    $activity_id = Activity::where('rendom', $activity_rendom)->first();
 
   
 

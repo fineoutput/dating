@@ -983,7 +983,7 @@ public function userinterestnumber(Request $request)
 
         $currentTime = Carbon::now('Asia/Kolkata');
 
-            $activityIds = OtherInterest::where('user_id', $user->id)
+            $activityIds = OtherInterest::where('user_id_1', $user->id)
                 ->where(function($query) {
                     $query->where('confirm', 6);
                 })

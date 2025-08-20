@@ -1085,7 +1085,7 @@ public function userinterestnumber(Request $request)
                 'vibe_name'          => $vibeNames ?? '',
                 'vibe_image'         => $vibeImages ?? '',
                 'expense_name'       => $firstExpenseName ?? '',
-                'user_name'          => $user->name,
+                'user_name'          => $activityUser->name,
                 'user_profile_image' => $profileImageUrl ?? '',
                 'activity_image'     => asset($activity->image),
                 'user_time'          => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),

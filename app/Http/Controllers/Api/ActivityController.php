@@ -1115,7 +1115,8 @@ $activityIds = OtherInterest::where('user_id', $user->id)
     ->where(function($query) {
         $query->where('confirm', 1)
               ->orWhere('confirm', 2)
-              ->orWhere('confirm', 3);
+              ->orWhere('confirm', 3)
+              ->orWhere('confirm', 7);
     })
     ->pluck('activity_id')
     ->toArray();
@@ -1693,6 +1694,19 @@ $remainingInterests = max(0, $allowedInterest - $interestCount);
 
     $friendNames = $friends->pluck('name');
 
+    $host_number = OtherInterest::where('activity_id', $mainActivity->id)->where('confirm',7)->get();
+
+        $userNames = [];
+
+        foreach ($host_number as $interest) {
+            $userModel = User::find($interest->user_id);
+
+            if ($userModel) {
+                $userNames[] = $userModel->name;
+            }
+        }
+
+    $hostNames = array_unique(array_merge($friendNames, $userNames));
 
     if (!$mainActivity) {
         return response()->json([
@@ -1767,7 +1781,7 @@ $remainingInterests = max(0, $allowedInterest - $interestCount);
         'already_update' => $mainActivity->update_count ?? 0,
         'status' => $mainActivity->status,
         'amount' => $mainActivity->amount,
-        'host_name' => $friendNames,
+        'host_name' => $hostNames,
         'remainingInterests' => $remainingInterests ?? 0,
 
     ];
@@ -4189,7 +4203,7 @@ public function acceptnumber(Request $request)
 
         if ($otherInterest) {
             $otherInterest->update([
-                'confirm' => $type === 'accept' ? 3 : 4
+                'confirm' => $type === 'accept' ? 7 : 4
             ]);
 
             return response()->json([

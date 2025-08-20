@@ -1686,27 +1686,57 @@ while ($currentIntervalStart->lessThanOrEqualTo($nowStartOfDay)) {
 $remainingInterests = max(0, $allowedInterest - $interestCount);
 
     // 🔹 1. Main activity from rendom
-    $mainActivity = Activity::with('user', 'vibe')->where('rendom', $request->rendom)->first();
+    // $mainActivity = Activity::with('user', 'vibe')->where('rendom', $request->rendom)->first();
+
+    // $friendRendoms = explode(',', $mainActivity->friend_rendom);
+
+    // $friends = User::whereIn('rendom', $friendRendoms)->get(['name', 'rendom']);
+
+    // $friendNames = $friends->pluck('name');
+
+    // $host_number = OtherInterest::where('activity_id', $mainActivity->id)->where('confirm',7)->get();
+
+    //     $userNames = [];
+
+    //     foreach ($host_number as $interest) {
+    //         $userModel = User::find($interest->user_id);
+
+    //         if ($userModel) {
+    //             $userNames[] = $userModel->name;
+    //         }
+    //     }
+
+    // $hostNames = array_unique(array_merge($friendNames, $userNames));
+
+    $mainActivity = Activity::with('user', 'vibe')
+    ->where('rendom', $request->rendom)
+    ->first();
 
     $friendRendoms = explode(',', $mainActivity->friend_rendom);
 
-    $friends = User::whereIn('rendom', $friendRendoms)->get(['name', 'rendom']);
+    // Fetch friends by their random codes
+    $friends = User::whereIn('rendom', $friendRendoms)->get(['id', 'name']);
+    $users = collect();
 
-    $friendNames = $friends->pluck('name');
+    // Add friend users
+    foreach ($friends as $friend) {
+        $users->put($friend->id, $friend->name); // Use ID to ensure uniqueness
+    }
 
-    $host_number = OtherInterest::where('activity_id', $mainActivity->id)->where('confirm',7)->get();
+    // Fetch hosts from OtherInterest table
+    $hostInterests = OtherInterest::where('activity_id', $mainActivity->id)
+        ->where('confirm', 7)
+        ->get();
 
-        $userNames = [];
-
-        foreach ($host_number as $interest) {
-            $userModel = User::find($interest->user_id);
-
-            if ($userModel) {
-                $userNames[] = $userModel->name;
-            }
+    foreach ($hostInterests as $interest) {
+        $user = User::find($interest->user_id);
+        if ($user) {
+            $users->put($user->id, $user->name); // Prevent duplicate IDs
         }
+    }
 
-    $hostNames = array_unique(array_merge($friendNames, $userNames));
+    // Now get all unique names
+    $hostNames = $users->values()->all();
 
     if (!$mainActivity) {
         return response()->json([

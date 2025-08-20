@@ -414,7 +414,7 @@ class ActivityController extends Controller
                 $phoneNumbers = array_filter(array_map('trim', explode(',', $activityTemp->friend_number)));
 
                 if (!empty($phoneNumbers)) {
-                    $matchingUsers = User::whereIn('phone_no', $phoneNumbers)->get();
+                    $matchingUsers = User::whereIn('number', $phoneNumbers)->get();
 
                     foreach ($matchingUsers as $matchedUser) {
                         $exists = OtherInterest::where('user_id', $user->id)

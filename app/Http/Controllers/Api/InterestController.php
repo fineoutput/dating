@@ -1125,7 +1125,8 @@ public function removeinterest(Request $request)
         $query->where('confirm', 0)
             //   ->orWhere('confirm', 1)
               ->orWhere('confirm', 2)
-              ->orWhere('confirm', 4);
+              ->orWhere('confirm', 4)
+              ->orWhere('confirm', 6);
     })
     ->get();
 

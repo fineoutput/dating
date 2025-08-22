@@ -18,6 +18,7 @@ use App\Models\Vibes;
 use App\Models\Activity;
 use App\Models\SlideLike;
 use App\Models\OtherInterest;
+use App\Models\PreDating;
 use App\Models\Report;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;

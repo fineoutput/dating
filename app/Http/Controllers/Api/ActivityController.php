@@ -691,7 +691,8 @@ public function useractivitys(Request $request)
             'expense_name' => $firstExpenseName ?? '',
            'user_profile_image' => $profileImageUrl ?? '',
             'activity_image' => asset($activity->image),
-           'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
+           'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
+
             'status' => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
         ];
     }
@@ -817,7 +818,8 @@ public function useroldactivitys(Request $request)
             'user_name' => $user->name,
            'user_profile_image' => $profileImageUrl ?? '',
             'activity_image' => asset($activity->image),
-           'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
+           'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
+
             'status' => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
         ];
     }
@@ -960,7 +962,8 @@ public function userinterestactivitys(Request $request)
                 'user_name'          => $user->name,
                 'user_profile_image' => $profileImageUrl ?? '',
                 'activity_image'     => asset($activity->image),
-                'user_time'          => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
+                'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
+
                 'status'             => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
             ];
         }
@@ -1088,7 +1091,8 @@ public function userinterestnumber(Request $request)
                 'user_name'          => $activityUser->name,
                 'user_profile_image' => $profileImageUrl ?? '',
                 'activity_image'     => asset($activity->image),
-                'user_time'          => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
+                'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
+
                 'status'             => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
             ];
         }
@@ -1225,7 +1229,8 @@ $activities = Activity::whereIn('id', $activityIds)
             'user_name'          => $user->name,
             'user_profile_image' => $profileImageUrl ?? '',
             'activity_image'     => asset($activity->image),
-            'user_time'          => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
+            'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
+
             'status'             => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
         ];
     }
@@ -1352,7 +1357,8 @@ $activities = Activity::whereIn('id', $activityIds)
             'user_name'          => $user->name,
             'user_profile_image' => $profileImageUrl ?? '',
             'activity_image'     => asset($activity->image),
-            'user_time'          => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
+            'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
+
             'status'             => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
         ];
     }
@@ -1497,7 +1503,8 @@ public function foryouactivitys(Request $request)
             'expense_name' => $firstExpenseName,
             'user_profile_image' => $profileImageUrl ?? '',
             'activity_image' => asset($activity->image),
-           'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
+           'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
+
             'status' => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
         ];
     }
@@ -2295,7 +2302,8 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             'user_profile_image' => $profileImageUrl,
             // 'user_state' => $userDetails->state,
             // 'user_city' => $userDetails->city,
-           'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
+           'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
+
 
         ];
     });
@@ -2448,7 +2456,8 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             'expense_name' => $firstExpenseName,
             // 'user_state' => $userDetails->state,
             // 'user_city' => $userDetails->city,
-            'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'), 
+            'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
+
         ];
     });
         return response()->json([
@@ -2654,7 +2663,8 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             // 'vibe_icon' => $activity->vibe->icon ?? '',
             'user_name' => $userData['name'] ?? '',
             'user_profile_image' => $userData['profile_image'] ?? '',
-            'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
+            'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
+
         ];
     });
 
@@ -3487,7 +3497,8 @@ if ($date_type) {
             'user_name' => $userDetails->name,
             'user_profile_image' => $profileImageUrl ?? '',
             'activity_image' => asset($activity->image),
-            'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
+            'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
+
         ];
     });
 
@@ -3943,7 +3954,8 @@ $activities = Activity::orderBy('id', 'DESC')
                     'user_name' => $user_rendom->name,
                      'user_profile_image' => $profileImageUrl ?? '',
                     'activity_image' => asset($activity->image),
-                    'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d-F') . ' ' . \Carbon\Carbon::parse($activity->end_time)->format('H:i'),
+                    'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
+
                     'status' => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
                 ];
             })

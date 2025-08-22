@@ -3397,13 +3397,13 @@ public function filteractivity(Request $request)
         $filterApplied = true;
     }
 
-        if ($vibe_id && is_array($vibe_id)) {
+
+     if ($vibe_id && is_array($vibe_id)) {
         $query->where(function ($q) use ($vibe_id) {
             foreach ($vibe_id as $id) {
-                $q->orWhere('vibe_id', 'like', '%'.$id.'%');
+                $q->orWhereRaw("FIND_IN_SET(?, vibe_id)", [$id]);
             }
         });
-        $filterApplied = true;
     }
 
 

@@ -1820,6 +1820,7 @@ $remainingInterests = max(0, $allowedInterest - $interestCount);
         'amount' => $mainActivity->amount,
         'host_name' => $hostNames,
         'remainingInterests' => $remainingInterests ?? 0,
+        'create_user' => $mainActivity->user->rendom ?? 0,
 
     ];
 

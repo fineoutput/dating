@@ -434,6 +434,31 @@ class ActivityController extends Controller
                 }
             }
 
+            if (!empty($activityTemp->friend_rendom)) {
+                $phonerendom = array_filter(array_map('trim', explode(',', $activityTemp->friend_rendom)));
+
+                if (!empty($phonerendom)) {
+                    $matchingUsers = User::whereIn('rendom', $phonerendom)->get();
+
+                    foreach ($matchingUsers as $matchedUser) {
+                        $exists = OtherInterest::where('user_id', $user->id)
+                            ->where('user_id_1', $matchedUser->id)
+                            ->where('activity_id', $activity->id)
+                            ->where('confirm', 6)
+                            ->exists();
+
+                        if (!$exists) {
+                            OtherInterest::create([
+                                'user_id_1'     => $user->id,
+                                'activity_id' => $activity->id,
+                                'user_id'   => $matchedUser->id,
+                                'confirm'     => 6,
+                            ]);
+                        }
+                    }
+                }
+            }
+
 
     
             $activityTemp->delete();

@@ -1092,7 +1092,7 @@ public function removeinterest(Request $request)
     // }
 
 
-    public function getuserinterest(Request $request)
+   public function getuserinterest(Request $request)
 {
     if (!Auth::check()) {
         return response()->json([
@@ -1119,35 +1119,33 @@ public function removeinterest(Request $request)
 
     $howMany = $activity->how_many;
 
-    $interests = OtherInterest::with('user') 
-    ->where('activity_id', $activity->id)
-    ->where(function($query) {
-        $query->where('confirm', 0)
-            //   ->orWhere('confirm', 1)
-              ->orWhere('confirm', 2)
-              ->orWhere('confirm', 4)
-              ->orWhere('confirm', 6);
-    })
-    ->get();
+    // Users who have shown interest but not confirmed
+    $interests = OtherInterest::with('user')
+        ->where('activity_id', $activity->id)
+        ->whereIn('confirm', [0, 2, 4, 6])
+        ->get();
 
-$confirm = OtherInterest::with('user')
+    // Confirmed users
+    $confirm = OtherInterest::with('user')
+        ->where('activity_id', $activity->id)
+        ->whereIn('confirm', [3, 7])
+        ->take($howMany)
+        ->get();
 
-    ->where('activity_id', $activity->id)
-    ->where(function($query) {
-        $query->Where('confirm', 3)->orWhere('confirm', 7);
-    })
-    ->take($howMany)
-    ->get();
+    // Is there a co-host (confirm = 7)?
+    $cohost = $confirm->contains(function ($item) {
+        return $item->confirm == 7;
+    });
 
-$indiscusion = OtherInterest::with('user')
-    ->where('activity_id', $activity->id)
-    ->where(function($query) {
-        $query->Where('confirm', 1)->orWhere('confirm', 3);
-    })
-    ->take($howMany)
-    ->get();
+    // Users in discussion
+    $indiscusion = OtherInterest::with('user')
+        ->where('activity_id', $activity->id)
+        ->whereIn('confirm', [1, 3])
+        ->take($howMany)
+        ->get();
 
-if ($interests->isEmpty() && $confirm->isEmpty() && $indiscusion->isEmpty()) {
+    // If all groups are empty
+    if ($interests->isEmpty() && $confirm->isEmpty() && $indiscusion->isEmpty()) {
         return response()->json([
             'message' => 'No interests found for this activity.',
             'status' => 200,
@@ -1159,17 +1157,12 @@ if ($interests->isEmpty() && $confirm->isEmpty() && $indiscusion->isEmpty()) {
         ]);
     }
 
-    $mapUserInterest = function ($interest) {
+    // Mapping user data
+    $mapUserInterest = function ($interest) use ($cohost) {
         $user = $interest->user;
 
-        $ghosted = OtherInterest::where('user_id', $user->id)
-            ->where('confirm', 0)
-            ->count();
-
-        $attended = OtherInterest::where('user_id', $user->id)
-            ->where('confirm', 1)
-            ->count();
-
+        $ghosted = OtherInterest::where('user_id', $user->id)->where('confirm', 0)->count();
+        $attended = OtherInterest::where('user_id', $user->id)->where('confirm', 1)->count();
         $created = Activity::where('user_id', $user->id)->count();
 
         $profileImages = json_decode($user->profile_image ?? '[]', true);
@@ -1180,6 +1173,7 @@ if ($interests->isEmpty() && $confirm->isEmpty() && $indiscusion->isEmpty()) {
         return [
             'user' => $user->name ?? '',
             'user_rendom' => $user->rendom ?? '',
+            'co_host' => $cohost,
             'user_profile' => $profileImageUrl,
             'activity_rendom' => $interest->activity->rendom ?? '',
             'confirm' => $interest->confirm,
@@ -1189,6 +1183,7 @@ if ($interests->isEmpty() && $confirm->isEmpty() && $indiscusion->isEmpty()) {
         ];
     };
 
+    // Transform collections
     $interestsArray = $interests->map($mapUserInterest);
     $confirmArray = $confirm->map($mapUserInterest);
     $indiscusionArray = $indiscusion->map($mapUserInterest);

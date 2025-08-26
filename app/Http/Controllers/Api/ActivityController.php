@@ -4375,7 +4375,7 @@ public function acceptpactup(Request $request)
             $q->where('user_id', $user->id)
             ->where('user_id_1', $user_auth->id);
         });
-    })
+    })->where('confirm', 2)
     ->where('activity_id', $activity_id)
     ->first();
 

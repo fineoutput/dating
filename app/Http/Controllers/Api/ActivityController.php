@@ -1117,7 +1117,8 @@ public function userinterestnumber(Request $request)
                 'user_profile_image' => $profileImageUrl ?? '',
                 'activity_image'     => asset($activity->image),
                 'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
-                'ago_time' => \Carbon\Carbon::parse($activity->when_time)->diffForHumans(),
+                'ago_time' => str_replace(['ago', 'from now'], '', \Carbon\Carbon::parse($activity->when_time)->diffForHumans()),
+
 
                 'status'             => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
             ];

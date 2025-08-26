@@ -4367,17 +4367,26 @@ public function acceptpactup(Request $request)
     }
 
 
-    $otherInterest = OtherInterest::where(function ($query) use ($user, $user_auth) {
-        $query->where(function ($q) use ($user_auth, $user) {
-            $q->where('user_id', $user_auth->id)
-            ->where('user_id_1', $user->id);
-        })->orWhere(function ($q) use ($user_auth, $user) {
-            $q->where('user_id', $user->id)
-            ->where('user_id_1', $user_auth->id);
-        });
-    })->where('confirm', 2)
-    ->where('activity_id', $activity_id)
-    ->first();
+    //  $otherInterest = OtherInterest::where(function($query) use ($user,$user_auth)  {
+    //     $query->where('user_id', $user_auth->id)
+    //         ->orWhere('user_id_1', $user->id);
+    //     })->where('confirm', 2)->where('activity_id', $activity_id)
+    //     ->first();
+     $otherInterest = OtherInterest::where('user_id', $user_auth->id)
+            ->Where('user_id_1', $user->id)->where('confirm', 2)->where('activity_id', $activity_id)
+        ->first();
+
+    // $otherInterest = OtherInterest::where(function ($query) use ($user, $user_auth) {
+    //     $query->where(function ($q) use ($user_auth, $user) {
+    //         $q->where('user_id', $user_auth->id)
+    //         ->where('user_id_1', $user->id);
+    //     })->orWhere(function ($q) use ($user_auth, $user) {
+    //         $q->where('user_id', $user->id)
+    //         ->where('user_id_1', $user_auth->id);
+    //     });
+    // })->where('confirm', 2)
+    // ->where('activity_id', $activity_id)
+    // ->first();
 
     if ($otherInterest) {
         if($pactup == 'accept'){

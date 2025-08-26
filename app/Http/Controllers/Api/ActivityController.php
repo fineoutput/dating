@@ -4315,10 +4315,8 @@ public function acceptpactup(Request $request)
 
     if($pactup == null){
 
-        $otherInterest = OtherInterest::where(function($query) use ($user,$user_auth)  {
-        $query->where('user_id', $user_auth->id)
-            ->orWhere('user_id_1', $user->id);
-        })->where('confirm', 2)
+        $otherInterest = OtherInterest::where('user_id', $user_auth->id)
+            ->Where('user_id_1', $user->id)->where('confirm', 2)
         ->get();
 
         

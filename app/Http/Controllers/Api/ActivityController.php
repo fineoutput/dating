@@ -4366,8 +4366,8 @@ public function acceptpactup(Request $request)
     ], 201);
     }
 
-    $otherInterest = OtherInterest::where(function($query) use ($user, $activity_id) {
-    $query->where('user_id', $user->id)
+    $otherInterest = OtherInterest::where(function($query) use ($user,$user_auth, $activity_id) {
+    $query->where('user_id', $user_auth->id)
           ->orWhere('user_id_1', $user->id);
     })->where('activity_id', $activity_id)
     ->first();

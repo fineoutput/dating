@@ -1140,7 +1140,7 @@ public function removeinterest(Request $request)
     // Users in discussion
     $indiscusion = OtherInterest::with('user')
         ->where('activity_id', $activity->id)
-        ->whereIn('confirm', [1, 3])
+        ->whereIn('confirm', [1, 3,7])
         ->take($howMany)
         ->get();
 

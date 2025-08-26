@@ -949,6 +949,7 @@ public function datingpreference(Request $request)
     // If any filter is missing, try loading from PreDating model
     if (!$dateRange || !$genderFilter || !$lookingFor || !$maxDistance) {
         $storedPreference = PreDating::where('user_id', $user->id)->first();
+        $finalDistance = $maxDistance ?? $storedPreference?->distance;
 
         if ($storedPreference) {
             $dateRange = $dateRange ?? $storedPreference->age;
@@ -963,7 +964,7 @@ public function datingpreference(Request $request)
         ['user_id' => $user->id],
         [
             'age' => $dateRange,
-            'distance' => $maxDistance,
+            'distance' => $finalDistance,
             'gender' => $genderFilter,
             'status' => $lookingFor,
         ]

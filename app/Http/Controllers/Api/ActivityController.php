@@ -3442,6 +3442,8 @@ public function filteractivity(Request $request)
             $q->orWhereRaw("FIND_IN_SET(?, REPLACE(REPLACE(vibe_id, '[', ''), ']', ''))", [$id]);
         }
     });
+
+     $filterApplied = true;
 }
 
 

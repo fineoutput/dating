@@ -1361,7 +1361,8 @@ public function cupidMatchFriend(Request $request)
             'profile_image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
             'status' => $match->status,
             'message' => $match->message,
-            'time' => Carbon::parse($match->created_at)->diffForHumans(),
+            // 'time' => Carbon::parse($match->created_at)->diffForHumans(),
+            'time' => Carbon::parse($match->created_at)->format('g:i A'),
             'status_id' => $match->id
         ];
     })->filter(); 

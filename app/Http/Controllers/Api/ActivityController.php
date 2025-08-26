@@ -4307,6 +4307,7 @@ public function acceptpactup(Request $request)
 
 
     $user = User::where('rendom', $random)->first();
+    $user_auth = Auth::user();
     // $activity_id = Activity::where('rendom', $activity_rendom)->first();
 
   
@@ -4314,8 +4315,8 @@ public function acceptpactup(Request $request)
 
     if($pactup == null){
 
-        $otherInterest = OtherInterest::where(function($query) use ($user) {
-        $query->where('user_id', $user->id)
+        $otherInterest = OtherInterest::where(function($query) use ($user,$user_auth)  {
+        $query->where('user_id', $user_auth->id)
             ->orWhere('user_id_1', $user->id);
         })->where('confirm', 2)
         ->get();

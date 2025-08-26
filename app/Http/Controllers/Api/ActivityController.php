@@ -4366,12 +4366,19 @@ public function acceptpactup(Request $request)
     ], 201);
     }
 
-    $otherInterest = OtherInterest::where(function($query) use ($user,$user_auth, $activity_id) {
-    $query->where('user_id', $user_auth->id)
-          ->orWhere('user_id_1', $user->id);
-    })->where('activity_id', $activity_id)
+
+    $otherInterest = OtherInterest::where(function ($query) use ($user, $user_auth) {
+        $query->where(function ($q) use ($user_auth, $user) {
+            $q->where('user_id', $user_auth->id)
+            ->where('user_id_1', $user->id);
+        })->orWhere(function ($q) use ($user_auth, $user) {
+            $q->where('user_id', $user->id)
+            ->where('user_id_1', $user_auth->id);
+        });
+    })
+    ->where('activity_id', $activity_id)
     ->first();
-  
+
     if ($otherInterest) {
         if($pactup == 'accept'){
          $otherInterest->update(['confirm' => 3]);

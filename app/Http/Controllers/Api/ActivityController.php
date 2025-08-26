@@ -3437,12 +3437,13 @@ public function filteractivity(Request $request)
 
 
      if ($vibe_id && is_array($vibe_id)) {
-        $query->where(function ($q) use ($vibe_id) {
-            foreach ($vibe_id as $id) {
-                $q->orWhereRaw("FIND_IN_SET(?, vibe_id)", [$id]);
-            }
-        });
-    }
+    $query->where(function ($q) use ($vibe_id) {
+        foreach ($vibe_id as $id) {
+            $q->orWhereRaw("FIND_IN_SET(?, REPLACE(REPLACE(vibe_id, '[', ''), ']', ''))", [$id]);
+        }
+    });
+}
+
 
 
 if ($date_type) {

@@ -1158,30 +1158,30 @@ public function removeinterest(Request $request)
     }
 
     // Mapping user data
-    $mapUserInterest = function ($interest) use ($cohost) {
-        $user = $interest->user;
+   $mapUserInterest = function ($interest) {
+    $user = $interest->user;
 
-        $ghosted = OtherInterest::where('user_id', $user->id)->where('confirm', 0)->count();
-        $attended = OtherInterest::where('user_id', $user->id)->where('confirm', 1)->count();
-        $created = Activity::where('user_id', $user->id)->count();
+    $ghosted = OtherInterest::where('user_id', $user->id)->where('confirm', 0)->count();
+    $attended = OtherInterest::where('user_id', $user->id)->where('confirm', 1)->count();
+    $created = Activity::where('user_id', $user->id)->count();
 
-        $profileImages = json_decode($user->profile_image ?? '[]', true);
-        $profileImageUrl = isset($profileImages[1])
-            ? asset('uploads/app/profile_images/' . $profileImages[1])
-            : '';
+    $profileImages = json_decode($user->profile_image ?? '[]', true);
+    $profileImageUrl = isset($profileImages[1])
+        ? asset('uploads/app/profile_images/' . $profileImages[1])
+        : '';
 
-        return [
-            'user' => $user->name ?? '',
-            'user_rendom' => $user->rendom ?? '',
-            'co_host' => $cohost,
-            'user_profile' => $profileImageUrl,
-            'activity_rendom' => $interest->activity->rendom ?? '',
-            'confirm' => $interest->confirm,
-            'ghosted' => $ghosted,
-            'attended' => $attended,
-            'created' => $created,
-        ];
-    };
+    return [
+        'user' => $user->name ?? '',
+        'user_rendom' => $user->rendom ?? '',
+        'co_host' => $interest->confirm == 7,  
+        'user_profile' => $profileImageUrl,
+        'activity_rendom' => $interest->activity->rendom ?? '',
+        'confirm' => $interest->confirm,
+        'ghosted' => $ghosted,
+        'attended' => $attended,
+        'created' => $created,
+    ];
+};
 
     // Transform collections
     $interestsArray = $interests->map($mapUserInterest);

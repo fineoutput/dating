@@ -3426,13 +3426,35 @@ public function filteractivity(Request $request)
     }
 
 
-    if ($expense_id && is_array($expense_id)) {
-    $query->where(function ($q) use ($expense_id) {
-        foreach ($expense_id as $id) {
-            $q->orWhere('expense_id', 'like', '%'.$id.'%');
+   $filterApplied = false;
+    $firstExpenseName = null;
+
+    // Normalize $expense_id into an array
+    if (!empty($expense_id)) {
+        if (is_string($expense_id)) {
+            $expenseIds = json_decode($expense_id, true);
+        } elseif (is_array($expense_id)) {
+            $expenseIds = $expense_id;
+        } else {
+            $expenseIds = [];
         }
-    });
-        $filterApplied = true;
+
+        if (is_array($expenseIds) && count($expenseIds) > 0) {
+            // Apply filter on query
+            $query->where(function ($q) use ($expenseIds) {
+                foreach ($expenseIds as $id) {
+                    $q->orWhere('expense_id', 'like', '%'.$id.'%');
+                }
+            });
+
+            $filterApplied = true;
+
+            // Get all matching expenses
+            $expenses = Expense::whereIn('id', $expenseIds)->get();
+
+            // Get names and join them with comma
+            $firstExpenseName = $expenses->pluck('name')->implode(', ');
+        }
     }
 
 

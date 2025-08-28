@@ -1348,26 +1348,29 @@ public function cupidMatchFriend(Request $request)
                     ->get();
 
     $matchedUsers = $CupidMatches->map(function ($match) use ($maker) {
+        // Determine matched user ID
         $matchedUserId = $match->user_id_1 == $maker->id ? $match->user_id_2 : $match->user_id_1;
 
         $user = User::find($matchedUserId);
 
-        if (!$user) return null; 
+        if (!$user) return null;
 
         $images = json_decode($user->profile_image, true);
         $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
+
+        // Determine correct status based on user position
+        $userStatus = $maker->id == $match->user_id_1 ? $match->user_id_1_status : $match->user_id_2_status;
 
         return [
             'id' => $user->id,
             'name' => $user->name,
             'profile_image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
-            'status' => $match->status,
+            'status' => $userStatus,
             'message' => $match->message,
-            // 'time' => Carbon::parse($match->created_at)->diffForHumans(),
             'time' => Carbon::parse($match->created_at)->format('g:i A'),
             'status_id' => $match->id
         ];
-    })->filter(); 
+    })->filter();
 
     return response()->json([
         'message' => 'Cupid matches found successfully!',
@@ -1377,56 +1380,57 @@ public function cupidMatchFriend(Request $request)
 }
 
 
+ public function acceptCupid(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'User not authenticated',
+                'status' => 401
+            ], 401);
+        }
 
-public function acceptCupid(Request $request)
-{
-    if (!Auth::check()) {
+        $request->validate([
+            'user_id' => 'required',
+            'status' => 'nullable',
+        ]);
+
+        $authUser = Auth::user();
+
+        $cupid = Cupid::where('id', $request->user_id)->first();
+
+        if (!$cupid) {
+            return response()->json([
+                'message' => 'Cupid match not found',
+                'status' => 404
+            ], 404);
+        }
+        // return $cupid->user_id_2;
+        
+         $cupid->status = $request->status;
+        if ($authUser->id == $cupid->user_id_1) {
+            $cupid->user_id_1_status = 1;
+        } elseif ($authUser->id == $cupid->user_id_2) {
+            $cupid->user_id_2_status = 1;
+        } else {
+            return response()->json([
+                'message' => 'Not authorized to update this match',
+                'status' => 403
+            ], 403);
+        }
+
+        $cupid->save();
+
         return response()->json([
-            'message' => 'User not authenticated',
-            'status' => 401
-        ], 401);
+            'message' => 'Cupid match status updated successfully!',
+            'status' => 200,
+            'data' => [
+                'id' => $cupid->id,
+                'user_id_1_status' => $cupid->user_id_1_status,
+                'user_id_2_status' => $cupid->user_id_2_status,
+                'status' => $request->status,
+            ]
+        ], 200);
     }
-
-    // Validate request data
-    $request->validate([
-        'user_id' => 'required|integer',
-    ]);
-
-    $authUser = Auth::user();
-
-    $cupid = Cupid::where('id', $request->user_id)->first();
-
-    if (!$cupid) {
-        return response()->json([
-            'message' => 'Cupid match not found',
-            'status' => 404
-        ], 404);
-    }
-
-    // Check if auth user is part of the cupid match
-    if ($authUser->id === $cupid->user_id_1) {
-        $cupid->user_id_1_status = 1;
-    } elseif ($authUser->id === $cupid->user_id_2) {
-        $cupid->user_id_2_status = 1;
-    } else {
-        return response()->json([
-            'message' => 'Not authorized to update this match',
-            'status' => 403
-        ], 403);
-    }
-
-    $cupid->save();
-
-    return response()->json([
-        'message' => 'Cupid match status updated successfully!',
-        'status' => 200,
-        'data' => [
-            'id' => $cupid->id,
-            'user_id_1_status' => $cupid->user_id_1_status,
-            'user_id_2_status' => $cupid->user_id_2_status,
-        ]
-    ], 200);
-}
 
 
 

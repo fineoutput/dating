@@ -1285,6 +1285,8 @@ public function cupidmatch(Request $request)
             'message' => $request->message ?? null,
             'identity' => $request->identity ?? null,
             'rendom' => $randomNumber,
+            'user_id_1_status' => 0,
+            'user_id_2_status' => 0,
             'status' => 0,
         ]);
 
@@ -1387,22 +1389,32 @@ public function acceptCupid(Request $request)
 
     // Validate request data
     $request->validate([
-        'status' => 'required',
-        'user_id' => 'required',
+        'user_id' => 'required|integer',
     ]);
 
-    $maker = Auth::user();
+    $authUser = Auth::user();
 
     $cupid = Cupid::where('id', $request->user_id)->first();
 
     if (!$cupid) {
         return response()->json([
-            'message' => 'Cupid match not found or not authorized',
+            'message' => 'Cupid match not found',
             'status' => 404
         ], 404);
     }
 
-    $cupid->status = $request->status;
+    // Check if auth user is part of the cupid match
+    if ($authUser->id === $cupid->user_id_1) {
+        $cupid->user_id_1_status = 1;
+    } elseif ($authUser->id === $cupid->user_id_2) {
+        $cupid->user_id_2_status = 1;
+    } else {
+        return response()->json([
+            'message' => 'Not authorized to update this match',
+            'status' => 403
+        ], 403);
+    }
+
     $cupid->save();
 
     return response()->json([
@@ -1410,7 +1422,8 @@ public function acceptCupid(Request $request)
         'status' => 200,
         'data' => [
             'id' => $cupid->id,
-            'status' => $cupid->status
+            'user_id_1_status' => $cupid->user_id_1_status,
+            'user_id_2_status' => $cupid->user_id_2_status,
         ]
     ], 200);
 }

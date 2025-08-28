@@ -20,6 +20,8 @@ class Cupid extends Model
         'rendom',
         'identity',
         'status',
+        'user_id_1_status',
+        'user_id_2_status',
     ];
 
 }

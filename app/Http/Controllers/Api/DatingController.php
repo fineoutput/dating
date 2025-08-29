@@ -844,9 +844,9 @@ public function MatchingUsersdetailes(Request $request)
          $query->where('gender', 'like', "%$gender%");
     }
 
-    if ($lookingFor) {
-        $query->where('looking_for', 'like', "%$lookingFor%"); // Candidate is looking for me
-    }
+    // if ($lookingFor) {
+    //     $query->where('looking_for', 'like', "%$lookingFor%"); // Candidate is looking for me
+    // }
 
     if ($minAge && $maxAge) {
         $query->whereBetween('age', [(int)$minAge, (int)$maxAge]);
@@ -1297,153 +1297,40 @@ public function datingpreference(Request $request)
         return response()->json(['message' => 'User not authenticated'], 401);
     }
 
+    // Fetch stored preferences
     $storedPreference = PreDating::where('user_id', $user->id)->first();
 
+    // Request input OR fallback to existing values
     $dateRange = $request->input('date_range') ?? $storedPreference?->age;
     $genderFilter = $request->input('gender') ?? $storedPreference?->gender;
     $lookingFor = $request->input('looking_for') ?? $storedPreference?->status;
     $maxDistance = $request->input('distance') ?? $storedPreference?->distance;
     $cupid = $request->input('cupid') ?? $storedPreference?->cupid;
 
+    // Save or update dating preferences
     PreDating::updateOrCreate(
         ['user_id' => $user->id],
         [
             'age' => $dateRange,
             'distance' => $maxDistance,
             'gender' => $genderFilter,
-            'status' => $lookingFor,
+            // 'status' => $lookingFor,
             'cupid' => $cupid,
         ]
     );
 
-    $minAge = $maxAge = null;
-    if ($dateRange) {
-        $dateRangeParts = explode('-', $dateRange);
-        $minAge = isset($dateRangeParts[0]) ? (int)$dateRangeParts[0] : null;
-        $maxAge = isset($dateRangeParts[1]) ? (int)$dateRangeParts[1] : null;
-    }
-
-    // Interests
-    $interestFieldDecoded = json_decode($user->interest, true);
-    if (!is_array($interestFieldDecoded)) {
-        return response()->json(['message' => 'Invalid interest data'], 400);
-    }
-
-    $interestIds = [];
-    foreach ($interestFieldDecoded as $item) {
-        $interestIds = array_merge($interestIds, explode(',', $item));
-    }
-    $interestIds = array_map('trim', $interestIds);
-
-    // Stats
-    $attendUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 6)->count();
-    $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
-    $hostedActivity = Activity::where('user_id', $user->id)->count();
-
-    // Location
-    $userLatitude = $user->latitude;
-    $userLongitude = $user->longitude;
-
-    // Excluded users
-    $excludedUserIds = SlideLike::where('matched_user', $user->id)
-        ->where('liked_user', 1)
-        ->pluck('matching_user')
-        ->toArray();
-
-    // "Like Me" logic: reverse gender and looking_for
-    $matchingUsers = User::where(function ($query) use ($interestIds) {
-            foreach ($interestIds as $interestId) {
-                $query->orWhere('interest', 'like', "%$interestId%");
-            }
-        })
-        ->where('id', '!=', $user->id)
-        ->whereNotIn('id', $excludedUserIds)
-        ->when($minAge && $maxAge, fn($query) => $query->whereBetween('age', [$minAge, $maxAge]))
-        ->where('gender', $user->looking_for)               // Match MY preference
-        ->where('looking_for', $user->gender)               // They are looking for ME
-        ->get();
-
-    if ($matchingUsers->isEmpty()) {
-        return response()->json([
-            'message' => 'No matching users found',
-            'status' => 201,
-            'data' => [],
-        ]);
-    }
-
-    $usersWithInterests = [];
-
-    foreach ($matchingUsers as $matchingUser) {
-        $userInterestsDecoded = json_decode($matchingUser->interest, true);
-
-        if (is_array($userInterestsDecoded)) {
-            $userInterestsIds = [];
-            foreach ($userInterestsDecoded as $item) {
-                $userInterestsIds = array_merge($userInterestsIds, explode(',', $item));
-            }
-            $userInterestsIds = array_map('trim', $userInterestsIds);
-
-            $userInterests = Interest::whereIn('id', $userInterestsIds)->get();
-
-            $matchingInterestCount = 0;
-            foreach ($userInterests as $interest) {
-                if (in_array($interest->id, $interestIds)) {
-                    $matchingInterestCount++;
-                }
-            }
-
-            $totalInterests = count($interestIds);
-            $matchingPercentage = ($totalInterests > 0) ? ($matchingInterestCount / $totalInterests) * 100 : 0;
-
-            $profileImages = json_decode($matchingUser->profile_image, true);
-            $profileImageUrls = [];
-            if (is_array($profileImages)) {
-                foreach ($profileImages as $image) {
-                    $profileImageUrls[] = asset('uploads/app/profile_images/' . $image);
-                }
-            }
-
-            $distance = $this->calculateDistance($userLatitude, $userLongitude, $matchingUser->latitude, $matchingUser->longitude);
-
-            if ($maxDistance && $distance > $maxDistance) {
-                continue;
-            }
-
-            $message = Chat::where('sender_id', $user->id)
-                ->where('receiver_id', $matchingUser->id)
-                ->latest()
-                ->first();
-
-            $usersWithInterests[] = [
-                'user' => $matchingUser->name,
-                'user_rendom' => $matchingUser->rendom,
-                'about' => $matchingUser->about,
-                'interest' => $userInterests,
-                'age' => $matchingUser->age,
-                'gender' => $matchingUser->gender,
-                'looking_for' => $matchingUser->looking_for,
-                'user_profile' => $profileImageUrls,
-                'status' => $matchingUser->status,
-                'address' => $matchingUser->address,
-                'match_percentage' => number_format($matchingPercentage, 2),
-                'message' => $message?->message,
-                'message_status' => $message?->status,
-                'distance' => round($distance) . ' km',
-                'attendUsers' => $attendUsers,
-                'ghostUsers' => $ghostUsers,
-                'hostedActivity' => $hostedActivity,
-            ];
-        }
-    }
-
     return response()->json([
-        'message' => 'Matching users found successfully',
+        'message' => 'Preferences saved successfully',
         'status' => 200,
-        'total_count' => count($usersWithInterests),
-        'data' => $usersWithInterests,
+        'data' => [
+            'age' => $dateRange,
+            'distance' => $maxDistance,
+            'gender' => $genderFilter,
+            // 'status' => $lookingFor,
+            'cupid' => $cupid,
+        ],
     ]);
 }
-
     
 
     private function calculateDistance($lat1, $lon1, $lat2, $lon2)

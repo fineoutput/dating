@@ -1296,22 +1296,14 @@ public function datingpreference(Request $request)
         return response()->json(['message' => 'User not authenticated'], 401);
     }
 
-    // Parse request filters
-    $dateRange = $request->input('date_range');
-    $genderFilter = $request->input('gender');
-    $lookingFor = $request->input('looking_for');
-    $maxDistance = $request->input('distance');
-    $cupid = $request->input('cupid');
-
-    // Fallback to stored preferences
     $storedPreference = PreDating::where('user_id', $user->id)->first();
 
-    $dateRange = $dateRange ?? $storedPreference?->age;
-    $genderFilter = $genderFilter ?? $storedPreference?->gender;
-    $lookingFor = $lookingFor ?? $storedPreference?->status;
-    $maxDistance = $maxDistance ?? $storedPreference?->distance;
+    $dateRange = $request->input('date_range') ?? $storedPreference?->age;
+    $genderFilter = $request->input('gender') ?? $storedPreference?->gender;
+    $lookingFor = $request->input('looking_for') ?? $storedPreference?->status;
+    $maxDistance = $request->input('distance') ?? $storedPreference?->distance;
+    $cupid = $request->input('cupid') ?? $storedPreference?->cupid;
 
-    // Save preferences
     PreDating::updateOrCreate(
         ['user_id' => $user->id],
         [
@@ -1323,7 +1315,6 @@ public function datingpreference(Request $request)
         ]
     );
 
-    // Parse age range
     $minAge = $maxAge = null;
     if ($dateRange) {
         $dateRangeParts = explode('-', $dateRange);

@@ -943,8 +943,8 @@ public function datingpreference(Request $request)
         [
             'age' => '18-40',
             'distance' => 100,
-            'gender' => $user->looking_for,
-            'status' => $user->gender,
+            'gender' => $user->looking_for ?? 'any',
+            'status' => $user->gender ?? 'any',
         ]
     );
 
@@ -953,6 +953,12 @@ public function datingpreference(Request $request)
     $genderFilter = $request->input('gender', $storedPreference->gender);
     $lookingFor = $request->input('looking_for', $storedPreference->status);
     $maxDistance = $request->input('distance', $storedPreference->distance);
+
+    // Validate input data
+    if (!preg_match('/^\d+-\d+$/', $dateRange)) {
+        $dateRange = '18-40'; // Fallback to default if invalid
+    }
+    $maxDistance = is_numeric($maxDistance) && $maxDistance > 0 ? (int)$maxDistance : 100;
 
     // Save updated preferences
     PreDating::updateOrCreate(
@@ -973,79 +979,91 @@ public function datingpreference(Request $request)
     $interestIds = [];
     $interestFieldDecoded = json_decode($user->interest, true) ?? [];
     foreach ($interestFieldDecoded as $item) {
-        $interestIds = array_merge($interestIds, explode(',', $item));
+        $interestIds = array_merge($interestIds, array_map('trim', explode(',', $item)));
     }
-    $interestIds = array_map('trim', $interestIds);
+    $interestIds = array_unique(array_filter($interestIds));
 
-    $userLatitude = $user->latitude;
-    $userLongitude = $user->longitude;
+    $userLatitude = $user->latitude ?? 0;
+    $userLongitude = $user->longitude ?? 0;
 
+    // Get excluded user IDs (users already liked/matched)
     $excludedUserIds = SlideLike::where('matched_user', $user->id)
         ->where('liked_user', 1)
         ->pluck('matching_user')
         ->toArray();
 
+    // Count user activities
     $attendUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 6)->count();
     $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
     $hostedActivity = Activity::where('user_id', $user->id)->count();
 
-    // Fetch all users with their PreDating data
-    $matchingUsers = User::with('preference') // relationship: hasOne(PreDating::class, 'user_id')
+    // Build query for matching users
+    $matchingUsersQuery = User::with(['preference'])
         ->where('id', '!=', $user->id)
         ->whereNotIn('id', $excludedUserIds)
-        ->get()
-        ->filter(function ($match) use ($user, $minAge, $maxAge, $maxDistance, $userLatitude, $userLongitude) {
-            $pref = $match->preference;
+        ->whereNotNull('latitude')
+        ->whereNotNull('longitude')
+        ->whereNotNull('age')
+        ->whereNotNull('gender')
+        ->whereNotNull('looking_for')
+        ->whereBetween('age', [$minAge, $maxAge]);
 
-            if (!$pref) return false;
+    // Apply gender and looking_for filters
+    if ($genderFilter !== 'any') {
+        $matchingUsersQuery->where('gender', $genderFilter);
+    }
+    if ($lookingFor !== 'any') {
+        $matchingUsersQuery->where('looking_for', $user->gender);
+    }
 
-            // Reverse match condition:
-            // My looking_for == their gender && My gender == their looking_for
-            $reverseMatch = $pref->gender == $user->looking_for && $pref->status == $user->gender;
-
-            // Age filter
-            $ageMatch = $match->age >= $minAge && $match->age <= $maxAge;
-
-            // Distance filter
-            $distance = $this->calculateDistance($userLatitude, $userLongitude, $match->latitude, $match->longitude);
-            $withinDistance = $distance <= $maxDistance;
-
-            return $reverseMatch && $ageMatch && $withinDistance;
-        });
+    $matchingUsers = $matchingUsersQuery->get();
 
     $usersWithInterests = [];
 
     foreach ($matchingUsers as $matchingUser) {
-        $userInterestsDecoded = json_decode($matchingUser->interest, true) ?? [];
+        // Skip users without preferences
+        if (!$matchingUser->preference) {
+            continue;
+        }
 
+        // Calculate distance and apply filter
+        $distance = $this->calculateDistance(
+            $userLatitude,
+            $userLongitude,
+            $matchingUser->latitude ?? 0,
+            $matchingUser->longitude ?? 0
+        );
+        if ($distance > $maxDistance) {
+            continue;
+        }
+
+        // Reverse match condition
+        $pref = $matchingUser->preference;
+        $reverseMatch = $pref->gender === $user->looking_for && $pref->status === $user->gender;
+        if (!$reverseMatch) {
+            continue;
+        }
+
+        // Decode and match interests
+        $userInterestsDecoded = json_decode($matchingUser->interest, true) ?? [];
         $userInterestsIds = [];
         foreach ($userInterestsDecoded as $item) {
-            $userInterestsIds = array_merge($userInterestsIds, explode(',', $item));
+            $userInterestsIds = array_merge($userInterestsIds, array_map('trim', explode(',', $item)));
         }
-        $userInterestsIds = array_map('trim', $userInterestsIds);
+        $userInterestsIds = array_unique(array_filter($userInterestsIds));
 
-        $userInterests = Interest::whereIn('id', $userInterestsIds)->get();
-
-        $matchingInterestCount = 0;
-        foreach ($userInterests as $interest) {
-            if (in_array($interest->id, $interestIds)) {
-                $matchingInterestCount++;
-            }
-        }
-
+        $userInterests = Interest::whereIn('id', $userInterestsIds)->pluck('id')->toArray();
+        $matchingInterestCount = count(array_intersect($userInterests, $interestIds));
         $totalInterests = count($interestIds);
         $matchingPercentage = $totalInterests > 0 ? ($matchingInterestCount / $totalInterests) * 100 : 0;
 
-        $profileImages = json_decode($matchingUser->profile_image, true);
-        $profileImageUrls = [];
-        if (is_array($profileImages)) {
-            foreach ($profileImages as $image) {
-                $profileImageUrls[] = asset('uploads/app/profile_images/' . $image);
-            }
-        }
+        // Get profile images
+        $profileImages = json_decode($matchingUser->profile_image, true) ?? [];
+        $profileImageUrls = array_map(function ($image) {
+            return asset('uploads/app/profile_images/' . $image);
+        }, array_filter($profileImages));
 
-        $distance = $this->calculateDistance($userLatitude, $userLongitude, $matchingUser->latitude, $matchingUser->longitude);
-
+        // Get latest message
         $message = Chat::where('sender_id', $user->id)
             ->where('receiver_id', $matchingUser->id)
             ->latest()

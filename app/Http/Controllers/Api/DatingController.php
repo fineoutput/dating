@@ -840,7 +840,8 @@ public function MatchingUsersdetailes(Request $request)
         ->whereNotIn('id', $excludeIds);
 
     if ($gender) {
-        $query->where('gender', $gender); // Candidate's gender matches my preference
+        // $query->where('gender', $gender);
+         $query->where('gender', 'like', "%$gender%");
     }
 
     if ($lookingFor) {

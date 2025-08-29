@@ -954,13 +954,15 @@ public function datingpreference(Request $request)
     $genderFilter = $request->input('gender', $storedPreference->gender);
     $lookingFor = $request->input('looking_for', $storedPreference->status);
     $maxDistance = $request->input('distance', $storedPreference->distance);
-    $cupid = $request->input('cupid', $storedPreference->cupid);
+    $cupid = filter_var($request->input('cupid', $storedPreference->cupid), FILTER_VALIDATE_BOOLEAN);
 
     // Validate input data
     if (!preg_match('/^\d+-\d+$/', $dateRange)) {
         $dateRange = '18-40'; // Fallback to default if invalid
     }
     $maxDistance = is_numeric($maxDistance) && $maxDistance > 0 ? (int)$maxDistance : 100;
+    $genderFilter = in_array($genderFilter, ['male', 'female', 'any']) ? $genderFilter : 'any';
+    $lookingFor = in_array($lookingFor, ['male', 'female', 'any']) ? $lookingFor : 'any';
 
     // Save updated preferences
     PreDating::updateOrCreate(
@@ -1019,6 +1021,14 @@ public function datingpreference(Request $request)
         $matchingUsersQuery->where('looking_for', $user->gender);
     }
 
+    // Apply reverse match filter in query if possible
+    $matchingUsersQuery->whereHas('preference', function ($query) use ($user, $lookingFor) {
+        $query->where('gender', $user->looking_for);
+        if ($lookingFor !== 'any') {
+            $query->where('status', $user->gender);
+        }
+    });
+
     $matchingUsers = $matchingUsersQuery->get();
 
     $usersWithInterests = [];
@@ -1040,13 +1050,6 @@ public function datingpreference(Request $request)
             continue;
         }
 
-        // Reverse match condition
-        $pref = $matchingUser->preference;
-        $reverseMatch = $pref->gender === $user->looking_for && $pref->status === $user->gender;
-        if (!$reverseMatch) {
-            continue;
-        }
-
         // Decode and match interests
         $userInterestsDecoded = json_decode($matchingUser->interest, true) ?? [];
         $userInterestsIds = [];
@@ -1059,6 +1062,11 @@ public function datingpreference(Request $request)
         $matchingInterestCount = count(array_intersect($userInterests, $interestIds));
         $totalInterests = count($interestIds);
         $matchingPercentage = $totalInterests > 0 ? ($matchingInterestCount / $totalInterests) * 100 : 0;
+
+        // Apply cupid logic: Prioritize users with higher match percentage or activity
+        if ($cupid && $matchingPercentage < 50 && $hostedActivity < 1) {
+            continue; // Skip users with low interest overlap and no hosted activities if cupid is enabled
+        }
 
         // Get profile images
         $profileImages = json_decode($matchingUser->profile_image, true) ?? [];
@@ -1091,6 +1099,13 @@ public function datingpreference(Request $request)
             'ghostUsers' => $ghostUsers,
             'hostedActivity' => $hostedActivity,
         ];
+    }
+
+    // Sort users by match percentage if cupid is enabled
+    if ($cupid) {
+        usort($usersWithInterests, function ($a, $b) {
+            return $b['match_percentage'] <=> $a['match_percentage'];
+        });
     }
 
     return response()->json([

@@ -28,6 +28,7 @@ class Activity extends Model
         'amount',
         'image',
         'friend_number',
+        'admin_city',
         'rendom',
         'update_count',
     ];

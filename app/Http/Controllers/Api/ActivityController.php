@@ -318,6 +318,7 @@ class ActivityController extends Controller
     
             // Update activity details
             $activityTemp->user_id = $user->id;  
+            $activityTemp->admin_city = $user->admin_city ?? '';  
             $activityTemp->where_to = $request->where_to ?? $activityTemp->where_to;
             $activityTemp->when_time = $request->when_time ?? $activityTemp->when_time;
             $activityTemp->how_many = $request->how_many ?? $activityTemp->how_many;
@@ -390,6 +391,7 @@ class ActivityController extends Controller
             $activity = Activity::create([
                 'user_id' => $activityTemp->user_id,
                 'where_to' => $activityTemp->where_to,
+                'admin_city' => $activityTemp->admin_city,
                 'when_time' => $activityTemp->when_time,
                 'how_many' => $activityTemp->how_many,
                 'start_time' => $activityTemp->start_time,
@@ -3558,6 +3560,7 @@ if ($date_type) {
             'vibe_image' => $vibeImages ?? '',
             'user_name' => $userDetails->name,
             'user_profile_image' => $profileImageUrl ?? '',
+            'firstExpenseName' => $firstExpenseName ?? '',
             'activity_image' => asset($activity->image),
             'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
 

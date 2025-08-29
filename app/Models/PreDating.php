@@ -15,6 +15,7 @@ class PreDating extends Model
         'distance', 
         'gender',
         'status',
+        'cupid',
     ];
 
     public function users()

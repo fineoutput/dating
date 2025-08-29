@@ -1529,6 +1529,37 @@ public function cupidMatchFriend(Request $request)
 }
 
 
+ public function pre_dating(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'User not authenticated',
+                'status' => 401
+            ], 401);
+        }
+
+        $maker = Auth::user();
+
+        $preDatingEntries = PreDating::where('user_id', $maker->id)->get();
+
+        $matchedUsers = $preDatingEntries->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'age' => $item->age,
+                'distance' => $item->distance,
+                'gender' => $item->gender,
+                'status' => $item->status,
+                'cupid' => $item->cupid,
+            ];
+        });
+
+        return response()->json([
+            'message' => 'Cupid matches found successfully!',
+            'status' => 200,
+            'data' => $matchedUsers->values()
+        ], 200);
+    }
+
  public function acceptCupid(Request $request)
     {
         if (!Auth::check()) {

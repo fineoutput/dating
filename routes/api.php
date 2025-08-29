@@ -83,6 +83,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cupidmatch', [DatingController::class, 'cupidmatch']);
 
     Route::get('/cupidmatch-friend', [DatingController::class, 'cupidMatchFriend']);
+    Route::get('pre-dating', [DatingController::class, 'pre_dating']);
+
     
     Route::post('/accept-cupid', [DatingController::class, 'acceptCupid']);
 

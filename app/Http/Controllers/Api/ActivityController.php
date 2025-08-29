@@ -3379,6 +3379,7 @@ public function friendcount_one(Request $request)
 public function filteractivity(Request $request)
 {
     $location = $request->input('location');
+    $how_many = $request->input('how_many');
     $when_time = $request->input('when_time');
     $end_time = $request->input('end_time');
     $expense_id = $request->input('expense_id'); 
@@ -3412,6 +3413,11 @@ public function filteractivity(Request $request)
     }
     if ($location) {
         $query->where('location', 'like', '%' . $location . '%');
+        $filterApplied = true;
+    }
+
+    if ($how_many) {
+        $query->where('how_many',$how_many);
         $filterApplied = true;
     }
 

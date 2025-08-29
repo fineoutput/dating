@@ -3542,10 +3542,21 @@ if ($date_type) {
             }
         }
 
-        $authuser =  Auth::user();
+        // 🟩 Get expense name
+        $expenseName = '';
+        $expenseIds = json_decode($activity->expense_id, true);
+        if (is_array($expenseIds) && count($expenseIds) > 0) {
+            $expenses = Expense::whereIn('id', $expenseIds)->pluck('name')->toArray();
+            $expenseName = implode(', ', $expenses);
+        }
+
+        $authuser = Auth::user();
         $actlike = false;
-        if($authuser){
-            $liked_Act = LikeActivity::where('activity_id', $activity->id)->where('user_id', $authuser->id)->where('status', 1)->first();
+        if ($authuser) {
+            $liked_Act = LikeActivity::where('activity_id', $activity->id)
+                ->where('user_id', $authuser->id)
+                ->where('status', 1)
+                ->first();
             $actlike = $liked_Act ? true : false;
         }
 
@@ -3560,13 +3571,13 @@ if ($date_type) {
             'vibe_image' => $vibeImages ?? '',
             'user_name' => $userDetails->name,
             'user_profile_image' => $profileImageUrl ?? '',
-            'firstExpenseName' => $firstExpenseName ?? '',
             'activity_image' => asset($activity->image),
             'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
-
+            
+            // ✅ Add expense name
+            'expense_name' => $expenseName,
         ];
     });
-
     return response()->json([
         'message' => 'Activities retrieved successfully',
         'status' => 200,

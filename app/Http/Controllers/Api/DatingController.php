@@ -604,180 +604,269 @@ class DatingController extends Controller
 //     }
 
 
- public function MatchingUsersdetailes(Request $request)
-    {
-        $user = Auth::user();
+//  public function MatchingUsersdetailes(Request $request)
+//     {
+//         $user = Auth::user();
 
-        if (!$user) {
-            return response()->json(['message' => 'User not authenticated'], 401);
-        }
+//         if (!$user) {
+//             return response()->json(['message' => 'User not authenticated'], 401);
+//         }
 
-        $interestField = $user->interest;
-        $interestFieldDecoded = json_decode($interestField, true);
+//         $interestField = $user->interest;
+//         $interestFieldDecoded = json_decode($interestField, true);
 
-        if (!is_array($interestFieldDecoded)) {
-            return response()->json(['message' => 'Invalid interest data'], 400);
-        }
+//         if (!is_array($interestFieldDecoded)) {
+//             return response()->json(['message' => 'Invalid interest data'], 400);
+//         }
 
-        $attendUsers = OtherInterest::where('user_id', $user->id)
-            ->where('confirm', 6)
-            ->count();
+//         $attendUsers = OtherInterest::where('user_id', $user->id)
+//             ->where('confirm', 6)
+//             ->count();
 
-        $ghostUsers = OtherInterest::where('user_id', $user->id)
-            ->where('confirm', 3)
-            ->count();
+//         $ghostUsers = OtherInterest::where('user_id', $user->id)
+//             ->where('confirm', 3)
+//             ->count();
 
-        $hostedActivity = Activity::where('user_id', $user->id)
-            ->count();
+//         $hostedActivity = Activity::where('user_id', $user->id)
+//             ->count();
 
-        $interestIds = [];
-        foreach ($interestFieldDecoded as $item) {
-            $interestIds = array_merge($interestIds, explode(',', $item));
-        }
+//         $interestIds = [];
+//         foreach ($interestFieldDecoded as $item) {
+//             $interestIds = array_merge($interestIds, explode(',', $item));
+//         }
 
-        $interestIds = array_map('trim', $interestIds);
+//         $interestIds = array_map('trim', $interestIds);
 
-        $userLatitude = $user->latitude;
-        $userLongitude = $user->longitude;
+//         $userLatitude = $user->latitude;
+//         $userLongitude = $user->longitude;
 
-        // Get filters from request
-        $dateRange = $request->input('date_range'); // Example: '18-27'
-        $lookingFor = $request->input('looking_for');
-        $maxDistance = $request->input('distance'); // in km
+//         // Get filters from request
+//         $dateRange = $request->input('date_range'); // Example: '18-27'
+//         $lookingFor = $request->input('looking_for');
+//         $maxDistance = $request->input('distance'); // in km
 
-        // Parse date range if provided
-        $minAge = $maxAge = null;
-        if ($dateRange) {
-            $dateRangeParts = explode('-', $dateRange);
-            $minAge = $dateRangeParts[0] ?? null;
-            $maxAge = $dateRangeParts[1] ?? null;
-        }
+//         // Parse date range if provided
+//         $minAge = $maxAge = null;
+//         if ($dateRange) {
+//             $dateRangeParts = explode('-', $dateRange);
+//             $minAge = $dateRangeParts[0] ?? null;
+//             $maxAge = $dateRangeParts[1] ?? null;
+//         }
 
-        // Users already matched (excluded)
-        $excludedUserIds = SlideLike::where('matched_user', $user->id)
-            ->where('liked_user', 1)
-            ->pluck('matching_user') // Assuming `matching_user` is the other user's ID
-            ->toArray();
+//         // Users already matched (excluded)
+//         $excludedUserIds = SlideLike::where('matched_user', $user->id)
+//             ->where('liked_user', 1)
+//             ->pluck('matching_user') // Assuming `matching_user` is the other user's ID
+//             ->toArray();
 
-        // Users reported by the current user (exclude them too)
-        $reportedUserIds = Report::where('reporting_user_id', $user->id)
-            ->pluck('reported_user_id')
-            ->toArray();
+//         // Users reported by the current user (exclude them too)
+//         $reportedUserIds = Report::where('reporting_user_id', $user->id)
+//             ->pluck('reported_user_id')
+//             ->toArray();
 
-        // Merge exclude arrays
-        $excludeIds = array_merge($excludedUserIds, $reportedUserIds);
+//         // Merge exclude arrays
+//         $excludeIds = array_merge($excludedUserIds, $reportedUserIds);
 
-        // Step 2: Filter matching users, excluding matched and reported users
-        $matchingUsers = User::where(function ($query) use ($interestIds) {
-            foreach ($interestIds as $interestId) {
-                $query->orWhere('interest', 'like', "%$interestId%");
-            }
-        })
-        ->where('id', '!=', $user->id)
-        ->whereNotIn('id', $excludeIds) // Exclude matched & reported users
-        ->when($minAge && $maxAge, function ($query) use ($minAge, $maxAge) {
-            return $query->whereBetween('age', [$minAge, $maxAge]);
-        })
-        ->when($lookingFor, function ($query) use ($lookingFor) {
-            return $query->where('looking_for', 'like', "%$lookingFor%");
-        })
-        ->get();
+//         // Step 2: Filter matching users, excluding matched and reported users
+//         $matchingUsers = User::where(function ($query) use ($interestIds) {
+//             foreach ($interestIds as $interestId) {
+//                 $query->orWhere('interest', 'like', "%$interestId%");
+//             }
+//         })
+//         ->where('id', '!=', $user->id)
+//         ->whereNotIn('id', $excludeIds) // Exclude matched & reported users
+//         ->when($minAge && $maxAge, function ($query) use ($minAge, $maxAge) {
+//             return $query->whereBetween('age', [$minAge, $maxAge]);
+//         })
+//         ->when($lookingFor, function ($query) use ($lookingFor) {
+//             return $query->where('looking_for', 'like', "%$lookingFor%");
+//         })
+//         ->get();
 
-        if ($matchingUsers->isEmpty()) {
-            return response()->json([
-                'message' => 'No matching users found',
-                'status' => 201,
-                'data' => [],
-            ], 200);
-        }
+//         if ($matchingUsers->isEmpty()) {
+//             return response()->json([
+//                 'message' => 'No matching users found',
+//                 'status' => 201,
+//                 'data' => [],
+//             ], 200);
+//         }
 
-        $usersWithInterests = [];
-        $totalMatchingUsers = 0;
+//         $usersWithInterests = [];
+//         $totalMatchingUsers = 0;
 
-        foreach ($matchingUsers as $matchingUser) {
-            $userInterestsField = $matchingUser->interest;
-            $userInterestsDecoded = json_decode($userInterestsField, true);
+//         foreach ($matchingUsers as $matchingUser) {
+//             $userInterestsField = $matchingUser->interest;
+//             $userInterestsDecoded = json_decode($userInterestsField, true);
 
-            if (is_array($userInterestsDecoded)) {
-                $userInterestsIds = [];
-                foreach ($userInterestsDecoded as $item) {
-                    $userInterestsIds = array_merge($userInterestsIds, explode(',', $item));
-                }
+//             if (is_array($userInterestsDecoded)) {
+//                 $userInterestsIds = [];
+//                 foreach ($userInterestsDecoded as $item) {
+//                     $userInterestsIds = array_merge($userInterestsIds, explode(',', $item));
+//                 }
 
-                $userInterestsIds = array_map('trim', $userInterestsIds);
+//                 $userInterestsIds = array_map('trim', $userInterestsIds);
 
-                $userInterests = Interest::whereIn('id', $userInterestsIds)->get();
+//                 $userInterests = Interest::whereIn('id', $userInterestsIds)->get();
 
-                $matchingInterestCount = 0;
-                foreach ($userInterests as $interest) {
-                    if (in_array($interest->id, $interestIds)) {
-                        $matchingInterestCount++;
-                    }
-                }
+//                 $matchingInterestCount = 0;
+//                 foreach ($userInterests as $interest) {
+//                     if (in_array($interest->id, $interestIds)) {
+//                         $matchingInterestCount++;
+//                     }
+//                 }
 
-                $totalInterests = count($interestIds);
-                $matchingPercentage = ($totalInterests > 0) ? ($matchingInterestCount / $totalInterests) * 100 : 0;
+//                 $totalInterests = count($interestIds);
+//                 $matchingPercentage = ($totalInterests > 0) ? ($matchingInterestCount / $totalInterests) * 100 : 0;
 
-                $profileImages = json_decode($matchingUser->profile_image, true);
-                $profileImageUrls = [];
+//                 $profileImages = json_decode($matchingUser->profile_image, true);
+//                 $profileImageUrls = [];
 
-                if (is_array($profileImages)) {
-                    foreach ($profileImages as $image) {
-                        $profileImageUrls[] = asset('uploads/app/profile_images/' . $image);
-                    }
-                }
-                $matchedUserLatitude = $matchingUser->latitude;
-                $matchedUserLongitude = $matchingUser->longitude;
+//                 if (is_array($profileImages)) {
+//                     foreach ($profileImages as $image) {
+//                         $profileImageUrls[] = asset('uploads/app/profile_images/' . $image);
+//                     }
+//                 }
+//                 $matchedUserLatitude = $matchingUser->latitude;
+//                 $matchedUserLongitude = $matchingUser->longitude;
 
-                // Calculate distance between users, always calculate distance
-                $distance = $this->calculateDistance($userLatitude, $userLongitude, $matchedUserLatitude, $matchedUserLongitude);
+//                 // Calculate distance between users, always calculate distance
+//                 $distance = $this->calculateDistance($userLatitude, $userLongitude, $matchedUserLatitude, $matchedUserLongitude);
 
-                // Apply the distance filter if provided
-                if ($maxDistance && $distance > $maxDistance) {
-                    continue; // Skip users who are farther than the specified distance
-                }
+//                 // Apply the distance filter if provided
+//                 if ($maxDistance && $distance > $maxDistance) {
+//                     continue; // Skip users who are farther than the specified distance
+//                 }
 
-                // Add user data to response array
-                $message = Chat::where('sender_id', Auth::id())
-                    ->where('receiver_id', $matchingUser->id)
-                    ->latest()
-                    ->first();
+//                 // Add user data to response array
+//                 $message = Chat::where('sender_id', Auth::id())
+//                     ->where('receiver_id', $matchingUser->id)
+//                     ->latest()
+//                     ->first();
 
-                $userData = [
-                    'user' => $matchingUser->name,
-                    'user_rendom' => $matchingUser->rendom,
-                    'about' => $matchingUser->about,
-                    'interest' => $userInterests,
-                    'age' => $matchingUser->age,
-                    'gender' => $matchingUser->gender,
-                    'looking_for' => $matchingUser->looking_for,
-                    'user_profile' => $profileImageUrls,
-                    'status' => $matchingUser->status,
-                    'address' => $matchingUser->address,
-                    'match_percentage' => number_format($matchingPercentage, 2),
-                    'message' => $message ? $message->message : null,
-                    'message_status' => $message ? $message->status : null,
-                    'distance' => round($distance) . ' km',
-                    'attendUsers' => $attendUsers,
-                    'ghostUsers' => $ghostUsers,
-                    'hostedActivity' => $hostedActivity,
-                ];
+//                 $userData = [
+//                     'user' => $matchingUser->name,
+//                     'user_rendom' => $matchingUser->rendom,
+//                     'about' => $matchingUser->about,
+//                     'interest' => $userInterests,
+//                     'age' => $matchingUser->age,
+//                     'gender' => $matchingUser->gender,
+//                     'looking_for' => $matchingUser->looking_for,
+//                     'user_profile' => $profileImageUrls,
+//                     'status' => $matchingUser->status,
+//                     'address' => $matchingUser->address,
+//                     'match_percentage' => number_format($matchingPercentage, 2),
+//                     'message' => $message ? $message->message : null,
+//                     'message_status' => $message ? $message->status : null,
+//                     'distance' => round($distance) . ' km',
+//                     'attendUsers' => $attendUsers,
+//                     'ghostUsers' => $ghostUsers,
+//                     'hostedActivity' => $hostedActivity,
+//                 ];
 
-                $usersWithInterests[] = $userData;
-                $totalMatchingUsers++;
-            }
-        }
+//                 $usersWithInterests[] = $userData;
+//                 $totalMatchingUsers++;
+//             }
+//         }
 
-        return response()->json([
-            'message' => 'Matching users found successfully',
-            'status' => 200,
-            'total_count' => $totalMatchingUsers,
-            'data' => $usersWithInterests,
-        ]);
+//         return response()->json([
+//             'message' => 'Matching users found successfully',
+//             'status' => 200,
+//             'total_count' => $totalMatchingUsers,
+//             'data' => $usersWithInterests,
+//         ]);
+//     }
+
+
+public function MatchingUsersdetailes(Request $request)
+{
+    $user = Auth::user();
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], 401);
     }
 
+    // Fetch your preferences
+    $myPref = PreDating::where('user_id', $user->id)->first();
+    if (!$myPref) {
+        return response()->json(['message' => 'No preferences set'], 400);
+    }
 
+    $interestIds = collect(json_decode($user->interest, true))
+        ->flatten()
+        ->flatMap(fn($i) => explode(',', $i))
+        ->map(fn($i) => trim($i))
+        ->unique()
+        ->filter()
+        ->values()
+        ->all();
 
+    $attendUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 6)->count();
+    $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
+    $hostedActivity = Activity::where('user_id', $user->id)->count();
+
+    $excluded = SlideLike::where('matched_user', $user->id)->where('liked_user', 1)->pluck('matching_user')->toArray();
+    $reported = Report::where('reporting_user_id', $user->id)->pluck('reported_user_id')->toArray();
+    $excludeIds = array_merge($excluded, $reported);
+
+    [$minAge, $maxAge] = explode('-', $myPref->age . '-');
+
+    $maxDistance = $myPref->distance;
+
+    $myLookingFor = $myPref->status;      // I want that
+    $myGender      = $myPref->gender;     // I am this
+
+    $matches = User::where('id', '!=', $user->id)
+        ->whereNotIn('id', $excludeIds)
+        ->where('gender', $myLookingFor)       // match their gender
+        ->where('looking_for', $myGender)      // ensure they want me
+        ->when($minAge && $maxAge, fn($q) => $q->whereBetween('age', [(int)$minAge, (int)$maxAge]))
+        ->get()
+        ->filter(function ($candidate) use ($interestIds, $maxDistance, $user) {
+            // interest matching
+            $candInterests = collect(json_decode($candidate->interest, true) ?? [])
+                ->flatten()
+                ->flatMap(fn($i) => explode(',', $i))
+                ->map(fn($i) => trim($i))
+                ->all();
+            if (!count(array_intersect($interestIds, $candInterests))) {
+                return false;
+            }
+            // distance filtering
+            $distance = $this->calculateDistance($user->latitude, $user->longitude, $candidate->latitude, $candidate->longitude);
+            return $distance <= $maxDistance;
+        });
+
+    $response = $matches->map(function ($cand) use ($user, $interestIds, $attendUsers, $ghostUsers, $hostedActivity) {
+         $candInterests = Interest::whereIn('id', array_map('trim', array_merge(...(json_decode($cand->interest, true) ?? []))))->get();
+         $matchingPercentage = count($candInterests->pluck('id')->intersect($interestIds)) / max(1, count($interestIds)) * 100;
+
+         $message = Chat::where('sender_id', $user->id)
+                        ->where('receiver_id', $cand->id)
+                        ->latest()
+                        ->first();
+
+         return [
+            'user' => $cand->name,
+            'age' => $cand->age,
+            'gender' => $cand->gender,
+            'looking_for' => $cand->looking_for,
+            'interest' => $candInterests,
+            'match_percentage' => number_format($matchingPercentage, 2),
+            'message' => $message?->message,
+            'message_status' => $message?->status,
+            'distance' => round($this->calculateDistance($user->latitude, $user->longitude, $cand->latitude, $cand->longitude)) . ' km',
+            'attendUsers' => $attendUsers,
+            'ghostUsers' => $ghostUsers,
+            'hostedActivity' => $hostedActivity,
+        ];
+    })->values();
+
+    return response()->json([
+        'message' => 'Matching users found successfully',
+        'status' => 200,
+        'total_count' => $response->count(),
+        'data' => $response,
+    ]);
+}
 
 
 // public function datingpreference(Request $request)

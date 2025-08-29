@@ -930,16 +930,14 @@ class DatingController extends Controller
 //     ]);
 // }
 
-
 public function datingpreference(Request $request)
 {
     $user = Auth::user();
-
     if (!$user) {
         return response()->json(['message' => 'User not authenticated'], 401);
     }
 
-    // Load preferences: from request or PreDating
+    // Get or create preferences for current user
     $storedPreference = PreDating::firstOrCreate(
         ['user_id' => $user->id],
         [
@@ -950,12 +948,13 @@ public function datingpreference(Request $request)
         ]
     );
 
+    // Get preferences from request or fallback to stored
     $dateRange = $request->input('date_range', $storedPreference->age);
     $genderFilter = $request->input('gender', $storedPreference->gender);
     $lookingFor = $request->input('looking_for', $storedPreference->status);
     $maxDistance = $request->input('distance', $storedPreference->distance);
 
-    // Save or update preferences
+    // Save updated preferences
     PreDating::updateOrCreate(
         ['user_id' => $user->id],
         [
@@ -966,24 +965,17 @@ public function datingpreference(Request $request)
         ]
     );
 
-    // Parse age range
     [$minAge, $maxAge] = explode('-', $dateRange) + [18, 40];
-
     $minAge = (int)$minAge;
     $maxAge = (int)$maxAge;
 
     // Decode user's interests
-    $interestFieldDecoded = json_decode($user->interest, true) ?? [];
     $interestIds = [];
+    $interestFieldDecoded = json_decode($user->interest, true) ?? [];
     foreach ($interestFieldDecoded as $item) {
         $interestIds = array_merge($interestIds, explode(',', $item));
     }
     $interestIds = array_map('trim', $interestIds);
-
-    // Stats
-    $attendUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 6)->count();
-    $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
-    $hostedActivity = Activity::where('user_id', $user->id)->count();
 
     $userLatitude = $user->latitude;
     $userLongitude = $user->longitude;
@@ -993,39 +985,33 @@ public function datingpreference(Request $request)
         ->pluck('matching_user')
         ->toArray();
 
-    // 🔍 Function to get matching users with given filters
-    $getMatchingUsers = function ($applyAge = true, $applyDistance = true) use (
-    $interestIds, $user, $excludedUserIds, $minAge, $maxAge, $maxDistance,
-    $userLatitude, $userLongitude
-) {
-        return User::where(function ($query) use ($interestIds) {
-                foreach ($interestIds as $interestId) {
-                    $query->orWhere('interest', 'like', "%$interestId%");
-                }
-            })
-            ->where('id', '!=', $user->id)
-            ->whereNotIn('id', $excludedUserIds)
-            ->where('gender', $user->looking_for)
-            ->where('looking_for', $user->gender)
-            ->when($applyAge, fn($q) => $q->whereBetween('age', [$minAge, $maxAge]))
-            ->get()
-            ->filter(function ($match) use ($applyDistance, $userLatitude, $userLongitude, $maxDistance) {
-                if (!$applyDistance) return true;
-                $distance = $this->calculateDistance($userLatitude, $userLongitude, $match->latitude, $match->longitude);
-                return $distance <= $maxDistance;
-            });
-    };
+    $attendUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 6)->count();
+    $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
+    $hostedActivity = Activity::where('user_id', $user->id)->count();
 
-    // Try full filters
-    $matchingUsers = $getMatchingUsers(true, true);
+    // Fetch all users with their PreDating data
+    $matchingUsers = User::with('preference') // relationship: hasOne(PreDating::class, 'user_id')
+        ->where('id', '!=', $user->id)
+        ->whereNotIn('id', $excludedUserIds)
+        ->get()
+        ->filter(function ($match) use ($user, $minAge, $maxAge, $maxDistance, $userLatitude, $userLongitude) {
+            $pref = $match->preference;
 
-    // Fallbacks: relax distance, then age
-    if ($matchingUsers->isEmpty()) {
-        $matchingUsers = $getMatchingUsers(true, false); // ignore distance
-    }
-    if ($matchingUsers->isEmpty()) {
-        $matchingUsers = $getMatchingUsers(false, false); // ignore distance and age
-    }
+            if (!$pref) return false;
+
+            // Reverse match condition:
+            // My looking_for == their gender && My gender == their looking_for
+            $reverseMatch = $pref->gender == $user->looking_for && $pref->status == $user->gender;
+
+            // Age filter
+            $ageMatch = $match->age >= $minAge && $match->age <= $maxAge;
+
+            // Distance filter
+            $distance = $this->calculateDistance($userLatitude, $userLongitude, $match->latitude, $match->longitude);
+            $withinDistance = $distance <= $maxDistance;
+
+            return $reverseMatch && $ageMatch && $withinDistance;
+        });
 
     $usersWithInterests = [];
 
@@ -1093,6 +1079,7 @@ public function datingpreference(Request $request)
         'data' => $usersWithInterests,
     ]);
 }
+
 
 // public function datingpreference(Request $request)
 // {

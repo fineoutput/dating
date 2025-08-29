@@ -41,6 +41,11 @@ class User extends Authenticatable
         'address',
     ];
 
+    public function preference()
+    {
+        return $this->hasOne(PreDating::class, 'user_id');
+    }
+
     public function city()
     {
         return $this->belongsTo(AdminCity::class, 'admin_city', 'id');

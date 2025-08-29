@@ -945,6 +945,7 @@ public function datingpreference(Request $request)
             'distance' => 100,
             'gender' => $user->looking_for ?? 'any',
             'status' => $user->gender ?? 'any',
+            'cupid' => $user->cupid ?? false,
         ]
     );
 
@@ -953,6 +954,7 @@ public function datingpreference(Request $request)
     $genderFilter = $request->input('gender', $storedPreference->gender);
     $lookingFor = $request->input('looking_for', $storedPreference->status);
     $maxDistance = $request->input('distance', $storedPreference->distance);
+    $cupid = $request->input('cupid', $storedPreference->cupid);
 
     // Validate input data
     if (!preg_match('/^\d+-\d+$/', $dateRange)) {
@@ -968,6 +970,7 @@ public function datingpreference(Request $request)
             'distance' => $maxDistance,
             'gender' => $genderFilter,
             'status' => $lookingFor,
+            'cupid' => $cupid,
         ]
     );
 

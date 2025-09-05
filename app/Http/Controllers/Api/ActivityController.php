@@ -2359,13 +2359,13 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             return response()->json(['message' => 'Invalid interest data','status'=>201], 400);
         }
 
-        $interestIds = [];
-        foreach ($interestFieldDecoded as $item) {
-            $interestIds = array_merge($interestIds, explode(',', $item));
-        }
+        // $interestIds = [];
+        // foreach ($interestFieldDecoded as $item) {
+        //     $interestIds = array_merge($interestIds, explode(',', $item));
+        // }
 
 
-    $interestIds = array_map('trim', $interestIds);
+    // $interestIds = array_map('trim', $interestIds);
 
     $currentTime = Carbon::now('Asia/Kolkata');
     $todayDate = Carbon::today('Asia/Kolkata');
@@ -2373,11 +2373,11 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
     $matchingActivities = Activity::orderBy('id','DESC')
         ->where('user_id', '!=', $user->id)
         ->where('status', 2)
-        ->where(function ($query) use ($interestIds) {
-            foreach ($interestIds as $id) {
-                $query->orWhere('interests_id', 'LIKE', '%"'.$id.'"%');
-            }
-        })
+        // ->where(function ($query) use ($interestIds) {
+        //     foreach ($interestIds as $id) {
+        //         $query->orWhere('interests_id', 'LIKE', '%"'.$id.'"%');
+        //     }
+        // })
         ->where(function ($query) use ($currentTime) {
             $query->whereDate('when_time', '>', substr($currentTime, 0, 10))
                 ->orWhereRaw("
@@ -3442,55 +3442,32 @@ public function filteractivity(Request $request)
     $firstExpenseName = null;
 
     // Normalize $expense_id into an array
-    // if (!empty($expense_id)) {
-    //     if (is_string($expense_id)) {
-    //         $expenseIds = json_decode($expense_id, true);
-    //     } elseif (is_array($expense_id)) {
-    //         $expenseIds = $expense_id;
-    //     } else {
-    //         $expenseIds = [];
-    //     }
-
-    //     if (is_array($expenseIds) && count($expenseIds) > 0) {
-    //         // Apply filter on query
-    //         $query->where(function ($q) use ($expenseIds) {
-    //             foreach ($expenseIds as $id) {
-    //                 $q->orWhere('expense_id', 'like', '%'.$id.'%');
-    //             }
-    //         });
-
-    //         $filterApplied = true;
-
-    //         // Get all matching expenses
-    //         $expenses = Expense::whereIn('id', $expenseIds)->get();
-
-    //         // Get names and join them with comma
-    //         $firstExpenseName = $expenses->pluck('name')->implode(', ');
-    //     }
-    // }
-
     if (!empty($expense_id)) {
-    if (is_string($expense_id)) {
-        $expenseIds = json_decode($expense_id, true);
-    } elseif (is_array($expense_id)) {
-        $expenseIds = $expense_id;
-    } else {
-        $expenseIds = [];
+        if (is_string($expense_id)) {
+            $expenseIds = json_decode($expense_id, true);
+        } elseif (is_array($expense_id)) {
+            $expenseIds = $expense_id;
+        } else {
+            $expenseIds = [];
+        }
+
+        if (is_array($expenseIds) && count($expenseIds) > 0) {
+            // Apply filter on query
+            $query->where(function ($q) use ($expenseIds) {
+                foreach ($expenseIds as $id) {
+                    $q->orWhere('expense_id', 'like', '%'.$id.'%');
+                }
+            });
+
+            $filterApplied = true;
+
+            // Get all matching expenses
+            $expenses = Expense::whereIn('id', $expenseIds)->get();
+
+            // Get names and join them with comma
+            $firstExpenseName = $expenses->pluck('name')->implode(', ');
+        }
     }
-
-    if (is_array($expenseIds) && count($expenseIds) > 0) {
-        // ✅ Apply filter using whereIn (correct for ID filtering)
-        $query->whereIn('expense_id', $expenseIds);
-
-        $filterApplied = true;
-
-        // Get all matching expenses
-        $expenses = Expense::whereIn('id', $expenseIds)->get();
-
-        // Get names and join them with comma
-        $firstExpenseName = $expenses->pluck('name')->implode(', ');
-    }
-}
 
 
        if ($vibe_id && is_array($vibe_id)) {

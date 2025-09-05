@@ -3441,7 +3441,7 @@ public function filteractivity(Request $request)
    $filterApplied = false;
     $firstExpenseName = null;
 
-    // Normalize $expense_id into an array
+    // return $expense_id;
     if (!empty($expense_id)) {
         if (is_string($expense_id)) {
             $expenseIds = json_decode($expense_id, true);
@@ -3455,7 +3455,7 @@ public function filteractivity(Request $request)
             // Apply filter on query
             $query->where(function ($q) use ($expenseIds) {
                 foreach ($expenseIds as $id) {
-                    $q->orWhere('expense_id', 'like', '%'.$id.'%');
+                    $q->orWhereJsonContains('expense_id', $id);
                 }
             });
 

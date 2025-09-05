@@ -92,7 +92,7 @@ class InterestController extends Controller
                 'id' => $vibe->id,
                 'name' => $vibe->name,
                 'activity_id' => $vibe->activity_id,
-                // 'icon' => $vibe->icon,
+                'icon' => $vibe->image,
                 'image' => $vibe->icon ? asset($vibe->icon) : null,
             ];
         });

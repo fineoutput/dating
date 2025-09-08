@@ -1119,7 +1119,7 @@ public function userinterestnumber(Request $request)
                 'user_profile_image' => $profileImageUrl ?? '',
                 'activity_image'     => asset($activity->image),
                 'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
-                'ago_time' => str_replace(['ago', 'from now'], '', \Carbon\Carbon::parse($activity->when_time)->diffForHumans()),
+                'ago_time' => str_replace(['ago', 'from now'], '', \Carbon\Carbon::parse($activity->created_at)->diffForHumans()),
 
 
                 'status'             => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
@@ -3395,7 +3395,7 @@ public function filteractivity(Request $request)
 
     $query = Activity::query();
     
-    $filterApplied = false;
+    // $filterApplied = false;
 
     if (!$date_type || $date_type !== 'Today') {
     $query->where(function ($query) use ($endTime, $currentTime) {
@@ -3416,7 +3416,7 @@ public function filteractivity(Request $request)
         $filterApplied = true;
     }
     if ($location) {
-        $query->where('location', 'like', '%' . $location . '%');
+        $query->whereRaw('location', 'like', '%' . $location . '%');
         $filterApplied = true;
     }
 

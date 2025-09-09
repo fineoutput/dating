@@ -1726,7 +1726,7 @@ public function cupidMatchFriend(Request $request)
 
         if ($request->status == 2) {
 
-            $cupid->user_id_1_status = 2;
+            $cupid->status = 2;
 
         } else {
 

@@ -15,6 +15,7 @@ class SlideLike extends Model
         'super_like',
         'liked_user',
         'dislike',
+        'status',
     ];
 
     public function sender()

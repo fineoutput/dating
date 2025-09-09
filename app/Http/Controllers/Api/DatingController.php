@@ -1699,6 +1699,51 @@ public function cupidMatchFriend(Request $request)
     }
 
 
+ public function acceptslide(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'User not authenticated',
+                'status' => 401
+            ], 401);
+        }
+
+        $request->validate([
+            'user_id' => 'required',
+            'status' => 'required',
+        ]);
+
+        $authUser = Auth::user();
+
+        $cupid = SlideLike::where('matching_user',$authUser->id)->where('matched_user', $request->user_id)->first();
+
+        if (!$cupid) {
+            return response()->json([
+                'message' => 'Slide Like match not found',
+                'status' => 404
+            ], 404);
+        }
+
+        if ($request->status == 2) {
+
+            $cupid->user_id_1_status = 2;
+
+        } else {
+
+            $cupid->status = 3;
+
+        }
+
+        $cupid->save();
+
+        return response()->json([
+            'message' => 'Slide Like status updated successfully!',
+            'status' => 200,
+            'data' => $cupid
+        ], 200);
+    }
+
+
 
 // public function cupidMatchFriend(Request $request)
 // {
@@ -1873,7 +1918,6 @@ public function updateCupidMatch(Request $request)
             return response()->json(['message' => 'User not authenticated'], 401);
         }
 
-        // 1. Get list of users reported by the authenticated user
         $reportedUserIds = Report::where('reporting_user_id', $user->id)
             ->pluck('reported_user_id')
             ->toArray();
@@ -1881,10 +1925,10 @@ public function updateCupidMatch(Request $request)
         $userLatitude = $user->latitude;
         $userLongitude = $user->longitude;
 
-        // 2. Get all matched users (from SlideLike table)
-        $matchedUsers = SlideLike::where('matched_user', $user->id)
+        $matchedUsers = SlideLike::where('matching_user', $user->id)
             ->where('liked_user', 1)
             ->get();
+
 
         if ($matchedUsers->isEmpty()) {
             return response()->json([
@@ -1923,7 +1967,7 @@ public function updateCupidMatch(Request $request)
         // ->values();        // reset array keys
 
             $matchedUserDetails = $matchedUsers->map(function ($slideLike) use ($user, $userLatitude, $userLongitude, $reportedUserIds) {
-            $matchingUser = User::find($slideLike->matching_user);
+            $matchingUser = User::find($slideLike->matched_user);
 
             if (
                 !$matchingUser || 

@@ -131,7 +131,7 @@ public function verifyPayment(Request $request)
                 'plan_id' => $request->plan_id,
                 'expire_days' => $request->expire_days ?? 30,
                 'order_id' => $order_id, 
-                 'type' => 'Activitys', 
+                 'type' => 'Dating', 
             ]);
 
             $data = $res->json();

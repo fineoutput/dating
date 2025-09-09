@@ -1976,15 +1976,13 @@ public function updateCupidMatch(Request $request)
             $remainingSwipes = max($allowedInterest - $usedSwipes, 0);
         }
 
-        return $remainingSwipes;
-
 
         if ($matchedUsers->isEmpty()) {
             return response()->json([
                 'message' => 'No matched users found',
                 'status' => 200,
                 'data' => [],
-                'allowed' => $allowedInterest,
+                'allowed' => $remainingSwipes,
             ]);
         }
 
@@ -2051,7 +2049,7 @@ public function updateCupidMatch(Request $request)
             'message' => 'Matched users found successfully',
             'status' => 200,
             'data' => $matchedUserDetails,
-            'allowed' => $allowedInterest,
+            'allowed' => $remainingSwipes,
         ]);
     }
 

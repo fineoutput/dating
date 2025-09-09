@@ -1939,42 +1939,42 @@ public function updateCupidMatch(Request $request)
 
         $remainingSwipes = 0;
         $allowedInterest = 0;
+        $usedSwipes = 0;
 
-        // Step 1: Get active subscription
         $activeSubscription = UserSubscription::where('user_id', $userId)
             ->where('type', 'Dating')
             ->where('is_active', 1)
             ->where('activated_at', '<=', $now)
             ->where('expires_at', '>=', $now)
             ->first();
-            
+
         if ($activeSubscription) {
-            // Step 2: Get allowed swipes from subscribed plan
             $dating = DatingSubscription::find($activeSubscription->plan_id);
             $allowedInterest = $dating ? $dating->unlimited_swipes : 0;
 
-            // Step 3: Count SlideLikes in subscription period excluding status 2 and 3
             $usedSwipes = SlideLike::where('matching_user', $userId)
                 ->where('liked_user', 1)
                 ->whereNotIn('status', [2, 3])
                 ->whereBetween('created_at', [$activeSubscription->activated_at, $activeSubscription->expires_at])
                 ->count();
 
-            // Step 4: Calculate remaining
-            $remainingSwipes = max($allowedInterest - $usedSwipes, 0);
         } else {
-            // Step 5: No active subscription — get default latest plan limit
-            $latestPlan = DatingSubscription::orderBy('id', 'desc')->first();
-            $allowedInterest = $latestPlan ? $latestPlan->unlimited_swipes : 0;
+            $freePlan = DatingSubscription::where('type', 'free')->first();
 
-            // Step 6: Count all-time used swipes (excluding status 2 & 3)
-            $usedSwipes = SlideLike::where('matching_user', $userId)
-                ->where('liked_user', 1)
-                ->whereNotIn('status', [2, 3])
-                ->count();
+            if ($freePlan) {
+                $allowedInterest = $freePlan->unlimited_swipes;
 
-            $remainingSwipes = max($allowedInterest - $usedSwipes, 0);
+                $usedSwipes = SlideLike::where('matching_user', $userId)
+                    ->where('liked_user', 1)
+                    ->whereNotIn('status', [2, 3])
+                    ->count();
+            } else {
+                $allowedInterest = 0;
+                $usedSwipes = 0;
+            }
         }
+
+        $remainingSwipes = max($allowedInterest - $usedSwipes, 0);
 
 
         if ($matchedUsers->isEmpty()) {

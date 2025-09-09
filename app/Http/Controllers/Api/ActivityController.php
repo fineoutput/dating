@@ -3427,10 +3427,12 @@ public function filteractivity(Request $request)
         $query->where('admin_city',Auth::user()->admin_city);
         $filterApplied = true;
     }
+
     if ($location) {
-        $query->whereRaw('location', 'like', '%' . $location . '%');
-        $filterApplied = true;
-    }
+    $location = trim($location); // Optional cleanup
+    $query->where('location', 'like', '%' . $location . '%');
+    $filterApplied = true;
+}
 
     if ($how_many) {
         $query->where('how_many',$how_many);
@@ -3450,7 +3452,7 @@ public function filteractivity(Request $request)
     }
 
 
-   $filterApplied = false;
+//    $filterApplied = false;
     $firstExpenseName = null;
 
     // return $expense_id;

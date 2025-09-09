@@ -35,7 +35,7 @@ class ChatController extends Controller
 {
     $request->validate([
         'receiver_rendom' => 'required',
-        'message' => 'required|string|max:255',
+        'message' => 'required',
         'type' => 'required',
         'chat_type' => 'required',
         'activity_id' => 'nullable',

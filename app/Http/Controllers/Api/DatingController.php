@@ -1926,8 +1926,10 @@ public function updateCupidMatch(Request $request)
         $userLongitude = $user->longitude;
 
         $matchedUsers = SlideLike::where('matching_user', $user->id)
-            ->where('liked_user', 1)
-            ->get();
+        ->where('liked_user', 1)
+        ->whereNotIn('status', [2, 3])
+        ->get();
+
 
 
         if ($matchedUsers->isEmpty()) {

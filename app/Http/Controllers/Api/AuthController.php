@@ -1142,7 +1142,142 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
         // }
 
 
- public function updateProfile(Request $request)
+//  public function updateProfile(Request $request)
+//     {
+//         $user = Auth::user();
+
+//         if (!$user) {
+//             return response()->json(['message' => 'User not authenticated'], 401);
+//         }
+
+//         $validator = Validator::make($request->all(), [
+//             'name' => 'nullable|string|max:255',
+//             'age' => 'nullable|integer|min:18|max:100',
+//             'gender' => 'nullable|string',
+//             'looking_for' => 'nullable|string|max:255',
+//             'interest' => 'nullable|array', 
+//             'about' => 'nullable|string|max:1000', 
+//             'address' => 'nullable|string|max:255',  
+//             'profile_image' => 'nullable|array',
+//         ]);
+
+//         if ($validator->fails()) {
+//             return response()->json(['errors' => $validator->errors()], 400);
+//         }
+
+//         $updateData = [
+//             'name' => $request->name,
+//             'age' => $request->age,
+//             'gender' => $request->gender,
+//             'looking_for' => $request->looking_for,
+//         ];
+
+//           $now = Carbon::now('Asia/Kolkata');
+
+//             $activeSubscription = UserSubscription::where('user_id', $user->id)
+//                 ->where('type', 'Activitys')
+//                 ->where('is_active', 1)
+//                 ->where('activated_at', '<=', $now)
+//                 ->where('expires_at', '>=', $now)
+//                 ->first();
+
+//         if ($activeSubscription && $request->has('interest') && is_array($request->interest)) {
+//             $updateData['interest'] = json_encode($request->interest); 
+//         }
+//         // if ($user->subscription == 1 && $request->has('interest') && is_array($request->interest)) {
+//         //     $updateData['interest'] = json_encode($request->interest); 
+//         // }
+
+//         if ($request->has('about')) {
+//             $updateData['about'] = $request->about;
+//         }
+//         if ($request->has('address')) {
+//             $updateData['address'] = $request->address;
+//         }
+
+//        if ($request->hasFile('profile_image')) {
+//         $existingImages = [];
+//         if ($user->profile_image) {
+//             $existingImages = json_decode($user->profile_image, true);
+//         }
+
+//         $newImages = $request->file('profile_image');
+
+//         $availableSlots = 9 - count($existingImages);
+//         if ($availableSlots <= 0) {
+//             return response()->json(['message' => 'You already have maximum 9 images.'], 400);
+//         }
+
+//         $imagePaths = $existingImages; 
+
+//         $uploadedCount = 0;
+
+//         foreach ($newImages as $image) {
+//             if ($uploadedCount >= $availableSlots) {
+//                 break;
+//             }
+
+//             $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+
+//             if (in_array($imageName, $existingImages)) {
+//                 continue;
+//             }
+
+//             $image->move(public_path('uploads/app/profile_images/'), $imageName);
+//             $imagePaths[] = $imageName;
+//             $uploadedCount++;
+//         }
+
+//         $updateData['profile_image'] = json_encode($imagePaths);
+//     }
+
+//         $user->update($updateData);
+
+//         $interestNamesWithIcons = [];
+//         if ($user->subscription == 1 && $request->has('interest') && is_array($request->interest)) {
+//             $interestIds = $request->interest;
+//             $interests = Interest::whereIn('id', $interestIds)->get();
+
+//             foreach ($interests as $interest) {
+//                 $interestNamesWithIcons[] = [
+//                     'name' => $interest->name,
+//                     'icon' => $interest->icon,
+//                 ];
+//             }
+//         }
+
+//         $imageUrls = [];
+//         if ($user->profile_image) {
+//             $imagePaths = json_decode($user->profile_image, true);
+
+//             if (is_array($imagePaths)) {
+//                 foreach ($imagePaths as $imageName) {
+//                     $imageUrls[] = url('uploads/app/profile_images/' . $imageName);
+//                 }
+//             }
+//         }
+
+//         return response()->json([
+//             'message' => 'Profile updated successfully',
+//             'data' => [
+//                 [
+//                     'rendom' => $user->rendom,
+//                     'name' => $user->name,
+//                     'age' => $user->age,
+//                     'gender' => $user->gender,
+//                     'looking_for' => $user->looking_for,
+//                     'interest' => $interestNamesWithIcons,
+//                     'profile_image' => $imageUrls,
+//                     'about' => $user->about,
+//                     'address' => $user->address,
+//                 ]
+//             ],
+//             'status' => 200,
+//         ], 200);
+//     }
+
+
+  public function updateProfile(Request $request)
     {
         $user = Auth::user();
 
@@ -1155,9 +1290,9 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
             'age' => 'nullable|integer|min:18|max:100',
             'gender' => 'nullable|string',
             'looking_for' => 'nullable|string|max:255',
-            'interest' => 'nullable|array', 
-            'about' => 'nullable|string|max:1000', 
-            'address' => 'nullable|string|max:255',  
+            'interest' => 'nullable|array',
+            'about' => 'nullable|string|max:1000',
+            'address' => 'nullable|string|max:255',
             'profile_image' => 'nullable|array',
         ]);
 
@@ -1172,69 +1307,70 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
             'looking_for' => $request->looking_for,
         ];
 
-          $now = Carbon::now('Asia/Kolkata');
+        $now = Carbon::now('Asia/Kolkata');
 
-            $activeSubscription = UserSubscription::where('user_id', $user->id)
-                ->where('type', 'Activitys')
-                ->where('is_active', 1)
-                ->where('activated_at', '<=', $now)
-                ->where('expires_at', '>=', $now)
-                ->first();
+        // ✅ Check for active subscription
+        $activeSubscription = UserSubscription::where('user_id', $user->id)
+            ->where('type', 'Activitys')
+            ->where('is_active', 1)
+            ->where('activated_at', '<=', $now)
+            ->where('expires_at', '>=', $now)
+            ->first();
 
+        // ✅ Update interest only if active subscription
         if ($activeSubscription && $request->has('interest') && is_array($request->interest)) {
-            $updateData['interest'] = json_encode($request->interest); 
+            $updateData['interest'] = json_encode($request->interest);
         }
-        // if ($user->subscription == 1 && $request->has('interest') && is_array($request->interest)) {
-        //     $updateData['interest'] = json_encode($request->interest); 
-        // }
 
         if ($request->has('about')) {
             $updateData['about'] = $request->about;
         }
+
         if ($request->has('address')) {
             $updateData['address'] = $request->address;
         }
 
-       if ($request->hasFile('profile_image')) {
-        $existingImages = [];
-        if ($user->profile_image) {
-            $existingImages = json_decode($user->profile_image, true);
-        }
-
-        $newImages = $request->file('profile_image');
-
-        $availableSlots = 9 - count($existingImages);
-        if ($availableSlots <= 0) {
-            return response()->json(['message' => 'You already have maximum 9 images.'], 400);
-        }
-
-        $imagePaths = $existingImages; 
-
-        $uploadedCount = 0;
-
-        foreach ($newImages as $image) {
-            if ($uploadedCount >= $availableSlots) {
-                break;
+        // ✅ Handle profile image uploads
+        if ($request->hasFile('profile_image')) {
+            $existingImages = [];
+            if ($user->profile_image) {
+                $existingImages = json_decode($user->profile_image, true);
             }
 
-            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $newImages = $request->file('profile_image');
+            $availableSlots = 9 - count($existingImages);
 
-            if (in_array($imageName, $existingImages)) {
-                continue;
+            if ($availableSlots <= 0) {
+                return response()->json(['message' => 'You already have maximum 9 images.'], 400);
             }
 
-            $image->move(public_path('uploads/app/profile_images/'), $imageName);
-            $imagePaths[] = $imageName;
-            $uploadedCount++;
-        }
+            $imagePaths = $existingImages;
+            $uploadedCount = 0;
 
-        $updateData['profile_image'] = json_encode($imagePaths);
-    }
+            foreach ($newImages as $image) {
+                if ($uploadedCount >= $availableSlots) break;
+
+                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+
+                if (in_array($imageName, $existingImages)) continue;
+
+                $image->move(public_path('uploads/app/profile_images/'), $imageName);
+                $imagePaths[] = $imageName;
+                $uploadedCount++;
+            }
+
+            $updateData['profile_image'] = json_encode($imagePaths);
+        }
 
         $user->update($updateData);
 
+        // ✅ Prepare interest response only if subscription is active
         $interestNamesWithIcons = [];
-        if ($user->subscription == 1 && $request->has('interest') && is_array($request->interest)) {
+        $subscriptionStatus = 0;
+
+        if ($activeSubscription && $request->has('interest') && is_array($request->interest)) {
+            $subscriptionStatus = 1;
+
             $interestIds = $request->interest;
             $interests = Interest::whereIn('id', $interestIds)->get();
 
@@ -1246,6 +1382,7 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
             }
         }
 
+        // ✅ Build image URLs
         $imageUrls = [];
         if ($user->profile_image) {
             $imagePaths = json_decode($user->profile_image, true);
@@ -1257,8 +1394,10 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
             }
         }
 
+        // ✅ Final response
         return response()->json([
             'message' => 'Profile updated successfully',
+            'subscription' => $subscriptionStatus,
             'data' => [
                 [
                     'rendom' => $user->rendom,
@@ -1273,7 +1412,7 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
                 ]
             ],
             'status' => 200,
-        ], 200);
+        ]);
     }
 
         

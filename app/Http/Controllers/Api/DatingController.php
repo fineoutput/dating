@@ -1982,7 +1982,7 @@ public function updateCupidMatch(Request $request)
                 'message' => 'No matched users found',
                 'status' => 200,
                 'data' => [],
-                'allowed' => $remainingSwipes,
+                'remainingSwipes' => $remainingSwipes,
             ]);
         }
 
@@ -2049,7 +2049,7 @@ public function updateCupidMatch(Request $request)
             'message' => 'Matched users found successfully',
             'status' => 200,
             'data' => $matchedUserDetails,
-            'allowed' => $remainingSwipes,
+            'remainingSwipes' => $remainingSwipes,
         ]);
     }
 

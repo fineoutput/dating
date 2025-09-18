@@ -3278,38 +3278,37 @@ public function friendcount_one(Request $request)
 
     $activityIds = $matchingActivities->pluck('id');
 
-    // 🔹 Get opposite user IDs from OtherInterest (exclude self)
-    $interestRelations = OtherInterest::where(function ($query) use ($user) {
-            $query->where('user_id', $user->id)
-                ->orWhere('user_id_1', $user->id);
-        })
-        ->where(function ($query) {
+    $interestRelations = OtherInterest::where('user_id', $user->id)
+                                      ->orWhere('user_id_1', $user->id)->where(function ($query) {
             $query->where('confirm', 3)
                 ->orWhere('confirm', 7);
         })
-        ->get();
-
+                                      ->get();
 
     $oppositeUserIds = $interestRelations->map(function ($relation) use ($user) {
         return $relation->user_id == $user->id ? $relation->user_id_1 : $relation->user_id;
     })->unique()->values();
+    
 
     $userDetailsFromInterest2 = User::whereIn('id', $oppositeUserIds)->get()->map(function ($userItem) use ($interestRelations, $user) {
+    // Find the matching interest relation for this user
         $matchingRelation = $interestRelations->first(function ($relation) use ($userItem, $user) {
             return ($relation->user_id == $user->id && $relation->user_id_1 == $userItem->id) ||
-                   ($relation->user_id_1 == $user->id && $relation->user_id == $userItem->id);
+                ($relation->user_id_1 == $user->id && $relation->user_id == $userItem->id);
         });
 
+        // Attach activity_id to user object temporarily
         $userItem->interest_activity_id = $matchingRelation->activity_id ?? null;
 
         return $userItem;
     });
 
-    $likeUser = SlideLike::where('matched_user', $user->id)->where('status',2);
+    // 🔹 Get matched users from SlideLike table
+    $likeUser = SlideLike::where('matched_user', $user->id);
     $likeUserDetails = $likeUser->pluck('matching_user');
     $likeUserDetails2 = User::whereIn('id', $likeUserDetails)->get();
 
-    // 🔹 Map interest users (form: activity)
+    // 🔹 Map interest users
     $userList = $userDetailsFromInterest2->map(function ($userItem) use ($user) {
         $imagePath = null;
         if ($userItem->profile_image) {
@@ -3324,12 +3323,6 @@ public function friendcount_one(Request $request)
                     ->orderBy('id', 'DESC')
                     ->first();
 
-        $chat_message = Chat::where('sender_id', $user->id)
-                    ->where('receiver_id', $userItem->id)
-                    ->where('activity_id', $userItem->interest_activity_id)
-                    ->orderBy('id', 'DESC')
-                    ->first();
-
         return [
             'id' => $userItem->id,
             'user_rendom' => $userItem->rendom,
@@ -3338,11 +3331,10 @@ public function friendcount_one(Request $request)
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
             'form' => 'activity',
             'last_message' => $chat->message ?? null,
-            'activity_message' => $chat_message->message ?? null,
         ];
     });
 
-    // 🔹 Map SlideLike users (form: match) ✅ changed
+    // 🔹 Map liked users
     $likeUserList = $likeUserDetails2->map(function ($userItem) use ($user) {
         $imagePath = null;
         if ($userItem->profile_image) {
@@ -3362,12 +3354,12 @@ public function friendcount_one(Request $request)
             'user_rendom' => $userItem->rendom,
             'name' => $userItem->name,
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
-            'form' => 'match', // ✅ changed from 'activity' to 'match'
+            'form' => 'activity',
             'last_message' => $chat->message ?? null,
         ];
     });
 
-    // 🔹 Get Cupid matches (form: match)
+    // 🔹 Get Cupid matches
     $CupidMatches = Cupid::where('user_id_1', $user->id)
                          ->orWhere('user_id_2', $user->id)
                          ->get()
@@ -3399,8 +3391,8 @@ public function friendcount_one(Request $request)
 
     // 🔹 Combine and remove duplicates, prioritize 'match'
     $matchUsers = collect($userList)
-                    ->merge($likeUserList)    // ✅ SlideLike users as 'match'
-                    ->merge($matchedUsers)    // ✅ Cupid matches
+                    ->merge($likeUserList)
+                    ->merge($matchedUsers)
                     ->sortByDesc(function ($user) {
                         return $user['form'] === 'match' ? 2 : 1;
                     })
@@ -3418,6 +3410,7 @@ public function friendcount_one(Request $request)
         ]
     ]);
 }
+
 
     
     

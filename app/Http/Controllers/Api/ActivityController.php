@@ -2986,7 +2986,10 @@ public function friendcount(Request $request)
     $activityIds = $matchingActivities->pluck('id');
 
     $interestRelations = OtherInterest::where('user_id', $user->id)
-                                      ->orWhere('user_id_1', $user->id)
+                                      ->orWhere('user_id_1', $user->id)->where(function ($query) {
+            $query->where('confirm', 3)
+                ->orWhere('confirm', 7);
+        })
                                       ->get();
 
     $oppositeUserIds = $interestRelations->map(function ($relation) use ($user) {

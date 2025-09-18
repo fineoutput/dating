@@ -1174,9 +1174,23 @@ if (empty($activityIds) || count($activityIds) == 0) {
     ]);
 }
 
-$activities = Activity::whereIn('id', $activityIds)
-                ->orderBy('id', 'DESC')
-                ->get(); 
+    $currentTime = Carbon::now('Asia/Kolkata'); 
+    $todayDate = Carbon::today('Asia/Kolkata');  
+
+    $activities = Activity::orderBy('id', 'DESC')
+        ->where('user_id', '!=', $user->id)
+        ->where('status', 2)
+        ->where(function ($query) use ($currentTime) {
+            $query->whereDate('when_time', '>', $currentTime->toDateString())
+                ->orWhereRaw("
+                    STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+                ", [$currentTime->format('Y-m-d H:i:s')]);
+        })
+        ->get();
+
+// $activities = Activity::whereIn('id', $activityIds)
+//                 ->orderBy('id', 'DESC')
+//                 ->get(); 
 
     if ($activities->isEmpty()) {
         return response()->json([

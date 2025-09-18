@@ -3424,10 +3424,10 @@ public function filteractivity(Request $request)
         $query->where('user_id', '!=',Auth::id());
         $filterApplied = true;
     }
-    if ($query) {
-        $query->where('admin_city',Auth::user()->admin_city);
-        $filterApplied = true;
-    }
+    // if ($query) {
+    //     $query->where('admin_city',Auth::user()->admin_city);
+    //     $filterApplied = true;
+    // }
 
     if ($location) {
     $location = trim($location); // Optional cleanup

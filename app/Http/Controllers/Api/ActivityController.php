@@ -3277,7 +3277,7 @@ public function friendcount_one(Request $request)
 
     // 🔹 Get opposite user IDs from OtherInterest (exclude self)
     $interestRelations = OtherInterest::where('user_id', $user->id)
-                                      ->orWhere('user_id_1', $user->id)
+                                      ->orWhere('user_id_1', $user->id)->where('confirm',1)
                                       ->get();
 
     $oppositeUserIds = $interestRelations->map(function ($relation) use ($user) {

@@ -1177,9 +1177,9 @@ if (empty($activityIds) || count($activityIds) == 0) {
     $currentTime = Carbon::now('Asia/Kolkata'); 
     $todayDate = Carbon::today('Asia/Kolkata');  
 
-    $activities = Activity::orderBy('id', 'DESC')
-        ->where('user_id', '!=', $user->id)
-        ->where('status', 2)
+    $activities = Activity::whereIn('id', $activityIds)->orderBy('id', 'DESC')
+        // ->where('user_id', '!=', $user->id)
+        // ->where('status', 2)
         ->where(function ($query) use ($currentTime) {
             $query->whereDate('when_time', '>', $currentTime->toDateString())
                 ->orWhereRaw("

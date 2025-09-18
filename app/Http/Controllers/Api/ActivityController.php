@@ -1862,6 +1862,8 @@ $remainingInterests = max(0, $allowedInterest - $interestCount);
         'host_name' => $hostNames,
         'remainingInterests' => $remainingInterests ?? 0,
         'create_user' => $mainActivity->user->rendom ?? 0,
+        'new_time' => Carbon::parse($mainActivity->when_time)->format('l jS M Y'),
+
 
     ];
 
@@ -1948,8 +1950,6 @@ $remainingInterests = max(0, $allowedInterest - $interestCount);
                 'already_interest' => $alinter,
                 'status' => $act->status,
                 'amount' => $act->amount,
-                'new_time' => Carbon::parse($act->when_time)->format('l jS M Y')
-,
             ];
         });
 

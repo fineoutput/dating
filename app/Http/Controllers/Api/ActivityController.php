@@ -3354,7 +3354,7 @@ public function friendcount_one(Request $request)
             'user_rendom' => $userItem->rendom,
             'name' => $userItem->name,
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
-            'form' => 'activity',
+            'form' => 'match',
             'last_message' => $chat->message ?? null,
         ];
     });

@@ -368,7 +368,7 @@ class ActivityController extends Controller
             $activityTemp->save();
             $activityTemp->makeHidden(['created_at', 'updated_at', 'deleted_at','id','user_id']);
             return response()->json([
-                'message' => 'Activity updated in ActivityTemp',
+                'message' => 'Activity Updated Successfully',
                 'status' => 200,
                 'data' => $activityTemp,
             ], 200);
@@ -467,7 +467,7 @@ class ActivityController extends Controller
             $activity->makeHidden(['created_at', 'updated_at', 'deleted_at','user_id','id']);
     
             return response()->json([
-                'message' => 'Activity moved to Activity table successfully',
+                'message' => 'Activity Created Successfully',
                 'status' => 200,
                 'data' => $activity,
             ], 200);
@@ -1948,6 +1948,8 @@ $remainingInterests = max(0, $allowedInterest - $interestCount);
                 'already_interest' => $alinter,
                 'status' => $act->status,
                 'amount' => $act->amount,
+                'new_time' => Carbon::parse($act->when_time)->format('l jS M Y')
+,
             ];
         });
 

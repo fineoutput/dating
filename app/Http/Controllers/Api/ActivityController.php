@@ -1550,7 +1550,11 @@ public function foryouactivitys(Request $request)
                         $actlike = false;
                     }
 
-                    $activimage = asset($activity->image) ?? null; 
+                    if($activity->image){
+                        $activimage = asset($activity->image); 
+                    }else{
+                        $activimage = null;
+                    }
 
         $activitiesData[] = [
             'rendom' => $activity->rendom,

@@ -3061,7 +3061,7 @@ public function friendcount(Request $request)
     });
 
     // 🔹 Get matched users from SlideLike table
-    $likeUser = SlideLike::where('matched_user', $user->id);
+    $likeUser = SlideLike::where('matched_user', $user->id)->where('status',2);
     $likeUserDetails = $likeUser->pluck('matching_user');
     $likeUserDetails2 = User::whereIn('id', $likeUserDetails)->get();
 
@@ -3357,7 +3357,7 @@ public function friendcount_one(Request $request)
     });
 
     // 🔹 Get matched users from SlideLike table
-    $likeUser = SlideLike::where('matched_user', $user->id);
+    $likeUser = SlideLike::where('matched_user', $user->id)->where('status',2);
     $likeUserDetails = $likeUser->pluck('matching_user');
     $likeUserDetails2 = User::whereIn('id', $likeUserDetails)->get();
 

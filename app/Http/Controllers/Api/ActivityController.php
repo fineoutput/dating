@@ -702,6 +702,13 @@ public function useractivitys(Request $request)
                         $firstExpenseName = $firstExpense->name ?? null;
                     }
 
+                    
+                    if($activity->image){
+                        $activimage = asset($activity->image); 
+                    }else{
+                        $activimage = null;
+                    }
+
         $activitiesData[] = [
             'rendom' => $activity->rendom,
             'when_time' => $activity->when_time,
@@ -717,7 +724,7 @@ public function useractivitys(Request $request)
             'user_name' => $user->name,
             'expense_name' => $firstExpenseName ?? '',
            'user_profile_image' => $profileImageUrl ?? '',
-            'activity_image' => asset($activity->image),
+            'activity_image' => $activimage,
            'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
 
             'status' => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
@@ -830,6 +837,13 @@ public function useroldactivitys(Request $request)
                         $firstExpenseName = $firstExpense->name ?? null;
                     }
 
+                    
+                    if($activity->image){
+                        $activimage = asset($activity->image); 
+                    }else{
+                        $activimage = null;
+                    }
+
         $activitiesData[] = [
             'rendom' => $activity->rendom,
             'when_time' => $activity->when_time,
@@ -844,7 +858,7 @@ public function useroldactivitys(Request $request)
             // 'vibe_icon' => $activity->vibe->icon ?? '',
             'user_name' => $user->name,
            'user_profile_image' => $profileImageUrl ?? '',
-            'activity_image' => asset($activity->image),
+            'activity_image' => $activimage,
            'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
 
             'status' => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
@@ -1268,6 +1282,14 @@ if (empty($activityIds) || count($activityIds) == 0) {
                         $actlike = false;
                     }
 
+
+                    
+                    if($activity->image){
+                        $activimage = asset($activity->image); 
+                    }else{
+                        $activimage = null;
+                    }
+
         $activitiesData[] = [
             'rendom'             => $activity->rendom,
             'when_time'          => $activity->when_time,
@@ -1283,7 +1305,7 @@ if (empty($activityIds) || count($activityIds) == 0) {
             'expense_name'       => $firstExpenseName ?? '',
             'user_name'          => $user->name,
             'user_profile_image' => $profileImageUrl ?? '',
-            'activity_image'     => asset($activity->image),
+            'activity_image'     => $activimage,
             'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
 
             'status'             => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
@@ -1405,6 +1427,12 @@ $activities = Activity::whereIn('id', $activityIds)
                         $actlike = false;
                     }
 
+                    
+                    if($activity->image){
+                        $activimage = asset($activity->image); 
+                    }else{
+                        $activimage = null;
+                    }
         $activitiesData[] = [
             'rendom'             => $activity->rendom,
             'when_time'          => $activity->when_time,
@@ -1420,7 +1448,7 @@ $activities = Activity::whereIn('id', $activityIds)
             'expense_name'       => $firstExpenseName ?? '',
             'user_name'          => $user->name,
             'user_profile_image' => $profileImageUrl ?? '',
-            'activity_image'     => asset($activity->image),
+            'activity_image'     => $activimage,
             'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
 
             'status'             => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
@@ -2509,6 +2537,12 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
         $firstExpenseName = $firstExpense->name ?? null;
     }
 
+            
+        if($activity->image){
+            $activimage = asset($activity->image); 
+        }else{
+            $activimage = null;
+        }
         return [
             // 'id' => $activity->id,
             // 'user_id' => $activity->user_id,
@@ -2525,7 +2559,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             // 'user_id' => $userDetails->id,
             'user_name' => $userDetails->name,
             'user_profile_image' => $profileImageUrl,
-            'activity_image' => asset($activity->image),
+            'activity_image' => $activimage,
             'expense_name' => $firstExpenseName,
             // 'user_state' => $userDetails->state,
             // 'user_city' => $userDetails->city,
@@ -3617,6 +3651,12 @@ if ($date_type) {
             $actlike = $liked_Act ? true : false;
         }
 
+        
+        if($activity->image){
+            $activimage = asset($activity->image); 
+        }else{
+            $activimage = null;
+        }
         return [
             'title' => $activity->title,
             'rendom' => $activity->rendom,
@@ -3628,7 +3668,7 @@ if ($date_type) {
             'vibe_image' => $vibeImages ?? '',
             'user_name' => $userDetails->name,
             'user_profile_image' => $profileImageUrl ?? '',
-            'activity_image' => asset($activity->image),
+            'activity_image' => $activimage,
             'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
             
             // ✅ Add expense name
@@ -4070,6 +4110,12 @@ $activities = Activity::orderBy('id', 'DESC')
                     }
 
 
+                            
+        if($activity->image){
+            $activimage = asset($activity->image); 
+        }else{
+            $activimage = null;
+        }
                 return [
                     'rendom' => $activity->rendom,
                     'when_time' => $activity->when_time,
@@ -4086,7 +4132,7 @@ $activities = Activity::orderBy('id', 'DESC')
                     // 'vibe_icon' => $activity->vibe->icon ?? '',
                     'user_name' => $user_rendom->name,
                      'user_profile_image' => $profileImageUrl ?? '',
-                    'activity_image' => asset($activity->image),
+                    'activity_image' => $activimage,
                     'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
 
                     'status' => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),

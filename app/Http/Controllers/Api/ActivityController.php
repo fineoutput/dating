@@ -4016,6 +4016,7 @@ public function vibeactivitydetails(Request $request)
 $activities = Activity::orderBy('id', 'DESC')
     // ->where('vibe_id', 'LIKE', '%"'.$vibe->id.'"%')
     ->where('status', 2)
+     ->where('admin_city', $user->admin_city)
     ->where('user_id', '!=', $user->id)
     ->whereDate('when_time', '>=', $todayDate->format('Y-m-d'))
     ->where(function ($query) use ($currentDateTime) {

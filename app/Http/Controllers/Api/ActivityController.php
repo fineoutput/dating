@@ -1550,6 +1550,8 @@ public function foryouactivitys(Request $request)
                         $actlike = false;
                     }
 
+                    $activimage = asset($activity->image) ?? null; 
+
         $activitiesData[] = [
             'rendom' => $activity->rendom,
             'when_time' => $activity->when_time,
@@ -1566,7 +1568,7 @@ public function foryouactivitys(Request $request)
             'user_name' => $activityUser->name,
             'expense_name' => $firstExpenseName,
             'user_profile_image' => $profileImageUrl ?? '',
-            'activity_image' => asset($activity->image),
+            'activity_image' => $activimage,
            'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
 
             'status' => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),

@@ -999,6 +999,13 @@ public function userinterestactivitys(Request $request)
                             $actlike = false;
                         }
 
+                                
+        if($activity->image){
+            $activimage = asset($activity->image); 
+        }else{
+            $activimage = null;
+        }
+
             $activitiesData[] = [
                 'rendom'             => $activity->rendom,
                 'when_time'          => $activity->when_time,
@@ -1014,7 +1021,7 @@ public function userinterestactivitys(Request $request)
                 'expense_name'       => $firstExpenseName ?? '',
                 'user_name'          => $user->name,
                 'user_profile_image' => $profileImageUrl ?? '',
-                'activity_image'     => asset($activity->image),
+                'activity_image'     => $activimage,
                 'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
 
                 'status'             => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),

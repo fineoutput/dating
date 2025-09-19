@@ -2450,6 +2450,7 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
     $matchingActivities = Activity::orderBy('id','DESC')
         ->where('user_id', '!=', $user->id)
+         ->where('admin_city', $user->admin_city)
         ->where('status', 2)
         // ->where(function ($query) use ($interestIds) {
         //     foreach ($interestIds as $id) {
@@ -3941,6 +3942,7 @@ public function vibeactivitydetails(Request $request)
 
         $activities = Activity::orderBy('id', 'DESC')
             ->where('status', 2)
+            ->where('admin_city', $user->admin_city)
             ->where('user_id', '!=', $user->id)
             ->where(function ($query) use ($currentTime) {
                 $query->whereDate('when_time', '>', substr($currentTime, 0, 10))

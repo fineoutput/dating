@@ -1122,7 +1122,7 @@ public function removeinterest(Request $request)
     // Users who have shown interest but not confirmed
     $interests = OtherInterest::with('user')
         ->where('activity_id', $activity->id)
-        ->whereIn('confirm', [0, 2, 4, 6])
+        ->whereIn('confirm', [0, 4, 6])
         ->get();
 
     // Confirmed users
@@ -1140,7 +1140,7 @@ public function removeinterest(Request $request)
     // Users in discussion
     $indiscusion = OtherInterest::with('user')
         ->where('activity_id', $activity->id)
-        ->whereIn('confirm', [1, 3,7])
+        ->whereIn('confirm', [1, 2,3,7])
         ->take($howMany)
         ->get();
 

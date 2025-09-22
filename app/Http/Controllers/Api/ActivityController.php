@@ -3356,10 +3356,20 @@ public function friendcount_one(Request $request)
         return $userItem;
     });
 
-    // 🔹 Get matched users from SlideLike table
-    $likeUser = SlideLike::where('matched_user', $user->id)->where('status',2);
-    $likeUserDetails = $likeUser->pluck('matching_user');
-    $likeUserDetails2 = User::whereIn('id', $likeUserDetails)->get();
+       $likeUser = SlideLike::where('status', 2)
+        ->where(function ($query) use ($user) {
+            $query->where('matched_user', $user->id)
+                ->orWhere('matching_user', $user->id);
+        })
+        ->get();
+
+    // ✅ Extract the opposite user IDs
+    $likeUserIds = $likeUser->map(function ($like) use ($user) {
+        return $like->matched_user == $user->id ? $like->matching_user : $like->matched_user;
+    })->unique()->values();
+
+    // ✅ Fetch User details for these opposite users
+    $likeUserDetails2 = User::whereIn('id', $likeUserIds)->get();
 
     // 🔹 Map interest users
     $userList = $userDetailsFromInterest2->map(function ($userItem) use ($user) {
@@ -3442,15 +3452,17 @@ public function friendcount_one(Request $request)
         ];
     })->filter(); // remove nulls
 
-    // 🔹 Combine and remove duplicates, prioritize 'match'
     $matchUsers = collect($userList)
-                    ->merge($likeUserList)
-                    ->merge($matchedUsers)
-                    ->sortByDesc(function ($user) {
-                        return $user['form'] === 'match' ? 2 : 1;
-                    })
-                    ->unique('id')
-                    ->values();
+        ->merge($likeUserList)
+        ->merge($matchedUsers)
+        ->filter(function ($userItem) use ($user) {
+            return $userItem['id'] !== $user->id; 
+        })
+        ->sortByDesc(function ($user) {
+            return $user['form'] === 'match' ? 2 : 1;
+        })
+        ->unique('id')
+        ->values();
 
     // 🔚 Final Response
     return response()->json([

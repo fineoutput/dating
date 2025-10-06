@@ -3407,32 +3407,30 @@ public function friendcount_one(Request $request)
        $howMany = $activity->how_many;
 
 
- $confirm = OtherInterest::with('user')
+$confirm = OtherInterest::with('user')
     ->where('activity_id', $userItem->interest_activity_id)
     ->whereIn('confirm', [3, 7])
     ->take($howMany)
     ->get()
-    ->map(function ($item) {
-        return [
-            'id' => $item->id,
-            'user_id' => $item->user_id,
-            'user_rendom' => $item->user->rendom ?? null,
-            'confirm' => $item->confirm,
-        ];
-    });
+    ->pluck('user.rendom')
+    ->filter() // Remove nulls if any user is missing or has no rendom
+    ->values();
 
 
+    $activityimagePath = $activity->image ?? null;
 
         return [
             'id' => $userItem->id,
             'user_rendom' => $userItem->rendom,
             'name' => $userItem->name,
+            'activity_name' => $activity->title,
+            'activity_image' => $activityimagePath ? asset($activityimagePath) : null,
             'activity_id' => $userItem->interest_activity_id,
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
             'form' => 'activity',
             'last_message' => $chat->message ?? null,
             'send_type' => $chat->send_type ?? null,
-            'confirm' => $confirm,
+            'user_rendoms' => $confirm,
         ];
     });
 

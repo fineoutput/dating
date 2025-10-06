@@ -3408,6 +3408,7 @@ public function friendcount_one(Request $request)
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
             'form' => 'activity',
             'last_message' => $chat->message ?? null,
+             'send_type' => $chat->send_type ?? null,
         ];
     });
 
@@ -3433,6 +3434,7 @@ public function friendcount_one(Request $request)
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
             'form' => 'match',
             'last_message' => $chat->message ?? null,
+            'send_type' => $chat->send_type ?? null,
         ];
     });
 
@@ -3463,6 +3465,7 @@ public function friendcount_one(Request $request)
             'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
             'form' => 'match',
             'last_message' => $chat->message ?? null,
+             'send_type' => $chat->send_type ?? null,
         ];
     })->filter(); // remove nulls
 

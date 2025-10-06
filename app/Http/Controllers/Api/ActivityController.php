@@ -3407,14 +3407,14 @@ public function friendcount_one(Request $request)
        $howMany = $activity->how_many;
 
 
-$confirm = OtherInterest::with('user')
-    ->where('activity_id', $userItem->interest_activity_id)
-    ->whereIn('confirm', [3, 7])
-    ->take($howMany)
-    ->get()
-    ->pluck('user.rendom')
-    ->filter() // Remove nulls if any user is missing or has no rendom
-    ->values();
+    $confirm = OtherInterest::with('user')
+        ->where('activity_id', $userItem->interest_activity_id)
+        ->whereIn('confirm', [3, 7])
+        ->take($howMany)
+        ->get()
+        ->pluck('user.rendom')
+        ->filter() // Remove nulls if any user is missing or has no rendom
+        ->values();
 
 
     $activityimagePath = $activity->image ?? null;
@@ -3433,6 +3433,58 @@ $confirm = OtherInterest::with('user')
             'user_rendoms' => $confirm,
         ];
     });
+
+    $groupUserList = $userDetailsFromInterest2->map(function ($userItem) use ($user) {
+        // Skip if no interest activity
+        if (!$userItem->interest_activity_id) {
+            return null;
+        }
+
+        $activity = Activity::where('id', $userItem->interest_activity_id)->first();
+        if (!$activity) {
+            return null;
+        }
+
+        $imagePath = null;
+        if ($userItem->profile_image) {
+            $images = json_decode($userItem->profile_image, true); 
+            if (is_array($images) && count($images)) {
+                $imagePath = reset($images);
+            }
+        }
+
+        $chat = Chat::where('sender_id', $user->id)
+                    ->where('receiver_id', $userItem->id)
+                    ->orderBy('id', 'DESC')
+                    ->first();
+
+        $howMany = $activity->how_many ?? 0;
+
+        $confirm = OtherInterest::with('user')
+            ->where('activity_id', $userItem->interest_activity_id)
+            ->whereIn('confirm', [3, 7])
+            ->take($howMany)
+            ->get()
+            ->pluck('user.rendom')
+            ->filter()
+            ->values();
+
+        $activityimagePath = $activity->image ?? null;
+
+        return [
+            'id' => $userItem->id,
+            'user_rendom' => $userItem->rendom,
+            'name' => $userItem->name,
+            'activity_name' => $activity->title,
+            'activity_image' => $activityimagePath ? asset($activityimagePath) : null,
+            'activity_id' => $userItem->interest_activity_id,
+            'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+            'form' => 'group',
+            'last_message' => $chat->message ?? null,
+            'send_type' => $chat->send_type ?? null,
+            'user_rendoms' => $confirm,
+        ];
+    })->filter();
 
     // 🔹 Map liked users
     $likeUserList = $likeUserDetails2->map(function ($userItem) use ($user) {
@@ -3491,15 +3543,13 @@ $confirm = OtherInterest::with('user')
         ];
     })->filter(); // remove nulls
 
-    $matchUsers = collect($userList)
-        ->merge($likeUserList)
-        ->merge($matchedUsers)
-        ->filter(function ($userItem) use ($user) {
-            return $userItem['id'] !== $user->id; 
-        })
-        ->sortByDesc(function ($user) {
-            return $user['form'] === 'match' ? 2 : 1;
-        })
+   $filteredUserList = $userList->filter(fn($u) => $u['id'] !== $user->id)->values();
+    $filteredGroupList = $groupUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
+    $filteredLikeList = $likeUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
+    $filteredCupidList = $matchedUsers->filter(fn($u) => $u['id'] !== $user->id)->values();
+
+    // Combine matches only
+    $matchUsers = $filteredLikeList->merge($filteredCupidList)
         ->unique('id')
         ->values();
 
@@ -3509,7 +3559,9 @@ $confirm = OtherInterest::with('user')
         'status' => 200,
         'data' => [
             'match_users' => $matchUsers,
-            'friend_count' => $matchUsers->count(),
+            'activity_users' => $filteredUserList,
+            'group_users' => $filteredGroupList,
+            'friend_count' => $filteredUserList->count() + $filteredGroupList->count(),
             'like_count' => $interestRelations->count(),
         ]
     ]);

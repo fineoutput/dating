@@ -175,7 +175,6 @@ public function sendMessage(Request $request)
         : [$request->receiver_rendom];
 
     if ($request->send_type === 'group') {
-        // Fetch all users in one query for efficiency
         $receivers = User::whereIn('rendom', $receiverRendoms)->get()->keyBy('rendom');
         $responses = [];
 
@@ -262,6 +261,7 @@ public function sendMessage(Request $request)
                 'message' => $request->message,
                 'status' => 'sent',
                 'rendom' => $code,
+                'send_type' => $request->send_type,
                 'chat_type' => $request->chat_type,
                 'activity_id' => $mainActivity->id ?? null,
             ]);
@@ -282,7 +282,6 @@ public function sendMessage(Request $request)
         ]);
     }
 
-    // ✅ Send Type = single
     $receiver = User::where('rendom', $receiverRendoms[0])->first();
 
     if (!$receiver) {
@@ -364,6 +363,7 @@ public function sendMessage(Request $request)
         'message' => $request->message,
         'status' => 'sent',
         'rendom' => $code,
+         'send_type' => $request->send_type,
         'chat_type' => $request->chat_type,
         'activity_id' => $mainActivity->id ?? null,
     ]);

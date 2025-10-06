@@ -3402,17 +3402,24 @@ public function friendcount_one(Request $request)
 
                     
 
-       
-
+    
     $activity = Activity::where('id', $userItem->interest_activity_id)->first();
        $howMany = $activity->how_many;
 
 
-                       $confirm = OtherInterest::with('user')
-        ->where('activity_id', $userItem->interest_activity_id)
-        ->whereIn('confirm', [3, 7])
-        ->take($howMany)
-        ->get();
+ $confirm = OtherInterest::with('user')
+    ->where('activity_id', $userItem->interest_activity_id)
+    ->whereIn('confirm', [3, 7])
+    ->take($howMany)
+    ->get()
+    ->map(function ($item) {
+        return [
+            'id' => $item->id,
+            'user_id' => $item->user_id,
+            'user_rendom' => $item->user->rendom ?? null,
+            'confirm' => $item->confirm,
+        ];
+    });
 
 
 

@@ -3400,6 +3400,22 @@ public function friendcount_one(Request $request)
                     ->orderBy('id', 'DESC')
                     ->first();
 
+                    
+
+       
+
+    $activity = Activity::where('id', $userItem->interest_activity_id)->first();
+       $howMany = $activity->how_many;
+
+
+                       $confirm = OtherInterest::with('user')
+        ->where('activity_id', $userItem->interest_activity_id)
+        ->whereIn('confirm', [3, 7])
+        ->take($howMany)
+        ->get();
+
+
+
         return [
             'id' => $userItem->id,
             'user_rendom' => $userItem->rendom,
@@ -3408,7 +3424,8 @@ public function friendcount_one(Request $request)
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
             'form' => 'activity',
             'last_message' => $chat->message ?? null,
-             'send_type' => $chat->send_type ?? null,
+            'send_type' => $chat->send_type ?? null,
+            'confirm' => $confirm,
         ];
     });
 

@@ -170,12 +170,18 @@ public function sendMessage(Request $request)
     $sender = Auth::user();
     $now = Carbon::now('Asia/Kolkata');
 
-    $receiverRendoms = is_array($request->receiver_rendom) 
-        ? $request->receiver_rendom 
-        : [$request->receiver_rendom];
+   
+        // return $receiverRendoms;
 
     if ($request->send_type === 'group') {
+         $receiverRendomsRaw = $request->receiver_rendom;
+
+$receiverRendoms = is_array($receiverRendomsRaw)
+    ? $receiverRendomsRaw
+    : json_decode($receiverRendomsRaw, true);
+
         $receivers = User::whereIn('rendom', $receiverRendoms)->get()->keyBy('rendom');
+        // return $receivers;
         $responses = [];
 
         // Collect all valid receiver IDs (excluding self)
@@ -269,17 +275,17 @@ public function sendMessage(Request $request)
                 $mainActivity = Activity::where('rendom', $request->activity_id)->first();
             }
 
+        }
+        
             $chat = Chat::create([
                 'sender_id' => $sender->id,
-                'receiver_id' => $receiver->id,
+                'receiver_id' => $implodedReceiverIds,
                 'message' => $request->message,
                 'status' => 'sent',
                 'rendom' => $code,
                 'send_type' => $request->send_type,
                 'chat_type' => $request->chat_type,
                 'activity_id' => $mainActivity->id ?? null,
-                // Optional: Store imploded receiver IDs if you want it saved per message
-                // 'group_receivers' => $implodedReceiverIds, // if such column exists
             ]);
 
             $responses[] = [
@@ -289,7 +295,6 @@ public function sendMessage(Request $request)
                 'rendom' => $chat->rendom,
                 'sent_time' => Carbon::parse($chat->created_at)->diffForHumans(),
             ];
-        }
 
         return response()->json([
             'message' => 'Group messages processed.',
@@ -297,17 +302,17 @@ public function sendMessage(Request $request)
             'receiver_ids' => $implodedReceiverIds, // returning here
             'status' => 200,
         ]);
-    }
+    }else{
+        $receiverRendoms = $request->receiver_rendom;
+        $receiver = User::where('rendom', $receiverRendoms)->first();
 
-    $receiver = User::where('rendom', $receiverRendoms[0])->first();
-
-    if (!$receiver) {
-        return response()->json([
-            'message' => 'User Not Found',
-            'data' => [],
-            'status' => 200,
-        ]);
-    }
+        if (!$receiver) {
+            return response()->json([
+                'message' => 'User Not Found',
+                'data' => [],
+                'status' => 200,
+            ]);
+        }
 
     if ($receiver->id == $sender->id) {
         return response()->json([
@@ -398,6 +403,7 @@ public function sendMessage(Request $request)
         ],
         'status' => 200,
     ]);
+    }
 }
 
 
@@ -420,7 +426,6 @@ public function getMessages(Request $request)
 
     $receiverId = $receiver->id;
 
-    // ✅ Decode only once
     $decodedImages = json_decode($receiver->profile_image, true);
     $profileImageUrl = null;
 
@@ -429,7 +434,6 @@ public function getMessages(Request $request)
         $profileImageUrl = url('') . '/uploads/app/profile_images/' . ltrim($firstImage, '/');
     }
 
-    // ✅ Fetch messages between sender & receiver
     $messages = Chat::where(function ($query) use ($receiverId) {
             $query->where('sender_id', Auth::id())
                 ->where('receiver_id', $receiverId);
@@ -450,7 +454,7 @@ public function getMessages(Request $request)
             'chat_type' => $message->chat_type,
             'sender_rendom' => $sender->rendom ?? null,
             'receiver_rendom' => $receiver->rendom ?? null,
-            'profile_image' => $profileImageUrl, // ✅ Same for all
+            'profile_image' => $profileImageUrl,
             'message' => $message->message,
             'status' => $message->status,
             'sent_time' => Carbon::parse($message->created_at)->diffForHumans(),

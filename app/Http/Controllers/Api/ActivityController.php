@@ -2334,34 +2334,31 @@ public function foryouActivitydetailes(Request $request)
 
     $activitiesWithUserDetails = $matchingActivities->map(function ($activity) {
         $hash = md5($activity->id);
-$r = hexdec(substr($hash, 0, 2));
-$g = hexdec(substr($hash, 2, 2));
-$b = hexdec(substr($hash, 4, 2));
+    $r = hexdec(substr($hash, 0, 2));
+    $g = hexdec(substr($hash, 2, 2));
+    $b = hexdec(substr($hash, 4, 2));
 
-$lightenFactor = 0.5;  // Adjust the lightening factor to 50%
-$r = round($r + (255 - $r) * $lightenFactor);
-$g = round($g + (255 - $g) * $lightenFactor);
-$b = round($b + (255 - $b) * $lightenFactor);
+    $lightenFactor = 0.5;  // Adjust the lightening factor to 50%
+    $r = round($r + (255 - $r) * $lightenFactor);
+    $g = round($g + (255 - $g) * $lightenFactor);
+    $b = round($b + (255 - $b) * $lightenFactor);
 
-// Convert back to hex format
-$bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
+    // Convert back to hex format
+    $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
     
         $userDetails = User::find($activity->user_id);
-    
+
         if ($userDetails) {
             $profileImages = json_decode($userDetails->profile_image, true);
             $profileImageUrl = isset($profileImages[1]) ? url('uploads/app/profile_images/' . $profileImages[1]) : null;
-    
-            // Merging user details directly in the main array
-            $userData = [
-                'id' => $userDetails->id ?? '',
-                'name' => $userDetails->name ?? '',
-                'profile_image' => $profileImageUrl, 
-                'state' => $userDetails->state,
-                'city' => $userDetails->city,
-                'time' => \Carbon\Carbon::parse($userDetails->created_at)->format('d-F H:i'), 
-            ];
+
+            $userName = $userDetails->name;
+            $userProfileImage = $profileImageUrl;
+        } else {
+            $userName = '';
+            $userProfileImage = null;
         }
+
     
         $imageUrl = $activity->image ? url('images/activities/' . $activity->image) : null;
     
@@ -2407,8 +2404,8 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
             'vibe_image' => $vibeImages ?? '',
             // 'vibe_icon' => $activity->vibe->icon ?? '',
             // 'user_id' => $userDetails->id,
-            'user_name' => $userDetails->name,
-            'user_profile_image' => $profileImageUrl,
+            'user_name' => $userDetails->name ?? '',
+            'user_profile_image' => $userProfileImage,
             // 'user_state' => $userDetails->state,
             // 'user_city' => $userDetails->city,
            'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),

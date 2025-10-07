@@ -714,14 +714,14 @@ public function useractivitys(Request $request)
             'when_time' => $activity->when_time,
             'end_time' => $activity->end_time,
             'title' => $activity->title,
-            'location' => $activity->location,
+            'location' => $activity->location ?? '',
             'bg_color' => $bgColor,
-            'how_many' => $activity->how_many,
+            'how_many' => $activity->how_many ?? '',
             'vibe_name' => $vibeNames ?? '',
             'vibe_image' => $vibeImages ?? '',
             'is_like' => true,
             // 'vibe_icon' => $activity->vibe->icon ?? '',
-            'user_name' => $user->name,
+            'user_name' => $user->name ?? '',
             'expense_name' => $firstExpenseName ?? '',
            'user_profile_image' => $profileImageUrl ?? '',
             'activity_image' => $activimage,
@@ -1605,7 +1605,7 @@ public function foryouactivitys(Request $request)
             // 'vibe_icon' => $activity->vibe->icon ?? '',
             'is_like' => false,
             'like' => $actlike,
-            'user_name' => $activityUser->name,
+            'user_name' => $activityUser->name ?? '',
             'expense_name' => $firstExpenseName,
             'user_profile_image' => $profileImageUrl ?? '',
             'activity_image' => $activimage,
@@ -2354,8 +2354,8 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
     
             // Merging user details directly in the main array
             $userData = [
-                'id' => $userDetails->id,
-                'name' => $userDetails->name,
+                'id' => $userDetails->id ?? '',
+                'name' => $userDetails->name ?? '',
                 'profile_image' => $profileImageUrl, 
                 'state' => $userDetails->state,
                 'city' => $userDetails->city,
@@ -2396,13 +2396,13 @@ $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
         return [
             // 'id' => $activity->id,
             // 'user_id' => $activity->user_id,
-            'title' => $activity->title,
-            'rendom' => $activity->rendom,
-            'location' => $activity->location,    
+            'title' => $activity->title ?? '',
+            'rendom' => $activity->rendom ?? '',
+            'location' => $activity->location ?? '',    
             // 'image' => $imageUrl,
-            'bg_color' => $activity->bg_color,
+            'bg_color' => $activity->bg_color ?? '',
             'is_like' => false,
-            'like' => $actlike,
+            'like' => $actlike ?? '',
             'vibe_name' => $vibeNames ?? '',
             'vibe_image' => $vibeImages ?? '',
             // 'vibe_icon' => $activity->vibe->icon ?? '',
@@ -3377,12 +3377,10 @@ public function friendcount_one(Request $request)
         })
         ->get();
 
-    // ✅ Extract the opposite user IDs
     $likeUserIds = $likeUser->map(function ($like) use ($user) {
         return $like->matched_user == $user->id ? $like->matching_user : $like->matched_user;
     })->unique()->values();
 
-    // ✅ Fetch User details for these opposite users
     $likeUserDetails2 = User::whereIn('id', $likeUserIds)->get();
 
     // 🔹 Map interest users
@@ -3400,9 +3398,7 @@ public function friendcount_one(Request $request)
                     ->orderBy('id', 'DESC')
                     ->first();
 
-                    
 
-    
     $activity = Activity::where('id', $userItem->interest_activity_id)->first();
        $howMany = $activity->how_many;
 

@@ -3456,7 +3456,7 @@ public function friendcount_one(Request $request)
 
         $confirm = OtherInterest::with('user')
             ->where('activity_id', $userItem->interest_activity_id)
-            ->whereIn('confirm', [3, 7])
+            ->whereIn('confirm', [4, 7])
             ->take($howMany)
             ->get()
             ->pluck('user.rendom')

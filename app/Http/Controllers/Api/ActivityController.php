@@ -3464,13 +3464,13 @@ public function friendcount_one(Request $request)
 
         $confirm = OtherInterest::with('user')
             ->where('activity_id', $userItem->interest_activity_id)
-            ->whereIn('confirm', [4, 7])
+            ->whereIn('confirm', [3, 7])
             ->take($howMany)
             ->get()
             ->pluck('user.rendom')
             ->filter()
             ->values();
-            
+
               if ($confirm->isEmpty()) return null;
 
         $activityimagePath = $activity->image ?? null;

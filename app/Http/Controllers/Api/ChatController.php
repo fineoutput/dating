@@ -178,6 +178,9 @@ public function sendMessage(Request $request)
         $receivers = User::whereIn('rendom', $receiverRendoms)->get()->keyBy('rendom');
         $responses = [];
 
+        // Collect all valid receiver IDs (excluding self)
+        $validReceiverIds = [];
+
         foreach ($receiverRendoms as $receiverRendom) {
             $receiver = $receivers->get($receiverRendom);
 
@@ -198,6 +201,17 @@ public function sendMessage(Request $request)
                 ];
                 continue;
             }
+
+            // Add to valid receiver IDs array
+            $validReceiverIds[] = $receiver->id;
+        }
+
+        // Implode IDs into a comma-separated string
+        $implodedReceiverIds = implode(',', $validReceiverIds);
+
+        // Now send message individually to valid users
+        foreach ($validReceiverIds as $receiverId) {
+            $receiver = User::find($receiverId);
 
             // Subscription & message limit check
             $activeSubscription = UserSubscription::where('user_id', $sender->id)
@@ -238,7 +252,7 @@ public function sendMessage(Request $request)
 
             if ($limitExceeded) {
                 $responses[] = [
-                    'receiver_rendom' => $receiverRendom,
+                    'receiver_id' => $receiverId,
                     'message' => 'Message limit reached.',
                     'status' => 203,
                 ];
@@ -264,6 +278,8 @@ public function sendMessage(Request $request)
                 'send_type' => $request->send_type,
                 'chat_type' => $request->chat_type,
                 'activity_id' => $mainActivity->id ?? null,
+                // Optional: Store imploded receiver IDs if you want it saved per message
+                // 'group_receivers' => $implodedReceiverIds, // if such column exists
             ]);
 
             $responses[] = [
@@ -278,6 +294,7 @@ public function sendMessage(Request $request)
         return response()->json([
             'message' => 'Group messages processed.',
             'data' => $responses,
+            'receiver_ids' => $implodedReceiverIds, // returning here
             'status' => 200,
         ]);
     }

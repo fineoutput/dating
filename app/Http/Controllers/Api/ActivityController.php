@@ -3345,6 +3345,7 @@ public function friendcount_one(Request $request)
     })->where(function ($query) {
         $query->where('confirm', 3)
             ->orWhere('confirm', 7)
+            ->orWhere('confirm', 4)
             ->orWhere('confirm', 2);
     })->get();             
 
@@ -3454,6 +3455,13 @@ public function friendcount_one(Request $request)
 
         $howMany = $activity->how_many ?? 0;
 
+    //     $confirm = OtherInterest::with('user')
+    // ->where('activity_id', $userItem->interest_activity_id)
+    // // ->whereIn('confirm', [4, 7])
+    // ->where('confirm',4)
+    // ->take($howMany)
+    // ->get();
+
         $confirm = OtherInterest::with('user')
             ->where('activity_id', $userItem->interest_activity_id)
             ->whereIn('confirm', [4, 7])
@@ -3462,6 +3470,8 @@ public function friendcount_one(Request $request)
             ->pluck('user.rendom')
             ->filter()
             ->values();
+            
+              if ($confirm->isEmpty()) return null;
 
         $activityimagePath = $activity->image ?? null;
 
@@ -3479,6 +3489,7 @@ public function friendcount_one(Request $request)
             'user_rendoms' => $confirm,
         ];
     })->filter();
+    // return $groupUserList;
 
     // 🔹 Map liked users
     $likeUserList = $likeUserDetails2->map(function ($userItem) use ($user) {

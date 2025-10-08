@@ -265,7 +265,7 @@ public function sendMessage(Request $request)
                 continue;
             }
 
-            $code = rand(100000, 999999);
+             $code = rand(100000, 999999);
             while (Chat::where('rendom', $code)->exists()) {
                 $code = rand(100000, 999999);
             }
@@ -277,6 +277,11 @@ public function sendMessage(Request $request)
 
         }
         
+          $code = rand(100000, 999999);
+            while (Chat::where('rendom', $code)->exists()) {
+                $code = rand(100000, 999999);
+            }
+            
             $chat = Chat::create([
                 'sender_id' => $sender->id,
                 'receiver_id' => $implodedReceiverIds,

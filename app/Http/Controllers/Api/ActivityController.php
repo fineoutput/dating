@@ -4803,18 +4803,18 @@ public function updateConfirm(Request $request)
     ], 201);
     }
 
-       $howMany = $activity->how_many;
+       $howMany = $activity_rendom_1->how_many;
 
-        $confirmedCount = OtherInterest::where('activity_id', $activity->id)
+        $confirmedCount = OtherInterest::where('activity_id', $activity_rendom_1->id)
                                        ->where('confirm', 2)
                                        ->count();
-                                       
         if ($confirmedCount >= $howMany) {
             return response()->json([
                 'message' => 'The activity has reached its maximum number of confirmed participants.',
                 'status' => 201,
                 'data' => [],
             ], 201);
+        }
 
 
  $otherInterest = OtherInterest::where('user_id', $user->id)

@@ -290,7 +290,7 @@ public function sendMessage(Request $request)
                 'rendom' => $code,
                 'send_type' => $request->send_type,
                 'chat_type' => $request->chat_type,
-                'activity_id' => $mainActivity->id ?? null,
+                'activity_id' => $request->activity_id ?? null,
             ]);
 
             $responses[] = [
@@ -392,7 +392,7 @@ public function sendMessage(Request $request)
         'rendom' => $code,
          'send_type' => $request->send_type,
         'chat_type' => $request->chat_type,
-        'activity_id' => $mainActivity->id ?? null,
+        'activity_id' => $request->activity_id ?? null,
     ]);
 
     return response()->json([

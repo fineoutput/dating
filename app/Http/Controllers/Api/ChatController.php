@@ -700,7 +700,7 @@ public function getMessages(Request $request)
 
     $receiverRendomss = $request->input('receiver_rendom');
     $send_type = $request->input('send_type');
-    $activityId = $request->input('activity_id'); // ✅ Get activity_id from request
+    $activityId = $request->input('activity_id'); 
 
     // Convert input to array
     $receiverRendoms = is_array($receiverRendomss)
@@ -722,35 +722,35 @@ public function getMessages(Request $request)
     $receiverIds = $receiverIdMap->values()->toArray();
     $authId = $authUser->id;
 
-    // 🛠️ Handle messages
     $allMessages = Chat::where(function ($query) use ($authId, $receiverIds, $send_type) {
+    if ($send_type === 'single') {
+        $query->where(function ($q) use ($authId, $receiverIds) {
+            foreach ($receiverIds as $receiverId) {
+                $q->orWhere(function ($q2) use ($authId, $receiverId) {
+                    $q2->where('sender_id', $authId)
+                        ->whereRaw("FIND_IN_SET(?, receiver_id)", [$receiverId]);
+                });
+
+                $q->orWhere(function ($q2) use ($authId, $receiverId) {
+                    $q2->where('sender_id', $receiverId)
+                        ->whereRaw("FIND_IN_SET(?, receiver_id)", [$authId]);
+                });
+            }
+        });
+    } else {
+        // For group, keep as before
         $query->where('send_type', $send_type)
-              ->where(function ($q) use ($authId, $receiverIds) {
-                  foreach ($receiverIds as $receiverId) {
-                      $q->orWhere(function ($q2) use ($authId, $receiverId) {
-                          $q2->where('sender_id', $authId)
-                              ->whereRaw("FIND_IN_SET(?, receiver_id)", [$receiverId]);
-                      });
-
-                      $q->orWhere(function ($q2) use ($authId, $receiverId) {
-                          $q2->where('sender_id', $receiverId)
-                              ->whereRaw("FIND_IN_SET(?, receiver_id)", [$authId]);
-                      });
-
-                      $q->orWhere(function ($q2) use ($authId) {
-                          $q2->whereRaw("FIND_IN_SET(?, receiver_id)", [$authId]);
-                      });
-                  }
-
-                  $q->orWhere('sender_id', $authId);
+              ->where(function ($q) use ($authId) {
+                  $q->where('sender_id', $authId)
+                    ->orWhereRaw("FIND_IN_SET(?, receiver_id)", [$authId]);
               });
-    })
-    ->when($send_type === 'group' && $activityId, function ($query) use ($activityId) {
-        // ✅ Filter by activity_id only for group chats
-        $query->where('activity_id', $activityId);
-    })
-    ->orderBy('created_at', 'asc')
-    ->get();
+    }
+})
+->when($send_type === 'group' && $activityId, function ($query) use ($activityId) {
+    $query->where('activity_id', $activityId);
+})
+->orderBy('created_at', 'asc')
+->get();
 
     // Format messages
     $flatMessages = $allMessages->map(function ($message) use ($authId) {

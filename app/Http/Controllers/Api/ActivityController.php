@@ -2475,103 +2475,80 @@ public function foryouActivitydetailes(Request $request)
         ], 200);
     }
 
-    $activitiesWithUserDetails = $matchingActivities->map(function ($activity) {
+        $activitiesWithUserDetails = $matchingActivities->map(function ($activity) {
         $hash = md5($activity->id);
-$r = hexdec(substr($hash, 0, 2));
-$g = hexdec(substr($hash, 2, 2));
-$b = hexdec(substr($hash, 4, 2));
+        $r = hexdec(substr($hash, 0, 2));
+        $g = hexdec(substr($hash, 2, 2));
+        $b = hexdec(substr($hash, 4, 2));
 
-$lightenFactor = 0.5;  // Adjust the lightening factor to 50%
-$r = round($r + (255 - $r) * $lightenFactor);
-$g = round($g + (255 - $g) * $lightenFactor);
-$b = round($b + (255 - $b) * $lightenFactor);
+        $lightenFactor = 0.5;
+        $r = round($r + (255 - $r) * $lightenFactor);
+        $g = round($g + (255 - $g) * $lightenFactor);
+        $b = round($b + (255 - $b) * $lightenFactor);
 
-// Convert back to hex format
-$bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
-    
+        $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
+
         $userDetails = User::find($activity->user_id);
-    
+
+        // ✅ Initialize defaults
+        $profileImageUrl = null;
+        $userName = '';
+        $actlike = false;
+
         if ($userDetails) {
             $profileImages = json_decode($userDetails->profile_image, true);
             $profileImageUrl = isset($profileImages[1]) ? url('uploads/app/profile_images/' . $profileImages[1]) : null;
-    
-            // Merging user details directly in the main array
-            $userData = [
-                'id' => $userDetails->id,
-                'name' => $userDetails->name,
-                'profile_image' => $profileImageUrl, 
-                'state' => $userDetails->state,
-                'city' => $userDetails->city,
-                'time' => \Carbon\Carbon::parse($userDetails->created_at)->format('d-F H:i'), 
-            ];
+            $userName = $userDetails->name ?? '';
         }
-    
+
         $imageUrl = $activity->image ? url('images/activities/' . $activity->image) : null;
-    
         $activity->bg_color = $bgColor;
 
-        
-                $vibeNames = [];
-                    $vibeImages = [];
+        $vibeNames = [];
+        $vibeImages = [];
 
-                    $vibeIdsRaw = json_decode($activity->vibe_id, true); 
-                    if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
-                        $vibeIdList = explode(',', $vibeIdsRaw[0]); 
-
-                        $vibes = Vibes::whereIn('id', $vibeIdList)->get();
-
-                        foreach ($vibes as $vibe) {
-                            $vibeNames[] = $vibe->name;
-                            $vibeImages[] = asset($vibe->icon);
-                        }
-                    }
-
-                       $authuser =  Auth::user();
-                    if($authuser){
-                        $liked_Act = LikeActivity::where('activity_id',$activity->id)->where('user_id',$authuser->id)->where('status', 1)->first();
-                    }
-
-                    if($liked_Act){
-                        $actlike = true;
-                    }else{
-                        $actlike = false;
-                    }
-
-                         $expenseIds = json_decode($activity->expense_id, true);
-    $firstExpenseName = null;
-    if (is_array($expenseIds) && count($expenseIds) > 0) {
-        $firstExpense = Expense::find($expenseIds[0]);
-        $firstExpenseName = $firstExpense->name ?? null;
-    }
-
-            
-        if($activity->image){
-            $activimage = asset($activity->image); 
-        }else{
-            $activimage = null;
+        $vibeIdsRaw = json_decode($activity->vibe_id, true); 
+        if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
+            $vibeIdList = explode(',', $vibeIdsRaw[0]); 
+            $vibes = Vibes::whereIn('id', $vibeIdList)->get();
+            foreach ($vibes as $vibe) {
+                $vibeNames[] = $vibe->name;
+                $vibeImages[] = asset($vibe->icon);
+            }
         }
+
+        $authuser = Auth::user();
+        if ($authuser) {
+            $liked_Act = LikeActivity::where('activity_id', $activity->id)
+                ->where('user_id', $authuser->id)
+                ->where('status', 1)
+                ->first();
+            $actlike = $liked_Act ? true : false;
+        }
+
+        $expenseIds = json_decode($activity->expense_id, true);
+        $firstExpenseName = null;
+        if (is_array($expenseIds) && count($expenseIds) > 0) {
+            $firstExpense = Expense::find($expenseIds[0]);
+            $firstExpenseName = $firstExpense->name ?? null;
+        }
+
+        $activimage = $activity->image ? asset($activity->image) : null;
+
         return [
-            // 'id' => $activity->id,
-            // 'user_id' => $activity->user_id,
             'title' => $activity->title,
             'rendom' => $activity->rendom,
-            'location' => $activity->location,    
-            // 'image' => $imageUrl,
+            'location' => $activity->location,
             'bg_color' => $activity->bg_color,
             'is_like' => false,
             'like' => $actlike,
-            'vibe_name' => $vibeNames ?? '',
-            'vibe_image' => $vibeImages ?? '',
-            // 'vibe_icon' => $activity->vibe->icon ?? '',
-            // 'user_id' => $userDetails->id,
-            'user_name' => $userDetails->name,
+            'vibe_name' => $vibeNames,
+            'vibe_image' => $vibeImages,
+            'user_name' => $userName,
             'user_profile_image' => $profileImageUrl,
             'activity_image' => $activimage,
             'expense_name' => $firstExpenseName,
-            // 'user_state' => $userDetails->state,
-            // 'user_city' => $userDetails->city,
             'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
-
         ];
     });
         return response()->json([

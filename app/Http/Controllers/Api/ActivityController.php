@@ -3429,16 +3429,73 @@ public function friendcount_one(Request $request)
         ];
     });
 
-    $groupUserList = $userDetailsFromInterest2->map(function ($userItem) use ($user) {
-        // Skip if no interest activity
-        if (!$userItem->interest_activity_id) {
-            return null;
-        }
+    // $groupUserList = $userDetailsFromInterest2->map(function ($userItem) use ($user) {
+    //     // Skip if no interest activity
+    //     if (!$userItem->interest_activity_id) {
+    //         return null;
+    //     }
 
-        $activity = Activity::where('id', $userItem->interest_activity_id)->first();
-        if (!$activity) {
-            return null;
-        }
+    //     $activity = Activity::where('id', $userItem->interest_activity_id)->first();
+    //     if (!$activity) {
+    //         return null;
+    //     }
+
+    //     $imagePath = null;
+    //     if ($userItem->profile_image) {
+    //         $images = json_decode($userItem->profile_image, true); 
+    //         if (is_array($images) && count($images)) {
+    //             $imagePath = reset($images);
+    //         }
+    //     }
+
+    //     $chat = Chat::where('sender_id', $user->id)
+    //                 ->where('receiver_id', $userItem->id)
+    //                 ->where('send_type', 'group')
+    //                 ->orderBy('id', 'DESC')
+    //                 ->first();
+
+    //     $howMany = $activity->how_many ?? 0;
+
+    // //     $confirm = OtherInterest::with('user')
+    // // ->where('activity_id', $userItem->interest_activity_id)
+    // // // ->whereIn('confirm', [4, 7])
+    // // ->where('confirm',4)
+    // // ->take($howMany)
+    // // ->get();
+
+    //     $confirm = OtherInterest::with('user')
+    //         ->where('activity_id', $userItem->interest_activity_id)
+    //         ->whereIn('confirm', [3, 7])
+    //         ->take($howMany)
+    //         ->get()
+    //         ->pluck('user.rendom')
+    //         ->filter()
+    //         ->values();
+
+    //           if ($confirm->isEmpty()) return null;
+
+    //     $activityimagePath = $activity->image ?? null;
+
+    //     return [
+    //         'id' => $userItem->id,
+    //         'user_rendom' => $userItem->rendom,
+    //         'name' => $userItem->name,
+    //         'activity_name' => $activity->title,
+    //         'activity_image' => $activityimagePath ? asset($activityimagePath) : null,
+    //         'activity_id' => $userItem->interest_activity_id,
+    //         'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+    //         'form' => 'group',
+    //         'last_message' => $chat->message ?? null,
+    //         'send_type' => $chat->send_type ?? null,
+    //         'user_rendoms' => $confirm,
+    //     ];
+    // })->filter();
+    $groupUserList = $userDetailsFromInterest2
+    ->map(function ($userItem) use ($user) {
+        if (!$userItem->interest_activity_id) return null;
+
+        $activity = Activity::find($userItem->interest_activity_id);
+        if (!$activity) return null;
 
         $imagePath = null;
         if ($userItem->profile_image) {
@@ -3456,13 +3513,6 @@ public function friendcount_one(Request $request)
 
         $howMany = $activity->how_many ?? 0;
 
-    //     $confirm = OtherInterest::with('user')
-    // ->where('activity_id', $userItem->interest_activity_id)
-    // // ->whereIn('confirm', [4, 7])
-    // ->where('confirm',4)
-    // ->take($howMany)
-    // ->get();
-
         $confirm = OtherInterest::with('user')
             ->where('activity_id', $userItem->interest_activity_id)
             ->whereIn('confirm', [3, 7])
@@ -3472,7 +3522,7 @@ public function friendcount_one(Request $request)
             ->filter()
             ->values();
 
-              if ($confirm->isEmpty()) return null;
+        if ($confirm->isEmpty()) return null;
 
         $activityimagePath = $activity->image ?? null;
 
@@ -3489,7 +3539,11 @@ public function friendcount_one(Request $request)
             'send_type' => $chat->send_type ?? null,
             'user_rendoms' => $confirm,
         ];
-    })->filter();
+    })
+    ->filter() // Remove nulls
+    ->unique('activity_id') // 🔴 Keep only one user per activity
+    ->values(); // Reset keys
+
     // return $groupUserList;
 
     // 🔹 Map liked users

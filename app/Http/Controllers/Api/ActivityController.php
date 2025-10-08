@@ -3468,9 +3468,11 @@ public function friendcount_one(Request $request)
 
         $chat = Chat::where('sender_id', $user->id)
             ->where('receiver_id', $userItem->id)
+            ->where('activity_id',$activity->id)
             ->where('send_type', 'group')
             ->orderBy('id', 'DESC')
             ->first();
+
         $confirm->push($user->rendom);
         return [
             'id' => $userItem->id,

@@ -3479,6 +3479,7 @@ public function friendcount_one(Request $request)
             'name' => $userItem->name,
             'activity_name' => $activity->title,
             'activity_id' => $activity->id,
+            'activity_rendom' => $activity->rendom,
             'activity_image' => $activity->image ? asset($activity->image) : null,
             'activity_id' => $aid,
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,

@@ -3475,6 +3475,7 @@ public function friendcount_one(Request $request)
         return [
             'id' => $userItem->id,
             'user_rendom' => $userItem->rendom,
+            'authuser_rendom' => $user->rendom,
             'name' => $userItem->name,
             'activity_name' => $activity->title,
             'activity_image' => $activity->image ? asset($activity->image) : null,

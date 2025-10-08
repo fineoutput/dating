@@ -1170,12 +1170,23 @@ public function removeinterest(Request $request)
         ? asset('uploads/app/profile_images/' . $profileImages[1])
         : '';
 
+           $chat = Chat::where('sender_id', $user->id)
+            ->where('receiver_id', $user->id)
+            ->where('send_type', 'single')
+            ->orderBy('id', 'DESC')
+            ->first();
+
+              $authuser = Auth::user();
     return [
         'user' => $user->name ?? '',
         'user_rendom' => $user->rendom ?? '',
+        'form' => 'activity',
+        'send_type' => 'single',
+        'authuser_rendom' => $authuser->rendom ?? '',
         'co_host' => $interest->confirm == 7,  
         'user_profile' => $profileImageUrl,
         'activity_rendom' => $interest->activity->rendom ?? '',
+        'activity_id' => $interest->activity->id ?? '',
         'confirm' => $interest->confirm,
         'ghosted' => $ghosted,
         'attended' => $attended,

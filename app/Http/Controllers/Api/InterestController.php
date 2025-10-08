@@ -1303,12 +1303,12 @@ public function removeinterest(Request $request)
                                        ->count();
     
 
-        if ($confirmedCount >= $howMany) {
-            return response()->json([
-                'message' => 'Maximum confirmations reached for this activity.',
-                'status' => 201,
-            ]);
-        }
+        // if ($confirmedCount >= $howMany) {
+        //     return response()->json([
+        //         'message' => 'Maximum confirmations reached for this activity.',
+        //         'status' => 201,
+        //     ]);
+        // }
 
         $interest = OtherInterest::where('activity_id', $activity->id)
                                  ->where('user_id', $user_rendom->id) 

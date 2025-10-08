@@ -3928,7 +3928,7 @@ public function filteractivity(Request $request)
         ", [$endTime])
         ->where('when_time', '>=', $currentTime);
     });
-}
+  }
 
 
     if ($query) {
@@ -3944,7 +3944,7 @@ public function filteractivity(Request $request)
     $location = trim($location); // Optional cleanup
     $query->where('location', 'like', '%' . $location . '%');
     $filterApplied = true;
-}
+  }
 
     if ($how_many) {
         $query->where('how_many',$how_many);
@@ -3964,7 +3964,7 @@ public function filteractivity(Request $request)
     }
 
 
-//    $filterApplied = false;
+   //    $filterApplied = false;
     $firstExpenseName = null;
 
     // return $expense_id;
@@ -4005,37 +4005,37 @@ public function filteractivity(Request $request)
         $filterApplied = true;
     }
 
-//      if ($vibe_id && is_array($vibe_id)) {
-//     $query->where(function ($q) use ($vibe_id) {
-//         foreach ($vibe_id as $id) {
-//             $q->orWhereRaw("FIND_IN_SET(?, REPLACE(REPLACE(vibe_id, '[', ''), ']', ''))", [$id]);
-//         }
-//     });
+    //      if ($vibe_id && is_array($vibe_id)) {
+    //     $query->where(function ($q) use ($vibe_id) {
+    //         foreach ($vibe_id as $id) {
+    //             $q->orWhereRaw("FIND_IN_SET(?, REPLACE(REPLACE(vibe_id, '[', ''), ']', ''))", [$id]);
+    //         }
+    //     });
 
-//      $filterApplied = true;
-// }
+    //      $filterApplied = true;
+    // }
 
 
 
-if ($date_type) {
-    $today = Carbon::now('Asia/Kolkata')->format('Y-m-d');
-    $tomorrow = Carbon::now('Asia/Kolkata')->addDay()->format('Y-m-d');
-    $saturday = Carbon::now('Asia/Kolkata')->next(Carbon::SATURDAY)->format('Y-m-d');
-    $sunday = Carbon::now('Asia/Kolkata')->next(Carbon::SUNDAY)->format('Y-m-d');
+    if ($date_type) {
+        $today = Carbon::now('Asia/Kolkata')->format('Y-m-d');
+        $tomorrow = Carbon::now('Asia/Kolkata')->addDay()->format('Y-m-d');
+        $saturday = Carbon::now('Asia/Kolkata')->next(Carbon::SATURDAY)->format('Y-m-d');
+        $sunday = Carbon::now('Asia/Kolkata')->next(Carbon::SUNDAY)->format('Y-m-d');
 
-    if ($date_type == 'Today') {
-        $query->where('when_time', $today);
-    } elseif ($date_type == 'Tomorrow') {
-        $query->where('when_time', $tomorrow);
-    } elseif ($date_type == 'Weekend') {
-        $query->where(function ($q) use ($saturday, $sunday) {
-            $q->where('when_time', $saturday)
-              ->orWhere('when_time', $sunday);
-        });
+        if ($date_type == 'Today') {
+            $query->where('when_time', $today);
+        } elseif ($date_type == 'Tomorrow') {
+            $query->where('when_time', $tomorrow);
+        } elseif ($date_type == 'Weekend') {
+            $query->where(function ($q) use ($saturday, $sunday) {
+                $q->where('when_time', $saturday)
+                ->orWhere('when_time', $sunday);
+            });
+        }
+
+        $filterApplied = true;
     }
-
-    $filterApplied = true;
-}
 
     if (!$filterApplied) {
         return response()->json([
@@ -4059,9 +4059,15 @@ if ($date_type) {
         $b = round($b + (255 - $b) * $lightenFactor);
         $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
-        $userDetails = $activity->user;
+    $userDetails = $activity->user;
+    $profileImageUrl = null;
+    if ($userDetails && $userDetails->profile_image) {
         $profileImages = json_decode($userDetails->profile_image, true);
-        $profileImageUrl = isset($profileImages[1]) ? url('uploads/app/profile_images/' . $profileImages[1]) : null;
+        if (is_array($profileImages) && isset($profileImages[1])) {
+            $profileImageUrl = url('uploads/app/profile_images/' . $profileImages[1]);
+        }
+    }
+
 
         $vibeNames = [];
         $vibeImages = [];
@@ -4103,15 +4109,15 @@ if ($date_type) {
             $activimage = null;
         }
         return [
-            'title' => $activity->title,
-            'rendom' => $activity->rendom,
-            'location' => $activity->location,
-            'bg_color' => $bgColor,
+            'title' => $activity->title ?? '',
+            'rendom' => $activity->rendom ?? '',
+            'location' => $activity->location ?? '',
+            'bg_color' => $bgColor ?? '',
             'is_like' => false,
             'like' => $actlike,
             'vibe_name' => $vibeNames ?? '',
             'vibe_image' => $vibeImages ?? '',
-            'user_name' => $userDetails->name,
+            'user_name' => $userDetails->name ?? '',
             'user_profile_image' => $profileImageUrl ?? '',
             'activity_image' => $activimage,
             'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),

@@ -1181,9 +1181,9 @@ public function userconfirmactivitys(Request $request)
 
 $activityIds = OtherInterest::where('user_id', $user->id)
     ->where(function($query) {
-        $query->where('confirm', 2)
+        $query->where('confirm', 3)
         // $query->where('confirm', 1)
-              ->orWhere('confirm', 3)
+            //   ->orWhere('confirm', 3)
               ->orWhere('confirm', 7);
     })
     ->pluck('activity_id')

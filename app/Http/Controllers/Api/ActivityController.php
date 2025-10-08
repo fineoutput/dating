@@ -3523,12 +3523,14 @@ public function friendcount_one(Request $request)
             ->values();
 
         if ($confirm->isEmpty()) return null;
+        $confirm->push($userItem->rendom);
 
         $activityimagePath = $activity->image ?? null;
 
         return [
             'id' => $userItem->id,
             'user_rendom' => $userItem->rendom,
+            'authuser_rendom' => $user->rendom,
             'name' => $userItem->name,
             'activity_name' => $activity->title,
             'activity_image' => $activityimagePath ? asset($activityimagePath) : null,

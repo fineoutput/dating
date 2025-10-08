@@ -894,6 +894,7 @@ public function userinterestactivitys(Request $request)
                 ->where(function($query) {
                     $query->where('confirm', 0)
                         ->orWhere('confirm', 1)
+                        ->orWhere('confirm', 2)
                         ->orWhere('confirm', 4);
                 })
                 ->pluck('activity_id')

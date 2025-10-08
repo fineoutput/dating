@@ -4159,7 +4159,7 @@ public function vibeactivitydetails(Request $request)
 
        $currentDateTime = Carbon::now('Asia/Kolkata')->format('Y-m-d H:i:s');
 
-$activities = Activity::orderBy('id', 'DESC')
+    $activities = Activity::orderBy('id', 'DESC')
     // ->where('vibe_id', 'LIKE', '%"'.$vibe->id.'"%')
     ->where('status', 2)
      ->where('admin_city', $user->admin_city)
@@ -4226,16 +4226,16 @@ $activities = Activity::orderBy('id', 'DESC')
 
                 $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
-                $user_rendom = User::where('id', $activity->user_id)->first();
+            $user_rendom = User::find($activity->user_id);
 
-                $profileImageUrl = null;
-                if ($user_rendom->profile_image) {
-                    $profileImages = json_decode($user_rendom->profile_image, true);
+            $profileImageUrl = null;
+            if ($user_rendom && $user_rendom->profile_image) {
+                $profileImages = json_decode($user_rendom->profile_image, true);
 
-                    if (!empty($profileImages) && isset($profileImages[1])) {
-                        $profileImageUrl = url('uploads/app/profile_images/' . $profileImages[1]);
-                    }
+                if (!empty($profileImages) && isset($profileImages[1])) {
+                    $profileImageUrl = url('uploads/app/profile_images/' . $profileImages[1]);
                 }
+            }
 
                 $vibeNames = [];
                     $vibeImages = [];
@@ -4291,7 +4291,7 @@ $activities = Activity::orderBy('id', 'DESC')
                     'vibe_image' => $vibeImages ?? '',
                     'expense_name' => $firstExpenseName ?? '',
                     // 'vibe_icon' => $activity->vibe->icon ?? '',
-                    'user_name' => $user_rendom->name,
+                    'user_name' => $user_rendom->name ?? '',
                      'user_profile_image' => $profileImageUrl ?? '',
                     'activity_image' => $activimage,
                     'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),

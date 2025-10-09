@@ -1141,7 +1141,7 @@ public function removeinterest(Request $request)
     $indiscusion = OtherInterest::with('user')
         ->where('activity_id', $activity->id)
         ->whereIn('confirm', [1, 2,3,7])
-        ->take($howMany)
+        // ->take($howMany)
         ->get();
 
     // If all groups are empty

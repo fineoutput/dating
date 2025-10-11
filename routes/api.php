@@ -28,6 +28,7 @@ Route::post('login', [AuthController::class, 'login']);
 Route::get('phone-numbers', [AuthController::class, 'getPhoneNumbers']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/user/device', [AuthController::class, 'fcmUpdate']);
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('activity-store', [ActivityController::class, 'activitystore']);
     Route::post('activity-edit', [ActivityController::class, 'activityedit']);

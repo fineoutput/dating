@@ -1480,5 +1480,43 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
     }
         
         
+ public function fcmUpdate(Request $request)
+    {
+
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Unauthorized. Please log in.',
+            ], 401);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'fcm_token' => 'nullable|string',
+            'device_id' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user->fcm_token = $request->fcm_token;
+        $user->device_id = $request->device_id;
+        $user->save();
+
+        return response()->json([
+            'message' => 'Device info updated successfully.',
+            'data' => [
+                'fcm_token' => $user->fcm_token,
+                'device_id' => $user->device_id,
+                'device_updated_at' => $user->device_updated_at,
+            ],
+            'status' => 200,
+        ]);
+    }
+
         
 }

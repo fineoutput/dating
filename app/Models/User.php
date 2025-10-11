@@ -39,6 +39,8 @@ class User extends Authenticatable
         'rendom',
         'about',
         'address',
+        'fcm_token',
+        'device_id',
     ];
 
     public function preference()

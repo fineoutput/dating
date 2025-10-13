@@ -179,5 +179,16 @@ Route::get('/activity-subscription/{status}/{id}/update-status', [ActivitySubscr
 
 });
 
+Route::get('/test-notification', function () {
+    $user = \App\Models\User::find(178); // Replace with real user ID
+    $user->notify(new \App\Notifications\ChatMessageNotification(
+        'Test Title',
+        'This is a test notification',
+        ['test_key' => 'test_value']
+    ));
+
+    return 'Notification Sent!';
+});
+
 
 

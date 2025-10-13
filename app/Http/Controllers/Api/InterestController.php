@@ -24,10 +24,21 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Models\UserSubscription;
+use App\Services\FirebaseService;
+use Illuminate\Support\Facades\Log;
+
 
 
 class InterestController extends Controller
 {
+
+      protected $firebaseService;
+
+    public function __construct(FirebaseService $firebaseService)
+    {
+        $this->firebaseService = $firebaseService;
+    }
+
 
     public function interest()
     {
@@ -371,6 +382,30 @@ public function addinterest(Request $request)
         ]);
     }
 
+     $title = $request->title ?? 'Confirm Intrest';
+
+                $firebaseService = new FirebaseService();
+
+                        $sent = $firebaseService->sendNotification(
+                        $activity->user->fcm_token,
+                        $title,
+                        $activity->user->name,
+                        [
+                            'screen' => 'Chat',
+                        ]
+                    );
+
+                    if ($sent) {
+                            Log::info("✅ Notification sent to user ID { $activity->user->fcm_token,}");
+                        } else {
+                            Log::warning("No FCM token for user ID: { $activity->user->fcm_token,}, rendom: { $activity->user->fcm_token,}");
+                            $responses[] = [
+                                'receiver_rendom' =>  $activity->user->fcm_token,
+                                'message' => 'No FCM token available.',
+                                'status' => 400,
+                            ];
+                        }
+    
     // Prevent user from liking their own activity
     if ($activity->user_id == $user->id) {
         return response()->json([
@@ -1334,7 +1369,8 @@ public function removeinterest(Request $request)
 
         $interest->confirm = $request->confirm;
         $interest->save();
-    
+
+       
         $activity_data = Activity::where('id',$interest->activity_id)->first();
         $user_rendom_data = User::where('id',$interest->user_id)->first();
 

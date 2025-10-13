@@ -24,136 +24,23 @@ use App\Models\UserSubscription;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use App\Services\FirebaseService;
+
+use App\Notifications\ChatMessageNotification;
 
 
 
 class ChatController extends Controller
 {
 
+    protected $firebaseService;
 
-//  public function sendMessage(Request $request)
-// {
-//     $request->validate([
-//         'receiver_rendom' => 'required',
-//         'message' => 'required',
-//         'type' => 'required',
-//         'chat_type' => 'required',
-//         'activity_id' => 'nullable',
-//     ]);
+    public function __construct(FirebaseService $firebaseService)
+    {
+        $this->firebaseService = $firebaseService;
+    }
 
-//     $sender = Auth::user();
-//     $now = Carbon::now('Asia/Kolkata');
-
-//     $receiver = User::where('rendom', $request->receiver_rendom)->first();
-//     if (!$receiver) {
-//         return response()->json([
-//             'message' => 'User Not Found',
-//             'data' => [],
-//             'status' => 200,
-//         ]);
-//     }
-
-//     $activeSubscription = UserSubscription::where('user_id', $sender->id)
-//         ->where('type', 'Activitys')
-//         ->where('is_active', 1)
-//         ->where('activated_at', '<=', $now)
-//         ->where('expires_at', '>=', $now)
-//         ->first();
-
-//     $allowedCount = 0;
-//     if ($activeSubscription) {
-//         $coinCategory = CoinCategory::find($activeSubscription->plan_id);
-//         if ($coinCategory) {
-//             $allowedCount = $coinCategory->interest_messages_coin; 
-//         } else {
-//             $activitySub = ActivitySubscription::orderBy('id', 'desc')->first();
-//             $allowedCount = $activitySub ? (int)$activitySub->message_count : 0;
-//         }
-//     } else {
-//         $activitySub = ActivitySubscription::orderBy('id', 'desc')->first();
-//         $allowedCount = $activitySub ? (int)$activitySub->message_count : 0;
-//     }
-
-//     $startDate = Carbon::parse($sender->created_at)->startOfDay();
-//     $nowStartOfDay = $now->copy()->startOfDay();
-
-//     $currentIntervalStart = $startDate;
-
-//     while ($currentIntervalStart->lessThanOrEqualTo($nowStartOfDay)) {
-//         $currentIntervalEnd = $currentIntervalStart->copy()->addDays(30)->subSecond();
-
-//         $count = Chat::where('sender_id', $sender->id)
-//             ->where('chat_type', 'activity')
-//             ->whereBetween('created_at', [$currentIntervalStart, $currentIntervalEnd])
-//             ->count();
-
-//         if ($count >= $allowedCount) {
-//             $messageText = $activeSubscription
-//                 ? 'You have used all your message coins for this month. Please purchase or renew your plan.'
-//                 : 'Please subscribe to send more messages.';
-
-//             return response()->json([
-//                 'message' => $messageText,
-//                 'data' => [
-//                     'interval_start' => $currentIntervalStart->toDateString(),
-//                     'interval_end' => $currentIntervalEnd->toDateString(),
-//                     'messages_sent' => $count,
-//                     'allowed_messages' => $allowedCount,
-//                 ],
-//                 'status' => 203,
-//             ]);
-//         }
-
-//         $currentIntervalStart = $currentIntervalEnd->copy()->addSecond();
-//     }
-
-//     if ($receiver->id == $sender->id) {
-//         return response()->json([
-//             'message' => 'You cannot send message to yourself.',
-//             'data' => [],
-//             'status' => 400,
-//         ]);
-//     }
-
-//     $code = rand(100000, 999999);
-
-//     while (Chat::where('rendom', $code)->exists()) {
-//         $code = rand(100000, 999999);
-//     }
-
-//       $mainActivity = '';
-
-//     if($request->activity_id){
-//         $mainActivity = Activity::where('rendom', $request->activity_id)->first();
-//     }
-    
-//     $chat = Chat::create([
-//         'sender_id' => $sender->id,
-//         'receiver_id' => $receiver->id,
-//         'message' => $request->message,
-//         'status' => 'sent',
-//         'rendom' => $code,
-//         'chat_type' => $request->chat_type,
-//         'activity_id' => $mainActivity->id ?? '',
-//     ]);
-
-//     // Format sent time
-//     $timeAgo = Carbon::parse($chat->created_at)->diffForHumans();
-
-//     return response()->json([
-//         'message' => 'Message sent successfully.',
-//         'data' => [
-//             'sender_rendom' => $sender->rendom,
-//             'receiver_rendom' => $receiver->rendom,
-//             'message' => $chat->message,
-//             'rendom' => $chat->rendom,
-//             'chat_type' => $chat->chat_type,
-//             'status' => $chat->status,
-//             'sent_time' => $timeAgo,
-//         ],
-//         'status' => 200,
-//     ]);
-// }
 
 
 public function sendMessage(Request $request)
@@ -212,12 +99,39 @@ public function sendMessage(Request $request)
             $validReceiverIds[] = $receiver->id;
         }
 
-        // Implode IDs into a comma-separated string
         $implodedReceiverIds = implode(',', $validReceiverIds);
 
-        // Now send message individually to valid users
         foreach ($validReceiverIds as $receiverId) {
             $receiver = User::find($receiverId);
+
+            $title = $request->title ?? 'New Group Message';
+
+                $firebaseService = new FirebaseService();
+
+                        $sent = $firebaseService->sendNotification(
+                        $receiver->fcm_token,
+                        $title,
+                        $request->message,
+                         $data = [
+                            'sender_rendom' => $sender->rendom,
+                            'receiver_rendom' => $receiver->rendom,
+                            'message' => $request->message,
+                            'status' => 'sent',
+                            'sent_time' => $now->diffForHumans(),
+                            'screen' => 'Chat',
+                        ]
+                    );
+
+                    if ($sent) {
+                            Log::info("✅ Notification sent to user ID {$receiver->id}");
+                        } else {
+                            Log::warning("No FCM token for user ID: {$receiver->id}, rendom: {$receiver->rendom}");
+                            $responses[] = [
+                                'receiver_rendom' => $receiver->rendom,
+                                'message' => 'No FCM token available.',
+                                'status' => 400,
+                            ];
+                        }
 
             // Subscription & message limit check
             $activeSubscription = UserSubscription::where('user_id', $sender->id)
@@ -395,6 +309,35 @@ public function sendMessage(Request $request)
         'activity_id' => $request->activity_id ?? null,
     ]);
 
+     $firebaseService = new FirebaseService(); // or inject via constructor
+
+      $title = $request->title ?? 'New Message';
+
+        $sent = $firebaseService->sendNotification(
+        $receiver->fcm_token,
+        $title,
+        $request->message,
+        [
+            'sender_rendom' => $sender->rendom,
+            'receiver_rendom' => $receiver->rendom,
+            'message' => $request->message,
+            'status' => 'sent',
+            'sent_time' => now()->diffForHumans(),
+            'screen' => 'Chat',
+        ]
+    );
+
+     if ($sent) {
+            Log::info("✅ Notification sent to user ID {$receiver->id}");
+        } else {
+            Log::warning("No FCM token for user ID: {$receiver->id}, rendom: {$receiver->rendom}");
+            $responses[] = [
+                'receiver_rendom' => $receiver->rendom,
+                'message' => 'No FCM token available.',
+                'status' => 400,
+            ];
+        }
+
     return response()->json([
         'message' => 'Message sent successfully.',
         'data' => [
@@ -410,284 +353,6 @@ public function sendMessage(Request $request)
     ]);
     }
 }
-
-
-
-
-// public function getMessages(Request $request)
-// {
-//     $authUser = Auth::user();
-//     $receiverRendom = $request->input('receiver_rendom');
-
-//     $receiver = User::where('rendom', $receiverRendom)->first();
-
-//     if (!$receiver) {
-//         return response()->json([
-//             'message' => 'Data Not Found',
-//             'data' => [],
-//             'status' => 200,
-//         ]);
-//     }
-
-//     $receiverId = $receiver->id;
-
-//     $decodedImages = json_decode($receiver->profile_image, true);
-//     $profileImageUrl = null;
-
-//     if (is_array($decodedImages) && count($decodedImages) > 0) {
-//         $firstImage = reset($decodedImages);
-//         $profileImageUrl = url('') . '/uploads/app/profile_images/' . ltrim($firstImage, '/');
-//     }
-
-//     $messages = Chat::where(function ($query) use ($receiverId) {
-//             $query->where('sender_id', Auth::id())
-//                 ->where('receiver_id', $receiverId);
-//         })
-//         ->orWhere(function ($query) use ($receiverId) {
-//             $query->where('sender_id', $receiverId)
-//                 ->where('receiver_id', Auth::id());
-//         })
-//         ->orderBy('created_at', 'asc')
-//         ->get();
-
-//     $messagesArray = $messages->map(function ($message) use ($profileImageUrl) {
-//         $sender = User::find($message->sender_id);
-//         $receiver = User::find($message->receiver_id);
-
-//         return [
-//             'rendom' => $message->rendom,
-//             'chat_type' => $message->chat_type,
-//             'sender_rendom' => $sender->rendom ?? null,
-//             'receiver_rendom' => $receiver->rendom ?? null,
-//             'profile_image' => $profileImageUrl,
-//             'message' => $message->message,
-//             'status' => $message->status,
-//             'send_type' => $message->send_type,
-//             'sent_time' => Carbon::parse($message->created_at)->diffForHumans(),
-//         ];
-//     });
-
-
-//      $user = Auth::user(); 
-
-//     if (!$user) {
-//         return response()->json(['message' => 'User not authenticated'], 401);
-//     }
-
-//     // 🔹 Get all activities by this user where status = 2
-//     $matchingActivities = Activity::where('user_id', $user->id)
-//                                   ->where('status', 2)
-//                                   ->get();
-
-//     $activityIds = $matchingActivities->pluck('id');
-
-//     // $Activitiesren = Activity::where('rendom', $request->rendom)->first();
-
-//     $interestRelations = OtherInterest::where('user_id', $user->id)->orderBy('id','DESC')
-//                                       ->get();
-
-//     $oppositeUserIds = $interestRelations->map(function ($relation) use ($user) {
-//         return $relation->user_id == $user->id ? $relation->user_id_1 : $relation->user_id;
-//     })->unique()->values();
-
-//     $userDetailsFromInterest2 = User::where('rendom',$receiverRendom)->whereIn('id', $oppositeUserIds)->get()->map(function ($userItem) use ($interestRelations, $user) {
-//     // Find the matching interest relation for this user
-//     $matchingRelation = $interestRelations->first(function ($relation) use ($userItem, $user) {
-//         return ($relation->user_id == $user->id && $relation->user_id_1 == $userItem->id) ||
-//                ($relation->user_id_1 == $user->id && $relation->user_id == $userItem->id);
-//     });
-
-//         $userItem->interest_activity_id = $matchingRelation->activity_id ?? null;
-//         $userItem->confirm = $matchingRelation->confirm ?? null;
-
-//         return $userItem;
-//     });
-
-//     // 🔹 Get matched users from SlideLike table
-//     $likeUser = SlideLike::where('matched_user', $user->id);
-//     $likeUserDetails = $likeUser->pluck('matching_user');
-//     $likeUserDetails2 = User::whereIn('id', $likeUserDetails)->get();
-
-//     // 🔹 Map interest users
-//     $userList = $userDetailsFromInterest2->map(function ($userItem) use ($user) {
-//         $imagePath = null;
-//         if ($userItem->profile_image) {
-//             $images = json_decode($userItem->profile_image, true); 
-//             if (is_array($images) && count($images)) {
-//                 $imagePath = reset($images);
-//             }
-//         }
-
-//         $chat = Chat::where('sender_id', $user->id)
-//                     ->where('receiver_id', $userItem->id)
-//                     ->orderBy('id', 'DESC')
-//                     ->first();
-
-//             $activityname = Activity::where('id',$userItem->interest_activity_id)->first();
-//         return [
-//             'id' => $userItem->id,
-//             'user_rendom' => $userItem->rendom,
-//             'name' => $userItem->name,
-//             'activity_id' => $userItem->interest_activity_id,
-//             'title' => $activityname->title,
-//             'status' => $userItem->confirm,
-//             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
-//             'form' => 'activity',
-//             'last_message' => $chat->message ?? null,
-//         ];
-//     });
-
-//     $likeUserList = $likeUserDetails2->map(function ($userItem) use ($user) {
-//         $imagePath = null;
-//         if ($userItem->profile_image) {
-//             $images = json_decode($userItem->profile_image, true); 
-//             if (is_array($images) && count($images)) {
-//                 $imagePath = reset($images);
-//             }
-//         }
-
-//         $chat = Chat::where('sender_id', $user->id)
-//                     ->where('receiver_id', $userItem->id)
-//                     ->orderBy('id', 'DESC')
-//                     ->first();
-
-//         return [
-//             'id' => $userItem->id,
-//             'user_rendom' => $userItem->rendom,
-//             'name' => $userItem->name,
-//             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
-//             'form' => 'activity',
-//             'last_message' => $chat->message ?? null,
-//         ];
-//     });
-
-//     // 🔹 Get Cupid matches
-//     $CupidMatches = Cupid::where('user_id_1', $user->id)
-//                          ->orWhere('user_id_2', $user->id)
-//                          ->get()
-//                          ->unique();
-
-//     $matchedUsers = $CupidMatches->map(function ($match) use ($user) {
-//         $matchedUserId = $match->user_id_1 == $user->id ? $match->user_id_2 : $match->user_id_1;
-//         $matchedUser = User::find($matchedUserId);
-
-//         if (!$matchedUser) return null;
-
-//         $images = json_decode($matchedUser->profile_image, true);
-//         $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
-
-//         $chat = Chat::where('sender_id', $user->id)
-//                     ->where('receiver_id', $matchedUser->id)
-//                     ->orderBy('id', 'DESC')
-//                     ->first();
-
-//         return [
-//             'id' => $matchedUser->id,
-//             'user_rendom' => $matchedUser->rendom,
-//             'name' => $matchedUser->name,
-//             'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
-//             'form' => 'match',
-//             'last_message' => $chat->message ?? null,
-//         ];
-//     })->filter(); // remove nulls
-
-//     // 🔹 Combine and remove duplicates, prioritize 'match'
-//     $matchUsers = collect($userList)
-//                     ->merge($likeUserList)
-//                     ->merge($matchedUsers)
-//                     ->sortByDesc(function ($user) {
-//                         return $user['form'] === 'match' ? 2 : 1;
-//                     })
-//                     ->unique('id')
-//                     ->values();
-
-
-//     return response()->json([
-//         'message' => 'Messages fetched successfully.',
-//         'data' => $messagesArray,
-//         'pactup' => $userList,
-//         'status' => 200,
-//     ]);
-// }
-
-// public function getMessages(Request $request)
-// {
-//     $authUser = Auth::user();
-
-//     if (!$authUser) {
-//         return response()->json(['message' => 'User not authenticated'], 401);
-//     }
-
-//     $receiverRendomss = $request->input('receiver_rendom');
-//     $send_type = $request->input('send_type');
-
-//     // Handle array input or JSON string
-//     $receiverRendoms = is_array($receiverRendomss)
-//         ? $receiverRendomss
-//         : json_decode($receiverRendomss, true);
-
-//     // Get receiver users
-//     $receivers = User::whereIn('rendom', $receiverRendoms)->get();
-
-//     if ($receivers->isEmpty()) {
-//         return response()->json([
-//             'message' => 'No users found',
-//             'data' => [],
-//             'status' => 200,
-//         ]);
-//     }
-
-//     $receiverIdMap = $receivers->pluck('id', 'rendom'); 
-//     $receiverIds = $receiverIdMap->values()->toArray();
-//     $authId = $authUser->id;
-
-//     $allMessages = Chat::where(function ($query) use ($authId, $receiverIds, $send_type) {
-//         $query->where('sender_id', $authId)
-//             ->where('send_type', $send_type)
-//             ->where(function ($q) use ($receiverIds) {
-//                 foreach ($receiverIds as $id) {
-//                     $q->orWhereRaw("FIND_IN_SET(?, receiver_id)", [$id]);
-//                 }
-//             });
-//     })->orWhere(function ($query) use ($authId, $receiverIds) {
-//         $query->whereIn('sender_id', $receiverIds)
-//             ->whereRaw("FIND_IN_SET(?, receiver_id)", [$authId]);
-//     })->orderBy('created_at', 'asc')->get();
-
-//     // Format messages
-//     $flatMessages = $allMessages->map(function ($message) {
-//         $sender = User::find($message->sender_id);
-//         $receiverIds = explode(',', $message->receiver_id);
-
-//         $receiver = User::find($receiverIds[0] ?? null); // Use first receiver for image
-
-//         $profileImageUrl = null;
-//         if ($receiver && $receiver->profile_image) {
-//             $images = json_decode($receiver->profile_image, true);
-//             if (is_array($images) && count($images)) {
-//                 $profileImageUrl = url('') . '/uploads/app/profile_images/' . ltrim(reset($images), '/');
-//             }
-//         }
-
-//         return [
-//             'rendom' => $message->rendom,
-//             'chat_type' => $message->chat_type,
-//             'sender_rendom' => $sender->rendom ?? null,
-//             'receiver_rendom' => implode(',', $receiverIds),
-//             'profile_image' => $profileImageUrl,
-//             'message' => $message->message,
-//             'status' => $message->status,
-//             'send_type' => $message->send_type,
-//             'sent_time' => Carbon::parse($message->created_at)->diffForHumans(),
-//         ];
-//     });
-
-//     return response()->json([
-//         'message' => 'Messages fetched successfully.',
-//         'data' => $flatMessages->values(),
-//         'status' => 200,
-//     ]);
-// }
 
 
 public function getMessages(Request $request)

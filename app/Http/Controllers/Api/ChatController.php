@@ -356,6 +356,7 @@ public function sendMessage(Request $request)
 
 
 
+
 // public function getMessages(Request $request)
 // {
 //     $authUser = Auth::user();

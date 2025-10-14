@@ -562,6 +562,7 @@ class ActivityController extends Controller
             'status' => 208,
         ], 208);
     }
+    
 
     try {
         // Track updated fields for notification

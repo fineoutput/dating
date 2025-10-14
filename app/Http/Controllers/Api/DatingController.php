@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\Log;
 
 
 
+
 class DatingController extends Controller
 {
 

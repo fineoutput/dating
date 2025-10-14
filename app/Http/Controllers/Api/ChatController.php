@@ -43,6 +43,324 @@ class ChatController extends Controller
 
 
 
+// public function sendMessage(Request $request)
+// {
+//     $request->validate([
+//         'receiver_rendom' => 'required',
+//         'message' => 'required',
+//         'type' => 'required',
+//         'chat_type' => 'required',
+//         'send_type' => 'required|in:single,group',
+//         'activity_id' => 'nullable',
+//     ]);
+
+//     $sender = Auth::user();
+//     $now = Carbon::now('Asia/Kolkata');
+
+   
+//         // return $receiverRendoms;
+
+//     if ($request->send_type === 'group') {
+//          $receiverRendomsRaw = $request->receiver_rendom;
+
+//  $receiverRendoms = is_array($receiverRendomsRaw)
+//     ? $receiverRendomsRaw
+//     : json_decode($receiverRendomsRaw, true);
+
+//         $receivers = User::whereIn('rendom', $receiverRendoms)->get()->keyBy('rendom');
+//         // return $receivers;
+//         $responses = [];
+
+//         // Collect all valid receiver IDs (excluding self)
+//         $validReceiverIds = [];
+
+//         foreach ($receiverRendoms as $receiverRendom) {
+//             $receiver = $receivers->get($receiverRendom);
+
+//             if (!$receiver) {
+//                 $responses[] = [
+//                     'receiver_rendom' => $receiverRendom,
+//                     'message' => 'Receiver not found.',
+//                     'status' => 404,
+//                 ];
+//                 continue;
+//             }
+
+//             if ($receiver->id == $sender->id) {
+//                 $responses[] = [
+//                     'receiver_rendom' => $receiverRendom,
+//                     'message' => 'You cannot send message to yourself.',
+//                     'status' => 400,
+//                 ];
+//                 continue;
+//             }
+
+//             // Add to valid receiver IDs array
+//             $validReceiverIds[] = $receiver->id;
+//         }
+
+//         $implodedReceiverIds = implode(',', $validReceiverIds);
+
+//         foreach ($validReceiverIds as $receiverId) {
+//             $receiver = User::find($receiverId);
+
+//             $title = $request->title ?? 'New Group Message';
+
+//                 $firebaseService = new FirebaseService();
+
+//                         $sent = $firebaseService->sendNotification(
+//                         $receiver->fcm_token,
+//                         $title,
+//                         $request->message,
+//                          $data = [
+//                             'sender_rendom' => $sender->rendom,
+//                             'receiver_rendom' => $receiver->rendom,
+//                             'message' => $request->message,
+//                             'status' => 'sent',
+//                             'sent_time' => $now->diffForHumans(),
+//                             'screen' => 'Chat',
+//                         ]
+//                     );
+
+//                     if ($sent) {
+//                             Log::info("✅ Notification sent to user ID {$receiver->id}");
+//                         } else {
+//                             Log::warning("No FCM token for user ID: {$receiver->id}, rendom: {$receiver->rendom}");
+//                             $responses[] = [
+//                                 'receiver_rendom' => $receiver->rendom,
+//                                 'message' => 'No FCM token available.',
+//                                 'status' => 400,
+//                             ];
+//                         }
+
+//             // Subscription & message limit check
+//             $activeSubscription = UserSubscription::where('user_id', $sender->id)
+//                 ->where('type', 'Activitys')
+//                 ->where('is_active', 1)
+//                 ->where('activated_at', '<=', $now)
+//                 ->where('expires_at', '>=', $now)
+//                 ->first();
+
+//             $allowedCount = 0;
+//             if ($activeSubscription) {
+//                 $coinCategory = CoinCategory::find($activeSubscription->plan_id);
+//                 $allowedCount = $coinCategory ? $coinCategory->interest_messages_coin : 0;
+//             } else {
+//                 $activitySub = ActivitySubscription::orderBy('id', 'desc')->first();
+//                 $allowedCount = $activitySub ? (int)$activitySub->message_count : 0;
+//             }
+
+//             $startDate = Carbon::parse($sender->created_at)->startOfDay();
+//             $nowStartOfDay = $now->copy()->startOfDay();
+//             $currentIntervalStart = $startDate;
+
+//             $limitExceeded = false;
+//             while ($currentIntervalStart->lessThanOrEqualTo($nowStartOfDay)) {
+//                 $currentIntervalEnd = $currentIntervalStart->copy()->addDays(30)->subSecond();
+//                 $count = Chat::where('sender_id', $sender->id)
+//                     ->where('chat_type', 'activity')
+//                     ->whereBetween('created_at', [$currentIntervalStart, $currentIntervalEnd])
+//                     ->count();
+
+//                 if ($count >= $allowedCount) {
+//                     $limitExceeded = true;
+//                     break;
+//                 }
+
+//                 $currentIntervalStart = $currentIntervalEnd->copy()->addSecond();
+//             }
+
+//             if ($limitExceeded) {
+//                $messageText = $activeSubscription
+//                 ? 'You have used all your message coins for this month. Please purchase or renew your plan.'
+//                 : 'Please subscribe to send more messages.';
+
+//             return response()->json([
+//                 'message' => $messageText,
+//                 'data' => [
+//                     'interval_start' => $currentIntervalStart->toDateString(),
+//                     'interval_end' => $currentIntervalEnd->toDateString(),
+//                     'messages_sent' => $count,
+//                     'allowed_messages' => $allowedCount,
+//                 ],
+//                 'status' => 203,
+//             ]);
+//             }
+
+//              $code = rand(100000, 999999);
+//             while (Chat::where('rendom', $code)->exists()) {
+//                 $code = rand(100000, 999999);
+//             }
+
+//             $mainActivity = null;
+//             if ($request->activity_id) {
+//                 $mainActivity = Activity::where('rendom', $request->activity_id)->first();
+//             }
+
+//         }
+        
+//           $code = rand(100000, 999999);
+//             while (Chat::where('rendom', $code)->exists()) {
+//                 $code = rand(100000, 999999);
+//             }
+
+//             $chat = Chat::create([
+//                 'sender_id' => $sender->id,
+//                 'receiver_id' => $implodedReceiverIds,
+//                 'message' => $request->message,
+//                 'status' => 'sent',
+//                 'rendom' => $code,
+//                 'send_type' => $request->send_type,
+//                 'chat_type' => $request->chat_type,
+//                 'activity_id' => $request->activity_id ?? null,
+//             ]);
+
+//             $responses[] = [
+//                 'receiver_rendom' => $receiverRendoms,
+//                 'message' => $chat->message,
+//                 'status' => 200,
+//                 'rendom' => $chat->rendom,
+//                 'sent_time' => Carbon::parse($chat->created_at)->diffForHumans(),
+//             ];
+
+//         return response()->json([
+//             'message' => 'Group messages processed.',
+//             'data' => $responses,
+//             'receiver_ids' => $implodedReceiverIds, // returning here
+//             'status' => 200,
+//         ]);
+//     }else{
+//         $receiverRendoms = $request->receiver_rendom;
+//         $receiver = User::where('rendom', $receiverRendoms)->first();
+
+//         if (!$receiver) {
+//             return response()->json([
+//                 'message' => 'User Not Found',
+//                 'data' => [],
+//                 'status' => 200,
+//             ]);
+//         }
+
+//     if ($receiver->id == $sender->id) {
+//         return response()->json([
+//             'message' => 'You cannot send message to yourself.',
+//             'data' => [],
+//             'status' => 400,
+//         ]);
+//     }
+
+//     $activeSubscription = UserSubscription::where('user_id', $sender->id)
+//         ->where('type', 'Activitys')
+//         ->where('is_active', 1)
+//         ->where('activated_at', '<=', $now)
+//         ->where('expires_at', '>=', $now)
+//         ->first();
+
+//     $allowedCount = 0;
+//     if ($activeSubscription) {
+//         $coinCategory = CoinCategory::find($activeSubscription->plan_id);
+//         $allowedCount = $coinCategory ? $coinCategory->interest_messages_coin : 0;
+//     } else {
+//         $activitySub = ActivitySubscription::orderBy('id', 'desc')->first();
+//         $allowedCount = $activitySub ? (int)$activitySub->message_count : 0;
+//     }
+
+//     $startDate = Carbon::parse($sender->created_at)->startOfDay();
+//     $nowStartOfDay = $now->copy()->startOfDay();
+//     $currentIntervalStart = $startDate;
+
+//     while ($currentIntervalStart->lessThanOrEqualTo($nowStartOfDay)) {
+//         $currentIntervalEnd = $currentIntervalStart->copy()->addDays(30)->subSecond();
+//         $count = Chat::where('sender_id', $sender->id)
+//             ->where('chat_type', 'activity')
+//             ->whereBetween('created_at', [$currentIntervalStart, $currentIntervalEnd])
+//             ->count();
+
+//         if ($count >= $allowedCount) {
+//             $messageText = $activeSubscription
+//                 ? 'You have used all your message coins for this month. Please purchase or renew your plan.'
+//                 : 'Please subscribe to send more messages.';
+
+//             return response()->json([
+//                 'message' => $messageText,
+//                 'data' => [
+//                     'interval_start' => $currentIntervalStart->toDateString(),
+//                     'interval_end' => $currentIntervalEnd->toDateString(),
+//                     'messages_sent' => $count,
+//                     'allowed_messages' => $allowedCount,
+//                 ],
+//                 'status' => 203,
+//             ]);
+//         }
+
+//         $currentIntervalStart = $currentIntervalEnd->copy()->addSecond();
+//     }
+
+//     $code = rand(100000, 999999);
+//     while (Chat::where('rendom', $code)->exists()) {
+//         $code = rand(100000, 999999);
+//     }
+
+//     $mainActivity = null;
+//     if ($request->activity_id) {
+//         $mainActivity = Activity::where('rendom', $request->activity_id)->first();
+//     }
+
+//     $chat = Chat::create([
+//         'sender_id' => $sender->id,
+//         'receiver_id' => $receiver->id,
+//         'message' => $request->message,
+//         'status' => 'sent',
+//         'rendom' => $code,
+//          'send_type' => $request->send_type,
+//         'chat_type' => $request->chat_type,
+//         'activity_id' => $request->activity_id ?? null,
+//     ]);
+
+//      $firebaseService = new FirebaseService(); // or inject via constructor
+
+//       $title = $request->title ?? 'New Message';
+
+//         $sent = $firebaseService->sendNotification(
+//         $receiver->fcm_token,
+//         $title,
+//         $request->message,
+//         [
+//             'sender_rendom' => $sender->rendom,
+//             'receiver_rendom' => $receiver->rendom,
+//             'message' => $request->message,
+//             'status' => 'sent',
+//             'sent_time' => now()->diffForHumans(),
+//             'screen' => 'Chat',
+//         ]
+//     );
+
+//      if ($sent) {
+//             Log::info("✅ Notification sent to user ID {$receiver->id}");
+//         } else {
+//             Log::warning("No FCM token for user ID: {$receiver->id}, rendom: {$receiver->rendom}");
+//             $responses[] = [
+//                 'receiver_rendom' => $receiver->rendom,
+//                 'message' => 'No FCM token available.',
+//                 'status' => 400,
+//             ];
+//         }
+
+//     return response()->json([
+//         'message' => 'Message sent successfully.',
+//         'data' => [
+//             'sender_rendom' => $sender->rendom,
+//             'receiver_rendom' => $receiver->rendom,
+//             'message' => $chat->message,
+//             'rendom' => $chat->rendom,
+//             'chat_type' => $chat->chat_type,
+//             'status' => $chat->status,
+//             'sent_time' => Carbon::parse($chat->created_at)->diffForHumans(),
+//         ],
+//         'status' => 200,
+//     ]);
+//     }
+// }
 public function sendMessage(Request $request)
 {
     $request->validate([
@@ -57,18 +375,14 @@ public function sendMessage(Request $request)
     $sender = Auth::user();
     $now = Carbon::now('Asia/Kolkata');
 
-   
-        // return $receiverRendoms;
-
     if ($request->send_type === 'group') {
-         $receiverRendomsRaw = $request->receiver_rendom;
+        $receiverRendomsRaw = $request->receiver_rendom;
 
- $receiverRendoms = is_array($receiverRendomsRaw)
-    ? $receiverRendomsRaw
-    : json_decode($receiverRendomsRaw, true);
+        $receiverRendoms = is_array($receiverRendomsRaw)
+            ? $receiverRendomsRaw
+            : json_decode($receiverRendomsRaw, true);
 
         $receivers = User::whereIn('rendom', $receiverRendoms)->get()->keyBy('rendom');
-        // return $receivers;
         $responses = [];
 
         // Collect all valid receiver IDs (excluding self)
@@ -99,137 +413,143 @@ public function sendMessage(Request $request)
             $validReceiverIds[] = $receiver->id;
         }
 
+        if (empty($validReceiverIds)) {
+            return response()->json([
+                'message' => 'No valid receivers found.',
+                'data' => $responses,
+                'status' => 200,
+            ]);
+        }
+
+        // Subscription & message limit check
+        $activeSubscription = UserSubscription::where('user_id', $sender->id)
+            ->where('type', 'Activitys')
+            ->where('is_active', 1)
+            ->where('activated_at', '<=', $now)
+            ->where('expires_at', '>=', $now)
+            ->first();
+
+        $allowedCount = 0;
+        if ($activeSubscription) {
+            $coinCategory = CoinCategory::find($activeSubscription->plan_id);
+            $allowedCount = $coinCategory ? $coinCategory->interest_messages_coin : 0;
+        } else {
+            $activitySub = ActivitySubscription::orderBy('id', 'desc')->first();
+            $allowedCount = $activitySub ? (int)$activitySub->message_count : 0;
+        }
+
+        $startDate = Carbon::parse($sender->created_at)->startOfDay();
+        $nowStartOfDay = $now->copy()->startOfDay();
+        $currentIntervalStart = $startDate;
+
+        while ($currentIntervalStart->lessThanOrEqualTo($nowStartOfDay)) {
+            $currentIntervalEnd = $currentIntervalStart->copy()->addDays(30)->subSecond();
+            $count = Chat::where('sender_id', $sender->id)
+                ->where('chat_type', 'activity')
+                ->whereBetween('created_at', [$currentIntervalStart, $currentIntervalEnd])
+                ->count();
+
+            if ($count >= $allowedCount) {
+                $messageText = $activeSubscription
+                    ? 'You have used all your message coins for this month. Please purchase or renew your plan.'
+                    : 'Please subscribe to send more messages.';
+
+                return response()->json([
+                    'message' => $messageText,
+                    'data' => [
+                        'interval_start' => $currentIntervalStart->toDateString(),
+                        'interval_end' => $currentIntervalEnd->toDateString(),
+                        'messages_sent' => $count,
+                        'allowed_messages' => $allowedCount,
+                    ],
+                    'status' => 203,
+                ]);
+            }
+
+            $currentIntervalStart = $currentIntervalEnd->copy()->addSecond();
+        }
+
         $implodedReceiverIds = implode(',', $validReceiverIds);
+
+        // Send notifications to valid receivers
+        $firebaseService = new FirebaseService();
+        $title = $request->title ?? 'New Group Message';
 
         foreach ($validReceiverIds as $receiverId) {
             $receiver = User::find($receiverId);
 
-            $title = $request->title ?? 'New Group Message';
+            if (!$receiver->fcm_token) {
+                Log::warning("No FCM token for user ID: {$receiver->id}, rendom: {$receiver->rendom}");
+                $responses[] = [
+                    'receiver_rendom' => $receiver->rendom,
+                    'message' => 'No FCM token available.',
+                    'status' => 400,
+                ];
+                continue;
+            }
 
-                $firebaseService = new FirebaseService();
+            $sent = $firebaseService->sendNotification(
+                $receiver->fcm_token,
+                $title,
+                $request->message,
+                [
+                    'sender_rendom' => $sender->rendom,
+                    'receiver_rendom' => $receiver->rendom,
+                    'message' => $request->message,
+                    'status' => 'sent',
+                    'sent_time' => $now->diffForHumans(),
+                    'screen' => 'Chat',
+                ]
+            );
 
-                        $sent = $firebaseService->sendNotification(
-                        $receiver->fcm_token,
-                        $title,
-                        $request->message,
-                         $data = [
-                            'sender_rendom' => $sender->rendom,
-                            'receiver_rendom' => $receiver->rendom,
-                            'message' => $request->message,
-                            'status' => 'sent',
-                            'sent_time' => $now->diffForHumans(),
-                            'screen' => 'Chat',
-                        ]
-                    );
-
-                    if ($sent) {
-                            Log::info("✅ Notification sent to user ID {$receiver->id}");
-                        } else {
-                            Log::warning("No FCM token for user ID: {$receiver->id}, rendom: {$receiver->rendom}");
-                            $responses[] = [
-                                'receiver_rendom' => $receiver->rendom,
-                                'message' => 'No FCM token available.',
-                                'status' => 400,
-                            ];
-                        }
-
-            // Subscription & message limit check
-            $activeSubscription = UserSubscription::where('user_id', $sender->id)
-                ->where('type', 'Activitys')
-                ->where('is_active', 1)
-                ->where('activated_at', '<=', $now)
-                ->where('expires_at', '>=', $now)
-                ->first();
-
-            $allowedCount = 0;
-            if ($activeSubscription) {
-                $coinCategory = CoinCategory::find($activeSubscription->plan_id);
-                $allowedCount = $coinCategory ? $coinCategory->interest_messages_coin : 0;
+            if ($sent) {
+                Log::info("✅ Notification sent to user ID {$receiver->id}");
             } else {
-                $activitySub = ActivitySubscription::orderBy('id', 'desc')->first();
-                $allowedCount = $activitySub ? (int)$activitySub->message_count : 0;
+                Log::warning("Notification failed for user ID: {$receiver->id}, rendom: {$receiver->rendom}");
+                $responses[] = [
+                    'receiver_rendom' => $receiver->rendom,
+                    'message' => 'Notification failed.',
+                    'status' => 400,
+                ];
             }
-
-            $startDate = Carbon::parse($sender->created_at)->startOfDay();
-            $nowStartOfDay = $now->copy()->startOfDay();
-            $currentIntervalStart = $startDate;
-
-            $limitExceeded = false;
-            while ($currentIntervalStart->lessThanOrEqualTo($nowStartOfDay)) {
-                $currentIntervalEnd = $currentIntervalStart->copy()->addDays(30)->subSecond();
-                $count = Chat::where('sender_id', $sender->id)
-                    ->where('chat_type', 'activity')
-                    ->whereBetween('created_at', [$currentIntervalStart, $currentIntervalEnd])
-                    ->count();
-
-                if ($count >= $allowedCount) {
-                    $limitExceeded = true;
-                    break;
-                }
-
-                $currentIntervalStart = $currentIntervalEnd->copy()->addSecond();
-            }
-
-            if ($limitExceeded) {
-               $messageText = $activeSubscription
-                ? 'You have used all your message coins for this month. Please purchase or renew your plan.'
-                : 'Please subscribe to send more messages.';
-
-            return response()->json([
-                'message' => $messageText,
-                'data' => [
-                    'interval_start' => $currentIntervalStart->toDateString(),
-                    'interval_end' => $currentIntervalEnd->toDateString(),
-                    'messages_sent' => $count,
-                    'allowed_messages' => $allowedCount,
-                ],
-                'status' => 203,
-            ]);
-            }
-
-             $code = rand(100000, 999999);
-            while (Chat::where('rendom', $code)->exists()) {
-                $code = rand(100000, 999999);
-            }
-
-            $mainActivity = null;
-            if ($request->activity_id) {
-                $mainActivity = Activity::where('rendom', $request->activity_id)->first();
-            }
-
         }
-        
-          $code = rand(100000, 999999);
-            while (Chat::where('rendom', $code)->exists()) {
-                $code = rand(100000, 999999);
-            }
 
-            $chat = Chat::create([
-                'sender_id' => $sender->id,
-                'receiver_id' => $implodedReceiverIds,
-                'message' => $request->message,
-                'status' => 'sent',
-                'rendom' => $code,
-                'send_type' => $request->send_type,
-                'chat_type' => $request->chat_type,
-                'activity_id' => $request->activity_id ?? null,
-            ]);
+        $code = rand(100000, 999999);
+        while (Chat::where('rendom', $code)->exists()) {
+            $code = rand(100000, 999999);
+        }
 
-            $responses[] = [
-                'receiver_rendom' => $receiverRendoms,
-                'message' => $chat->message,
-                'status' => 200,
-                'rendom' => $chat->rendom,
-                'sent_time' => Carbon::parse($chat->created_at)->diffForHumans(),
-            ];
+        $mainActivity = null;
+        if ($request->activity_id) {
+            $mainActivity = Activity::where('rendom', $request->activity_id)->first();
+        }
+
+        $chat = Chat::create([
+            'sender_id' => $sender->id,
+            'receiver_id' => $implodedReceiverIds,
+            'message' => $request->message,
+            'status' => 'sent',
+            'rendom' => $code,
+            'send_type' => $request->send_type,
+            'chat_type' => $request->chat_type,
+            'activity_id' => $request->activity_id ?? null,
+        ]);
+
+        $responses[] = [
+            'receiver_rendom' => $receiverRendoms,
+            'message' => $chat->message,
+            'status' => 200,
+            'rendom' => $chat->rendom,
+            'sent_time' => Carbon::parse($chat->created_at)->diffForHumans(),
+        ];
 
         return response()->json([
             'message' => 'Group messages processed.',
             'data' => $responses,
-            'receiver_ids' => $implodedReceiverIds, // returning here
+            'receiver_ids' => $implodedReceiverIds,
             'status' => 200,
         ]);
-    }else{
+    } else {
         $receiverRendoms = $request->receiver_rendom;
         $receiver = User::where('rendom', $receiverRendoms)->first();
 
@@ -241,124 +561,132 @@ public function sendMessage(Request $request)
             ]);
         }
 
-    if ($receiver->id == $sender->id) {
-        return response()->json([
-            'message' => 'You cannot send message to yourself.',
-            'data' => [],
-            'status' => 400,
-        ]);
-    }
-
-    $activeSubscription = UserSubscription::where('user_id', $sender->id)
-        ->where('type', 'Activitys')
-        ->where('is_active', 1)
-        ->where('activated_at', '<=', $now)
-        ->where('expires_at', '>=', $now)
-        ->first();
-
-    $allowedCount = 0;
-    if ($activeSubscription) {
-        $coinCategory = CoinCategory::find($activeSubscription->plan_id);
-        $allowedCount = $coinCategory ? $coinCategory->interest_messages_coin : 0;
-    } else {
-        $activitySub = ActivitySubscription::orderBy('id', 'desc')->first();
-        $allowedCount = $activitySub ? (int)$activitySub->message_count : 0;
-    }
-
-    $startDate = Carbon::parse($sender->created_at)->startOfDay();
-    $nowStartOfDay = $now->copy()->startOfDay();
-    $currentIntervalStart = $startDate;
-
-    while ($currentIntervalStart->lessThanOrEqualTo($nowStartOfDay)) {
-        $currentIntervalEnd = $currentIntervalStart->copy()->addDays(30)->subSecond();
-        $count = Chat::where('sender_id', $sender->id)
-            ->where('chat_type', 'activity')
-            ->whereBetween('created_at', [$currentIntervalStart, $currentIntervalEnd])
-            ->count();
-
-        if ($count >= $allowedCount) {
-            $messageText = $activeSubscription
-                ? 'You have used all your message coins for this month. Please purchase or renew your plan.'
-                : 'Please subscribe to send more messages.';
-
+        if ($receiver->id == $sender->id) {
             return response()->json([
-                'message' => $messageText,
-                'data' => [
-                    'interval_start' => $currentIntervalStart->toDateString(),
-                    'interval_end' => $currentIntervalEnd->toDateString(),
-                    'messages_sent' => $count,
-                    'allowed_messages' => $allowedCount,
-                ],
-                'status' => 203,
+                'message' => 'You cannot send message to yourself.',
+                'data' => [],
+                'status' => 400,
             ]);
         }
 
-        $currentIntervalStart = $currentIntervalEnd->copy()->addSecond();
-    }
+        $activeSubscription = UserSubscription::where('user_id', $sender->id)
+            ->where('type', 'Activitys')
+            ->where('is_active', 1)
+            ->where('activated_at', '<=', $now)
+            ->where('expires_at', '>=', $now)
+            ->first();
 
-    $code = rand(100000, 999999);
-    while (Chat::where('rendom', $code)->exists()) {
+        $allowedCount = 0;
+        if ($activeSubscription) {
+            $coinCategory = CoinCategory::find($activeSubscription->plan_id);
+            $allowedCount = $coinCategory ? $coinCategory->interest_messages_coin : 0;
+        } else {
+            $activitySub = ActivitySubscription::orderBy('id', 'desc')->first();
+            $allowedCount = $activitySub ? (int)$activitySub->message_count : 0;
+        }
+
+        $startDate = Carbon::parse($sender->created_at)->startOfDay();
+        $nowStartOfDay = $now->copy()->startOfDay();
+        $currentIntervalStart = $startDate;
+
+        while ($currentIntervalStart->lessThanOrEqualTo($nowStartOfDay)) {
+            $currentIntervalEnd = $currentIntervalStart->copy()->addDays(30)->subSecond();
+            $count = Chat::where('sender_id', $sender->id)
+                ->where('chat_type', 'activity')
+                ->whereBetween('created_at', [$currentIntervalStart, $currentIntervalEnd])
+                ->count();
+
+            if ($count >= $allowedCount) {
+                $messageText = $activeSubscription
+                    ? 'You have used all your message coins for this month. Please purchase or renew your plan.'
+                    : 'Please subscribe to send more messages.';
+
+                return response()->json([
+                    'message' => $messageText,
+                    'data' => [
+                        'interval_start' => $currentIntervalStart->toDateString(),
+                        'interval_end' => $currentIntervalEnd->toDateString(),
+                        'messages_sent' => $count,
+                        'allowed_messages' => $allowedCount,
+                    ],
+                    'status' => 203,
+                ]);
+            }
+
+            $currentIntervalStart = $currentIntervalEnd->copy()->addSecond();
+        }
+
         $code = rand(100000, 999999);
-    }
+        while (Chat::where('rendom', $code)->exists()) {
+            $code = rand(100000, 999999);
+        }
 
-    $mainActivity = null;
-    if ($request->activity_id) {
-        $mainActivity = Activity::where('rendom', $request->activity_id)->first();
-    }
+        $mainActivity = null;
+        if ($request->activity_id) {
+            $mainActivity = Activity::where('rendom', $request->activity_id)->first();
+        }
 
-    $chat = Chat::create([
-        'sender_id' => $sender->id,
-        'receiver_id' => $receiver->id,
-        'message' => $request->message,
-        'status' => 'sent',
-        'rendom' => $code,
-         'send_type' => $request->send_type,
-        'chat_type' => $request->chat_type,
-        'activity_id' => $request->activity_id ?? null,
-    ]);
-
-     $firebaseService = new FirebaseService(); // or inject via constructor
-
-      $title = $request->title ?? 'New Message';
-
-        $sent = $firebaseService->sendNotification(
-        $receiver->fcm_token,
-        $title,
-        $request->message,
-        [
-            'sender_rendom' => $sender->rendom,
-            'receiver_rendom' => $receiver->rendom,
+        $chat = Chat::create([
+            'sender_id' => $sender->id,
+            'receiver_id' => $receiver->id,
             'message' => $request->message,
             'status' => 'sent',
-            'sent_time' => now()->diffForHumans(),
-            'screen' => 'Chat',
-        ]
-    );
+            'rendom' => $code,
+            'send_type' => $request->send_type,
+            'chat_type' => $request->chat_type,
+            'activity_id' => $request->activity_id ?? null,
+        ]);
 
-     if ($sent) {
-            Log::info("✅ Notification sent to user ID {$receiver->id}");
-        } else {
+        $firebaseService = new FirebaseService();
+        $title = $request->title ?? 'New Message';
+
+        if (!$receiver->fcm_token) {
             Log::warning("No FCM token for user ID: {$receiver->id}, rendom: {$receiver->rendom}");
             $responses[] = [
                 'receiver_rendom' => $receiver->rendom,
                 'message' => 'No FCM token available.',
                 'status' => 400,
             ];
+        } else {
+            $sent = $firebaseService->sendNotification(
+                $receiver->fcm_token,
+                $title,
+                $request->message,
+                [
+                    'sender_rendom' => $sender->rendom,
+                    'receiver_rendom' => $receiver->rendom,
+                    'message' => $request->message,
+                    'status' => 'sent',
+                    'sent_time' => $now->diffForHumans(),
+                    'screen' => 'Chat',
+                ]
+            );
+
+            if ($sent) {
+                Log::info("✅ Notification sent to user ID {$receiver->id}");
+            } else {
+                Log::warning("Notification failed for user ID: {$receiver->id}, rendom: {$receiver->rendom}");
+                $responses[] = [
+                    'receiver_rendom' => $receiver->rendom,
+                    'message' => 'Notification failed.',
+                    'status' => 400,
+                ];
+            }
         }
 
-    return response()->json([
-        'message' => 'Message sent successfully.',
-        'data' => [
-            'sender_rendom' => $sender->rendom,
-            'receiver_rendom' => $receiver->rendom,
-            'message' => $chat->message,
-            'rendom' => $chat->rendom,
-            'chat_type' => $chat->chat_type,
-            'status' => $chat->status,
-            'sent_time' => Carbon::parse($chat->created_at)->diffForHumans(),
-        ],
-        'status' => 200,
-    ]);
+        return response()->json([
+            'message' => 'Message sent successfully.',
+            'data' => [
+                'sender_rendom' => $sender->rendom,
+                'receiver_rendom' => $receiver->rendom,
+                'message' => $chat->message,
+                'rendom' => $chat->rendom,
+                'chat_type' => $chat->chat_type,
+                'status' => $chat->status,
+                'sent_time' => Carbon::parse($chat->created_at)->diffForHumans(),
+            ],
+            'status' => 200,
+        ]);
     }
 }
 

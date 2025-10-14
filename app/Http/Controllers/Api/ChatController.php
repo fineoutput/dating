@@ -171,12 +171,20 @@ public function sendMessage(Request $request)
             }
 
             if ($limitExceeded) {
-                $responses[] = [
-                    'receiver_id' => $receiverId,
-                    'message' => 'Message limit reached.',
-                    'status' => 203,
-                ];
-                continue;
+               $messageText = $activeSubscription
+                ? 'You have used all your message coins for this month. Please purchase or renew your plan.'
+                : 'Please subscribe to send more messages.';
+
+            return response()->json([
+                'message' => $messageText,
+                'data' => [
+                    'interval_start' => $currentIntervalStart->toDateString(),
+                    'interval_end' => $currentIntervalEnd->toDateString(),
+                    'messages_sent' => $count,
+                    'allowed_messages' => $allowedCount,
+                ],
+                'status' => 203,
+            ]);
             }
 
              $code = rand(100000, 999999);

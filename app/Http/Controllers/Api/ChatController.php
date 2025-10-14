@@ -808,7 +808,7 @@ public function getMessages(Request $request)
     $receiverIds = $receiverIdMap->values()->toArray();
     $authId = $authUser->id;
 
-    $perPage = 10; // Number of messages per page (adjust as needed)
+    $perPage = 5; // Number of messages per page (adjust as needed)
     $page = $request->input('page', 1); // Default to page 1
 
     $allMessages = Chat::where(function ($query) use ($authId, $receiverIds, $send_type) {

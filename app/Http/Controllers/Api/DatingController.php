@@ -2038,7 +2038,7 @@ public function acceptslide(Request $request)
                     $request->message ?? 'You have a new like!',
                     [
                         'sender_rendom' => $sendnotification->rendom,
-                        'screen' => 'People',
+                        'screen' => 'Chat',
                     ]
                 );
 

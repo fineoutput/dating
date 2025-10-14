@@ -490,10 +490,10 @@ public function getMessages(Request $request)
     $receiverIds = $receiverIdMap->values()->toArray();
     $authId = $authUser->id;
 
-    $perPage = 5; // Number of messages per page (adjust as needed)
+    $perPage = 10; // Number of messages per page (adjust as needed)
     $page = $request->input('page', 1); // Default to page 1
 
-    $allMessages = Chat::where('id','DESC')->where(function ($query) use ($authId, $receiverIds, $send_type) {
+    $allMessages = Chat::orderBy('id','DESC')->where(function ($query) use ($authId, $receiverIds, $send_type) {
         if ($send_type === 'single') {
             $query->where(function ($q) use ($authId, $receiverIds) {
                 foreach ($receiverIds as $receiverId) {
@@ -523,6 +523,7 @@ public function getMessages(Request $request)
     ->orderBy('created_at', 'asc')
     ->paginate($perPage, ['*'], 'page', $page); // Use paginate instead of get
 
+    // return $allMessages;
     // Format messages
     $flatMessages = $allMessages->map(function ($message) use ($authId) {
         $sender = User::find($message->sender_id);

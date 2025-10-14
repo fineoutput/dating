@@ -26,11 +26,22 @@ use App\Models\UserSubscription;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
+use App\Services\FirebaseService;
+use Illuminate\Support\Facades\Log;
 
 
 
 class DatingController extends Controller
 {
+
+    protected $firebaseService;
+
+    public function __construct(FirebaseService $firebaseService)
+    {
+        $this->firebaseService = $firebaseService;
+    }
+
+
 
     // public function findMatchingUsers(Request $request)
     // {
@@ -1473,6 +1484,8 @@ public function datingpreference(Request $request)
 // }
 
 
+
+
 public function cupidmatch(Request $request)
 {
     // Check if the user is authenticated
@@ -1495,7 +1508,6 @@ public function cupidmatch(Request $request)
     $maker_id = Auth::id();
 
     try {
-
         $rendom_1 = User::where('rendom', $request->user_1_rendom)->first();
         $rendom_2 = User::where('rendom', $request->user_2_rendom)->first();
 
@@ -1504,12 +1516,10 @@ public function cupidmatch(Request $request)
                 'message' => 'User not found',
                 'data' => [],
                 'status' => 200,
-        ], 404);
+            ], 404);
         }
 
-
-        // $randomNumber = rand(100000, 999999);
-
+        // Generate unique random number for Cupid record
         do {
             $randomNumber = rand(100000, 999999);
         } while (Cupid::where('rendom', $randomNumber)->exists());
@@ -1528,14 +1538,84 @@ public function cupidmatch(Request $request)
             'status' => 0,
         ]);
 
-        // Save the Cupid match
         $cupid->save();
 
+        $maker_rendom = User::where('id', $cupid->maker_id)->first();
 
-        $maker_rendom = User::where('id',$cupid->maker_id)->first();
+        $firebaseService = new FirebaseService();
 
+        $title = 'New Cupid Match';
 
-        // Prepare a new array for the response without sensitive information
+        $notificationData = [
+            'user_1_rendom' => $rendom_1->rendom,
+            'user_2_rendom' => $rendom_2->rendom,
+            'maker_rendom' => $maker_rendom->rendom,
+            'message' => $cupid->message ?? 'A new match has been created for you!',
+            'rendom' => $cupid->rendom,
+            'status' => 'sent',
+            'sent_time' => now()->diffForHumans(),
+            'screen' => 'CupidMatch',
+        ];
+
+        $responses = [];
+
+        // Send notification to user_1
+        if ($rendom_1->fcm_token) {
+            $sent = $firebaseService->sendNotification(
+                $rendom_1->fcm_token,
+                $title,
+                $cupid->message ?? 'You have a new Cupid match!',
+                $notificationData
+            );
+
+            if ($sent) {
+                Log::info("✅ Notification sent to user ID {$rendom_1->id}, rendom: {$rendom_1->rendom}");
+            } else {
+                Log::warning("No FCM token for user ID: {$rendom_1->id}, rendom: {$rendom_1->rendom}");
+                $responses[] = [
+                    'receiver_rendom' => $rendom_1->rendom,
+                    'message' => 'No FCM token available or notification failed.',
+                    'status' => 400,
+                ];
+            }
+        } else {
+            Log::warning("No FCM token for user ID: {$rendom_1->id}, rendom: {$rendom_1->rendom}");
+            $responses[] = [
+                'receiver_rendom' => $rendom_1->rendom,
+                'message' => 'No FCM token available.',
+                'status' => 400,
+            ];
+        }
+
+        // Send notification to user_2
+        if ($rendom_2->fcm_token) {
+            $sent = $firebaseService->sendNotification(
+                $rendom_2->fcm_token,
+                $title,
+                $cupid->message ?? 'You have a new Cupid match!',
+                $notificationData
+            );
+
+            if ($sent) {
+                Log::info("✅ Notification sent to user ID {$rendom_2->id}, rendom: {$rendom_2->rendom}");
+            } else {
+                Log::warning("No FCM token for user ID: {$rendom_2->id}, rendom: {$rendom_2->rendom}");
+                $responses[] = [
+                    'receiver_rendom' => $rendom_2->rendom,
+                    'message' => 'No FCM token available or notification failed.',
+                    'status' => 400,
+                ];
+            }
+        } else {
+            Log::warning("No FCM token for user ID: {$rendom_2->id}, rendom: {$rendom_2->rendom}");
+            $responses[] = [
+                'receiver_rendom' => $rendom_2->rendom,
+                'message' => 'No FCM token available.',
+                'status' => 400,
+            ];
+        }
+
+        // Prepare response
         $response = [
             'message' => 'Cupid match saved successfully!',
             'status' => 200,
@@ -1549,15 +1629,15 @@ public function cupidmatch(Request $request)
                 'maker_rendom' => $maker_rendom->rendom,
                 'rendom' => $cupid->rendom,
                 'status' => 0,
-                // You can add any other necessary fields you want to return in the response
+                'notification_responses' => $responses, // Include notification responses for debugging
             ]
         ];
 
         return response()->json([
-            'message' => '',
+            'message' => 'Cupid match created and notifications sent.',
             'data' => $response,
             'status' => 200,
-        ],200);
+        ], 200);
 
     } catch (\Exception $e) {
         return response()->json([
@@ -1567,6 +1647,102 @@ public function cupidmatch(Request $request)
         ], 500);
     }
 }
+
+
+// public function cupidmatch(Request $request)
+// {
+//     // Check if the user is authenticated
+//     if (!Auth::check()) {
+//         return response()->json([
+//             'message' => 'User not authenticated',
+//             'status' => 401
+//         ], 401);
+//     }
+
+//     $validated = $request->validate([
+//         'user_1_rendom' => 'required',
+//         'user_2_rendom' => 'required',
+//         'accept' => 'nullable|boolean',
+//         'decline' => 'nullable|boolean',
+//         'message' => 'nullable|string|max:500',
+//         'identity' => 'nullable|string|max:255',
+//     ]);
+
+//     $maker_id = Auth::id();
+
+//     try {
+
+//         $rendom_1 = User::where('rendom', $request->user_1_rendom)->first();
+//         $rendom_2 = User::where('rendom', $request->user_2_rendom)->first();
+
+//         if (!$rendom_1 || !$rendom_2) {
+//             return response()->json([
+//                 'message' => 'User not found',
+//                 'data' => [],
+//                 'status' => 200,
+//         ], 404);
+//         }
+
+
+//         // $randomNumber = rand(100000, 999999);
+
+//         do {
+//             $randomNumber = rand(100000, 999999);
+//         } while (Cupid::where('rendom', $randomNumber)->exists());
+        
+//         $cupid = new Cupid([
+//             'user_id_1' => $rendom_1->id,
+//             'user_id_2' => $rendom_2->id,
+//             'maker_id' => $maker_id,
+//             'accept' => $request->accept ?? null,
+//             'decline' => $request->decline ?? null,
+//             'message' => $request->message ?? null,
+//             'identity' => $request->identity ?? null,
+//             'rendom' => $randomNumber,
+//             'user_id_1_status' => 0,
+//             'user_id_2_status' => 0,
+//             'status' => 0,
+//         ]);
+
+//         // Save the Cupid match
+//         $cupid->save();
+
+
+//         $maker_rendom = User::where('id',$cupid->maker_id)->first();
+
+
+//         // Prepare a new array for the response without sensitive information
+//         $response = [
+//             'message' => 'Cupid match saved successfully!',
+//             'status' => 200,
+//             'data' => [
+//                 'user_1_rendom' => $rendom_1->rendom,
+//                 'user_2_rendom' => $rendom_2->rendom,
+//                 'accept' => $cupid->accept,
+//                 'decline' => $cupid->decline,
+//                 'message' => $cupid->message,
+//                 'identity' => $cupid->identity,
+//                 'maker_rendom' => $maker_rendom->rendom,
+//                 'rendom' => $cupid->rendom,
+//                 'status' => 0,
+//                 // You can add any other necessary fields you want to return in the response
+//             ]
+//         ];
+
+//         return response()->json([
+//             'message' => '',
+//             'data' => $response,
+//             'status' => 200,
+//         ],200);
+
+//     } catch (\Exception $e) {
+//         return response()->json([
+//             'message' => 'Error saving cupid match.',
+//             'error' => $e->getMessage(),
+//             'status' => 500
+//         ], 500);
+//     }
+// }
 
 
 
@@ -1649,33 +1825,34 @@ public function cupidMatchFriend(Request $request)
         ], 200);
     }
 
- public function acceptCupid(Request $request)
-    {
-        if (!Auth::check()) {
-            return response()->json([
-                'message' => 'User not authenticated',
-                'status' => 401
-            ], 401);
-        }
+    public function acceptCupid(Request $request)
+{
+    if (!Auth::check()) {
+        return response()->json([
+            'message' => 'User not authenticated',
+            'status' => 401
+        ], 401);
+    }
 
-        $request->validate([
-            'user_id' => 'required',
-            'status' => 'nullable',
-        ]);
+    $request->validate([
+        'user_id' => 'required',
+        'status' => 'nullable',
+    ]);
 
-        $authUser = Auth::user();
+    $authUser = Auth::user();
 
-        $cupid = Cupid::where('id', $request->user_id)->first();
+    $cupid = Cupid::where('id', $request->user_id)->first();
 
-        if (!$cupid) {
-            return response()->json([
-                'message' => 'Cupid match not found',
-                'status' => 404
-            ], 404);
-        }
-        // return $cupid->user_id_2;
-        
-         $cupid->status = $request->status;
+    if (!$cupid) {
+        return response()->json([
+            'message' => 'Cupid match not found',
+            'status' => 404
+        ], 404);
+    }
+
+    try {
+        // Update match status
+        $cupid->status = $request->status;
         if ($authUser->id == $cupid->user_id_1) {
             $cupid->user_id_1_status = 1;
         } elseif ($authUser->id == $cupid->user_id_2) {
@@ -1689,17 +1866,168 @@ public function cupidMatchFriend(Request $request)
 
         $cupid->save();
 
+        // Fetch user details for notifications
+        $user_1 = User::find($cupid->user_id_1);
+        $user_2 = User::find($cupid->user_id_2);
+        $maker = User::find($cupid->maker_id);
+
+        if (!$user_1 || !$user_2 || !$maker) {
+            return response()->json([
+                'message' => 'One or more users not found',
+                'status' => 404
+            ], 404);
+        }
+
+        // Initialize FirebaseService
+        $firebaseService = new FirebaseService();
+
+        // Notification title
+        $title = 'Cupid Match Accepted';
+
+        // Prepare notification payload
+        $notificationData = [
+            'user_1_rendom' => $user_1->rendom,
+            'user_2_rendom' => $user_2->rendom,
+            'maker_rendom' => $maker->rendom,
+            'rendom' => $cupid->rendom,
+            'status' => $cupid->status,
+            'user_id_1_status' => $cupid->user_id_1_status,
+            'user_id_2_status' => $cupid->user_id_2_status,
+            'message' => 'A user has accepted the Cupid match!',
+            'sent_time' => now()->diffForHumans(),
+            'screen' => 'CupidMatch',
+        ];
+
+        $responses = [];
+
+        // Send notification to user_1
+        if ($user_1->fcm_token) {
+            $sent = $firebaseService->sendNotification(
+                $user_1->fcm_token,
+                $title,
+                $notificationData['message'],
+                $notificationData
+            );
+
+            if ($sent) {
+                Log::info("✅ Notification sent to user ID {$user_1->id}, rendom: {$user_1->rendom}");
+            } else {
+                Log::warning("No FCM token or notification failed for user ID: {$user_1->id}, rendom: {$user_1->rendom}");
+                $responses[] = [
+                    'receiver_rendom' => $user_1->rendom,
+                    'message' => 'No FCM token available or notification failed.',
+                    'status' => 400,
+                ];
+            }
+        } else {
+            Log::warning("No FCM token for user ID: {$user_1->id}, rendom: {$user_1->rendom}");
+            $responses[] = [
+                'receiver_rendom' => $user_1->rendom,
+                'message' => 'No FCM token available.',
+                'status' => 400,
+            ];
+        }
+
+        // Send notification to user_2
+        if ($user_2->fcm_token) {
+            $sent = $firebaseService->sendNotification(
+                $user_2->fcm_token,
+                $title,
+                $notificationData['message'],
+                $notificationData
+            );
+
+            if ($sent) {
+                Log::info("✅ Notification sent to user ID {$user_2->id}, rendom: {$user_2->rendom}");
+            } else {
+                Log::warning("No FCM token or notification failed for user ID: {$user_2->id}, rendom: {$user_2->rendom}");
+                $responses[] = [
+                    'receiver_rendom' => $user_2->rendom,
+                    'message' => 'No FCM token available or notification failed.',
+                    'status' => 400,
+                ];
+            }
+        } else {
+            Log::warning("No FCM token for user ID: {$user_2->id}, rendom: {$user_2->rendom}");
+            $responses[] = [
+                'receiver_rendom' => $user_2->rendom,
+                'message' => 'No FCM token available.',
+                'status' => 400,
+            ];
+        }
+
         return response()->json([
-            'message' => 'Cupid match status updated successfully!',
+            'message' => 'Cupid match status updated and notifications sent successfully!',
             'status' => 200,
             'data' => [
                 'id' => $cupid->id,
                 'user_id_1_status' => $cupid->user_id_1_status,
                 'user_id_2_status' => $cupid->user_id_2_status,
-                'status' => $request->status,
+                'status' => $cupid->status,
+                'notification_responses' => $responses, // Include notification responses for debugging
             ]
         ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Error updating cupid match.',
+            'error' => $e->getMessage(),
+            'status' => 500
+        ], 500);
     }
+}
+
+//  public function acceptCupid(Request $request)
+//     {
+//         if (!Auth::check()) {
+//             return response()->json([
+//                 'message' => 'User not authenticated',
+//                 'status' => 401
+//             ], 401);
+//         }
+
+//         $request->validate([
+//             'user_id' => 'required',
+//             'status' => 'nullable',
+//         ]);
+
+//         $authUser = Auth::user();
+
+//         $cupid = Cupid::where('id', $request->user_id)->first();
+
+//         if (!$cupid) {
+//             return response()->json([
+//                 'message' => 'Cupid match not found',
+//                 'status' => 404
+//             ], 404);
+//         }
+//         // return $cupid->user_id_2;
+        
+//          $cupid->status = $request->status;
+//         if ($authUser->id == $cupid->user_id_1) {
+//             $cupid->user_id_1_status = 1;
+//         } elseif ($authUser->id == $cupid->user_id_2) {
+//             $cupid->user_id_2_status = 1;
+//         } else {
+//             return response()->json([
+//                 'message' => 'Not authorized to update this match',
+//                 'status' => 403
+//             ], 403);
+//         }
+
+//         $cupid->save();
+
+//         return response()->json([
+//             'message' => 'Cupid match status updated successfully!',
+//             'status' => 200,
+//             'data' => [
+//                 'id' => $cupid->id,
+//                 'user_id_1_status' => $cupid->user_id_1_status,
+//                 'user_id_2_status' => $cupid->user_id_2_status,
+//                 'status' => $request->status,
+//             ]
+//         ], 200);
+//     }
 
 
  public function acceptslide(Request $request)
@@ -1800,49 +2128,146 @@ public function updateCupidMatch(Request $request)
     }
 
     $validated = $request->validate([
-        'rendom' => 'required',  
-        'accept' => 'nullable|boolean',  
-        'decline' => 'nullable|boolean', 
+        'rendom' => 'required',
+        'accept' => 'nullable|boolean',
+        'decline' => 'nullable|boolean',
     ]);
 
     try {
-
+        $authUser = Auth::user();
         $cupid = Cupid::where('rendom', $request->rendom)->first();
 
-        // If cupid match is found, update it
-        if ($cupid) {
-            if ($request->has('accept')) {
-                $cupid->accept = $request->accept;
-            }
-
-            if ($request->has('decline')) {
-                $cupid->decline = $request->decline;
-            }
-            $cupid->save();
-
-            $maker_rendom = User::where('id',$cupid->maker_id)->first();
-
-            $response = [
-                'message' => 'Cupid match updated successfully!',
-                'status' => 200,
-                'data' => [
-                    'accept' => $cupid->accept,
-                    'decline' => $cupid->decline,
-                    'message' => $cupid->message,
-                    'rendom' => $cupid->rendom,
-                    'identity' => $cupid->identity,
-                    'maker_rendom' => $maker_rendom->rendom,
-                ]
-            ];
-
-            return response()->json($response, 200);
-        } else {
+        // If cupid match is not found
+        if (!$cupid) {
             return response()->json([
                 'message' => 'Cupid match not found.',
                 'data' => [],
                 'status' => 200
             ], 200);
         }
+
+        // Check if the authenticated user is authorized to update the match
+        if ($authUser->id != $cupid->user_id_1 && $authUser->id != $cupid->user_id_2) {
+            return response()->json([
+                'message' => 'Not authorized to update this match.',
+                'status' => 403
+            ], 403);
+        }
+
+        // Update cupid match
+        if ($request->has('accept')) {
+            $cupid->accept = $request->accept;
+        }
+
+        if ($request->has('decline')) {
+            $cupid->decline = $request->decline;
+        }
+        $cupid->save();
+
+        // Fetch user details for notifications
+        $user_1 = User::find($cupid->user_id_1);
+        $user_2 = User::find($cupid->user_id_2);
+        $maker = User::find($cupid->maker_id);
+
+        if (!$user_1 || !$user_2 || !$maker) {
+            return response()->json([
+                'message' => 'One or more users not found.',
+                'status' => 404
+            ], 404);
+        }
+
+        // Initialize FirebaseService
+        $firebaseService = new FirebaseService();
+
+        // Notification title
+        $title = 'Cupid Match Updated';
+
+        // Prepare notification payload
+        $notificationData = [
+            'user_1_rendom' => $user_1->rendom,
+            'user_2_rendom' => $user_2->rendom,
+            'maker_rendom' => $maker->rendom,
+            'rendom' => $cupid->rendom,
+            'accept' => $cupid->accept,
+            'decline' => $cupid->decline,
+            'message' => $cupid->message ?? 'The Cupid match has been updated!',
+            'sent_time' => now()->diffForHumans(),
+            'screen' => 'CupidMatch',
+        ];
+
+        $responses = [];
+
+        // Send notification to user_1 (if not the authenticated user)
+        if ($authUser->id != $cupid->user_id_1 && $user_1->fcm_token) {
+            $sent = $firebaseService->sendNotification(
+                $user_1->fcm_token,
+                $title,
+                $notificationData['message'],
+                $notificationData
+            );
+
+            if ($sent) {
+                Log::info("✅ Notification sent to user ID {$user_1->id}, rendom: {$user_1->rendom}");
+            } else {
+                Log::warning("No FCM token or notification failed for user ID: {$user_1->id}, rendom: {$user_1->rendom}");
+                $responses[] = [
+                    'receiver_rendom' => $user_1->rndom,
+                    'message' => 'No FCM token available or notification failed.',
+                    'status' => 400,
+                ];
+            }
+        } elseif ($authUser->id != $cupid->user_id_1 && !$user_1->fcm_token) {
+            Log::warning("No FCM token for user ID: {$user_1->id}, rendom: {$user_1->rendom}");
+            $responses[] = [
+                'receiver_rendom' => $user_1->rendom,
+                'message' => 'No FCM token available.',
+                'status' => 400,
+            ];
+        }
+
+        // Send notification to user_2 (if not the authenticated user)
+        if ($authUser->id != $cupid->user_id_2 && $user_2->fcm_token) {
+            $sent = $firebaseService->sendNotification(
+                $user_2->fcm_token,
+                $title,
+                $notificationData['message'],
+                $notificationData
+            );
+
+            if ($sent) {
+                Log::info("✅ Notification sent to user ID {$user_2->id}, rendom: {$user_2->rendom}");
+            } else {
+                Log::warning("No FCM token or notification failed for user ID: {$user_2->id}, rendom: {$user_2->rendom}");
+                $responses[] = [
+                    'receiver_rendom' => $user_2->rendom,
+                    'message' => 'No FCM token available or notification failed.',
+                    'status' => 400,
+                ];
+            }
+        } elseif ($authUser->id != $cupid->user_id_2 && !$user_2->fcm_token) {
+            Log::warning("No FCM token for user ID: {$user_2->id}, rendom: {$user_2->rendom}");
+            $responses[] = [
+                'receiver_rendom' => $user_2->rendom,
+                'message' => 'No FCM token available.',
+                'status' => 400,
+            ];
+        }
+
+        $response = [
+            'message' => 'Cupid match updated successfully!',
+            'status' => 200,
+            'data' => [
+                'accept' => $cupid->accept,
+                'decline' => $cupid->decline,
+                'message' => $cupid->message,
+                'rendom' => $cupid->rendom,
+                'identity' => $cupid->identity,
+                'maker_rendom' => $maker->rendom,
+                'notification_responses' => $responses, // Include notification responses for debugging
+            ]
+        ];
+
+        return response()->json($response, 200);
 
     } catch (\Exception $e) {
         return response()->json([
@@ -1852,6 +2277,69 @@ public function updateCupidMatch(Request $request)
         ], 500);
     }
 }
+
+// public function updateCupidMatch(Request $request)
+// {
+//     if (!Auth::check()) {
+//         return response()->json([
+//             'message' => 'User not authenticated',
+//             'status' => 401
+//         ], 401);
+//     }
+
+//     $validated = $request->validate([
+//         'rendom' => 'required',  
+//         'accept' => 'nullable|boolean',  
+//         'decline' => 'nullable|boolean', 
+//     ]);
+
+//     try {
+
+//         $cupid = Cupid::where('rendom', $request->rendom)->first();
+
+//         // If cupid match is found, update it
+//         if ($cupid) {
+//             if ($request->has('accept')) {
+//                 $cupid->accept = $request->accept;
+//             }
+
+//             if ($request->has('decline')) {
+//                 $cupid->decline = $request->decline;
+//             }
+//             $cupid->save();
+
+//             $maker_rendom = User::where('id',$cupid->maker_id)->first();
+
+//             $response = [
+//                 'message' => 'Cupid match updated successfully!',
+//                 'status' => 200,
+//                 'data' => [
+//                     'accept' => $cupid->accept,
+//                     'decline' => $cupid->decline,
+//                     'message' => $cupid->message,
+//                     'rendom' => $cupid->rendom,
+//                     'identity' => $cupid->identity,
+//                     'maker_rendom' => $maker_rendom->rendom,
+//                 ]
+//             ];
+
+//             return response()->json($response, 200);
+//         } else {
+//             return response()->json([
+//                 'message' => 'Cupid match not found.',
+//                 'data' => [],
+//                 'status' => 200
+//             ], 200);
+//         }
+
+//     } catch (\Exception $e) {
+//         return response()->json([
+//             'message' => 'Error updating cupid match.',
+//             'error' => $e->getMessage(),
+//             'status' => 500
+//         ], 500);
+//     }
+// }
 
 
 

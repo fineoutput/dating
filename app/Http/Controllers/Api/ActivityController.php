@@ -27,15 +27,24 @@ use Illuminate\Support\Facades\Http;
 use App\Models\OtherInterest;
 use App\Models\UserSubscription;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
+use App\Services\FirebaseService;
+use Illuminate\Support\Facades\Log;
 
 
 
 class ActivityController extends Controller
 {
+
+      protected $firebaseService;
+
+    public function __construct(FirebaseService $firebaseService)
+    {
+        $this->firebaseService = $firebaseService;
+    }
+
 
 
   public function verifyCity(Request $request)
@@ -521,45 +530,146 @@ class ActivityController extends Controller
     }   
 
 
-   public function activityedit(Request $request)
-    {
-        if (!Auth::check()) {
-            return response()->json([
-                'message' => 'Unauthorized. Please log in.',
-            ], 401);
+  public function activityedit(Request $request)
+{
+    if (!Auth::check()) {
+        return response()->json([
+            'message' => 'Unauthorized. Please log in.',
+        ], 401);
+    }
+
+    $user = Auth::user();
+
+    $activity = Activity::where('user_id', $user->id)
+                        ->where('rendom', $request->activity_rendom)
+                        ->first();
+
+    if (!$activity) {
+        return response()->json([
+            'message' => 'Activity not found or unauthorized.',
+        ], 404);
+    }
+
+    $pactupusers = OtherInterest::where('user_id_1', $user->id)
+                                ->where('activity_id', $activity->id)
+                                ->whereIn('confirm', [3, 7])
+                                ->pluck('user_id')
+                                ->toArray();
+
+    if ($activity->update_count > 0) {
+        return response()->json([
+            'message' => 'You have already updated your activity once.',
+            'status' => 208,
+        ], 208);
+    }
+
+    try {
+        // Track updated fields for notification
+        $updatedFields = [];
+
+        if ($request->has('where_to') && $request->where_to !== $activity->where_to) {
+            $updatedFields['where_to'] = [
+                'old' => $activity->where_to,
+                'new' => $request->where_to
+            ];
+            $activity->where_to = $request->where_to;
         }
 
-        $user = Auth::user();
-
-        $activity = Activity::where('user_id', $user->id)
-                            ->where('rendom', $request->activity_rendom)
-                            ->first();
-
-        if (!$activity) {
-            return response()->json([
-                'message' => 'Activity not found or unauthorized.',
-            ], 404);
+        if ($request->has('when_time') && $request->when_time !== $activity->when_time) {
+            $updatedFields['when_time'] = [
+                'old' => $activity->when_time,
+                'new' => $request->when_time
+            ];
+            $activity->when_time = $request->when_time;
         }
 
-        if (!is_null($activity) && $activity->update_count == 0) {
-        $activity->where_to = $request->where_to ?? $activity->where_to;
-        $activity->when_time = $request->when_time ?? $activity->when_time;
-        $activity->how_many = $request->how_many ?? $activity->how_many;
-        $activity->start_time = $request->start_time ?? $activity->start_time;
-        $activity->end_time = $request->end_time ?? $activity->end_time;
-        $activity->friend_rendom = $request->friend_rendom ?? $activity->friend_rendom;
+        if ($request->has('how_many') && $request->how_many !== $activity->how_many) {
+            $updatedFields['how_many'] = [
+                'old' => $activity->how_many,
+                'new' => $request->how_many
+            ];
+            $activity->how_many = $request->how_many;
+        }
 
-        $activity->interests_id = isset($user->interest) ? implode(',', (array)$user->interest) : $activity->interests_id;
-        $activity->vibe_id = isset($request->vibe_id) ? implode(',', (array)$request->vibe_id) : $activity->vibe_id;
-        $activity->expense_id = isset($request->expense_id) ? implode(',', (array)$request->expense_id) : $activity->expense_id;
+        if ($request->has('start_time') && $request->start_time !== $activity->start_time) {
+            $updatedFields['start_time'] = [
+                'old' => $activity->start_time,
+                'new' => $request->start_time
+            ];
+            $activity->start_time = $request->start_time;
+        }
 
-        $activity->other_activity = $request->other_activity ?? $activity->other_activity;
-        $activity->status = 2;
-        $activity->title = $request->title ?? $activity->title;
-        $activity->description = $request->description ?? $activity->description;
-        $activity->location = $request->location ?? $activity->location;
-        $activity->amount = $request->amount ?? $activity->amount;
-        $activity->update_count = $request->update_count ?? '';
+        if ($request->has('end_time') && $request->end_time !== $activity->end_time) {
+            $updatedFields['end_time'] = [
+                'old' => $activity->end_time,
+                'new' => $request->end_time
+            ];
+            $activity->end_time = $request->end_time;
+        }
+
+        if ($request->has('friend_rendom') && $request->friend_rendom !== $activity->friend_rendom) {
+            $updatedFields['friend_rendom'] = [
+                'old' => $activity->friend_rendom,
+                'new' => $request->friend_rendom
+            ];
+            $activity->friend_rendom = $request->friend_rendom;
+        }
+
+        if ($request->has('vibe_id') && $request->vibe_id !== $activity->vibe_id) {
+            $updatedFields['vibe_id'] = [
+                'old' => $activity->vibe_id,
+                'new' => implode(',', (array)$request->vibe_id)
+            ];
+            $activity->vibe_id = implode(',', (array)$request->vibe_id);
+        }
+
+        if ($request->has('expense_id') && $request->expense_id !== $activity->expense_id) {
+            $updatedFields['expense_id'] = [
+                'old' => $activity->expense_id,
+                'new' => implode(',', (array)$request->expense_id)
+            ];
+            $activity->expense_id = implode(',', (array)$request->expense_id);
+        }
+
+        if ($request->has('other_activity') && $request->other_activity !== $activity->other_activity) {
+            $updatedFields['other_activity'] = [
+                'old' => $activity->other_activity,
+                'new' => $request->other_activity
+            ];
+            $activity->other_activity = $request->other_activity;
+        }
+
+        if ($request->has('title') && $request->title !== $activity->title) {
+            $updatedFields['title'] = [
+                'old' => $activity->title,
+                'new' => $request->title
+            ];
+            $activity->title = $request->title;
+        }
+
+        if ($request->has('description') && $request->description !== $activity->description) {
+            $updatedFields['description'] = [
+                'old' => $activity->description,
+                'new' => $request->description
+            ];
+            $activity->description = $request->description;
+        }
+
+        if ($request->has('location') && $request->location !== $activity->location) {
+            $updatedFields['location'] = [
+                'old' => $activity->location,
+                'new' => $request->location
+            ];
+            $activity->location = $request->location;
+        }
+
+        if ($request->has('amount') && $request->amount !== $activity->amount) {
+            $updatedFields['amount'] = [
+                'old' => $activity->amount,
+                'new' => $request->amount
+            ];
+            $activity->amount = $request->amount;
+        }
 
         if ($request->hasFile('image')) {
             $image = $request->file('image');
@@ -571,26 +681,176 @@ class ActivityController extends Controller
             }
 
             $image->move($destinationPath, $imageName);
-
+            $updatedFields['image'] = [
+                'old' => $activity->image,
+                'new' => 'activity_images/' . $imageName
+            ];
             $activity->image = 'activity_images/' . $imageName;
         }
 
-
+        $activity->status = 2;
+        $activity->update_count = 1; // Increment update_count
         $activity->save();
-        }else{
-            return response()->json([
-                    'message' => 'You have already updated your activity once.',
-                    // 'data' => $activity,
-                    'status' => 208,
-                ]);
+
+        // Initialize FirebaseService
+        $firebaseService = new FirebaseService();
+
+        // Fetch users from pactupusers
+        $users = User::whereIn('id', $pactupusers)->get();
+        $responses = [];
+
+        // Prepare notification payload (flatten updated_fields to a JSON string)
+        $notificationData = [
+            'activity_rendom' => (string)$activity->rendom, // Ensure string
+            'title' => (string)$activity->title, // Ensure string
+            'updated_fields' => json_encode($updatedFields), // Convert to JSON string
+            'message' => (string)'The activity "' . $activity->title . '" has been updated!', // Ensure string
+            'sent_time' => (string)now()->diffForHumans(), // Ensure string
+            'screen' => 'Activity',
+        ];
+
+        // Send notifications to pactupusers (excluding authenticated user)
+        foreach ($users as $pactupUser) {
+            if ($pactupUser->id === $user->id) {
+                continue; // Skip the authenticated user
+            }
+
+            if ($pactupUser->fcm_token) {
+                try {
+                    $sent = $firebaseService->sendNotification(
+                        $pactupUser->fcm_token,
+                        'Activity Updated',
+                        $notificationData['message'],
+                        $notificationData
+                    );
+
+                    if ($sent) {
+                        Log::info("✅ Notification sent to user ID {$pactupUser->id}, rendom: {$pactupUser->rendom}");
+                    } else {
+                        Log::warning("Notification failed for user ID: {$pactupUser->id}, rendom: {$pactupUser->rendom}");
+                        $responses[] = [
+                            'receiver_rendom' => $pactupUser->rendom,
+                            'message' => 'Notification failed.',
+                            'status' => 400,
+                        ];
+                    }
+                } catch (\Exception $e) {
+                    Log::error("❌ Failed to send FCM notification to user ID {$pactupUser->id}, rendom: {$pactupUser->rendom}: {$e->getMessage()}", [
+                        'token' => $pactupUser->fcm_token,
+                        'title' => 'Activity Updated',
+                        'body' => $notificationData['message'],
+                        'data' => $notificationData,
+                    ]);
+                    $responses[] = [
+                        'receiver_rendom' => $pactupUser->rendom,
+                        'message' => 'Failed to send notification: ' . $e->getMessage(),
+                        'status' => 400,
+                    ];
+                }
+            } else {
+                Log::warning("No FCM token for user ID: {$pactupUser->id}, rendom: {$pactupUser->rendom}");
+                $responses[] = [
+                    'receiver_rendom' => $pactupUser->rendom,
+                    'message' => 'No FCM token available.',
+                    'status' => 400,
+                ];
+            }
         }
 
         return response()->json([
-            'message' => 'Activity updated successfully.',
-            'data' => $activity,
+            'message' => 'Activity updated successfully and notifications sent.',
+            'data' => [
+                'activity' => $activity,
+                'notification_responses' => $responses, // Include notification responses for debugging
+            ],
             'status' => 200,
         ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Error updating activity.',
+            'error' => $e->getMessage(),
+            'status' => 500
+        ], 500);
     }
+}
+
+//    public function activityedit(Request $request)
+//     {
+//         if (!Auth::check()) {
+//             return response()->json([
+//                 'message' => 'Unauthorized. Please log in.',
+//             ], 401);
+//         }
+
+//         $user = Auth::user();
+
+//         $activity = Activity::where('user_id', $user->id)
+//                             ->where('rendom', $request->activity_rendom)
+//                             ->first();
+
+//         $pactupusers = OtherInterest::where('user_id_1', $user->id)
+//                         ->where('activity_id', $activity->id)
+//                         ->where('confirm', [4,7])
+//                         ->pluck('user_id')
+//                         ->toArray();       
+
+//         if (!$activity) {
+//             return response()->json([
+//                 'message' => 'Activity not found or unauthorized.',
+//             ], 404);
+//         }
+
+//         if (!is_null($activity) && $activity->update_count == 0) {
+//         $activity->where_to = $request->where_to ?? $activity->where_to;
+//         $activity->when_time = $request->when_time ?? $activity->when_time;
+//         $activity->how_many = $request->how_many ?? $activity->how_many;
+//         $activity->start_time = $request->start_time ?? $activity->start_time;
+//         $activity->end_time = $request->end_time ?? $activity->end_time;
+//         $activity->friend_rendom = $request->friend_rendom ?? $activity->friend_rendom;
+
+//         $activity->interests_id = isset($user->interest) ? implode(',', (array)$user->interest) : $activity->interests_id;
+//         $activity->vibe_id = isset($request->vibe_id) ? implode(',', (array)$request->vibe_id) : $activity->vibe_id;
+//         $activity->expense_id = isset($request->expense_id) ? implode(',', (array)$request->expense_id) : $activity->expense_id;
+
+//         $activity->other_activity = $request->other_activity ?? $activity->other_activity;
+//         $activity->status = 2;
+//         $activity->title = $request->title ?? $activity->title;
+//         $activity->description = $request->description ?? $activity->description;
+//         $activity->location = $request->location ?? $activity->location;
+//         $activity->amount = $request->amount ?? $activity->amount;
+//         $activity->update_count = $request->update_count ?? '';
+
+//         if ($request->hasFile('image')) {
+//             $image = $request->file('image');
+//             $imageName = time() . '_' . $image->getClientOriginalName();
+//             $destinationPath = public_path('activity_images');
+
+//             if (!file_exists($destinationPath)) {
+//                 mkdir($destinationPath, 0755, true);
+//             }
+
+//             $image->move($destinationPath, $imageName);
+
+//             $activity->image = 'activity_images/' . $imageName;
+//         }
+
+
+//         $activity->save();
+//         }else{
+//             return response()->json([
+//                     'message' => 'You have already updated your activity once.',
+//                     // 'data' => $activity,
+//                     'status' => 208,
+//                 ]);
+//         }
+
+//         return response()->json([
+//             'message' => 'Activity updated successfully.',
+//             'data' => $activity,
+//             'status' => 200,
+//         ]);
+//     }
     
 
   private function parseTimeToDate($time)
@@ -1488,6 +1748,7 @@ public function foryouactivitys(Request $request)
 
     $activities = Activity::orderBy('id', 'DESC')
         ->where('user_id', '!=', $users->id)
+        ->where('admin_city', $users->admin_city)
         ->where('status', 2)
         ->where(function ($query) use ($currentTime) {
             $query->whereDate('when_time', '>', $currentTime->toDateString())

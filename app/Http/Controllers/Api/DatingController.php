@@ -2021,7 +2021,7 @@ public function acceptslide(Request $request)
         $cupid->status = 2;
 
         $firebaseService = new FirebaseService();
-        $title = $request->title ?? "{$authUser->name} liked you";
+        $title = $request->title ?? "{$authUser->name} Accept Your Like";
 
         if (!$sendnotification->fcm_token) {
             Log::warning("No FCM token for user ID: {$sendnotification->id}, rendom: {$sendnotification->rendom}");

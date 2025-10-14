@@ -515,7 +515,7 @@ class DatingController extends Controller
 //             }
 //         })
 //         ->where('id', '!=', $user->id)
-//         ->whereNotIn('id', $excludedUserIds) // ✅ Exclude already matched users
+//         ->whereNotIn('id', $excludedUserIds) // Exclude already matched users
 //         ->when($minAge && $maxAge, function ($query) use ($minAge, $maxAge) {
 //             return $query->whereBetween('age', [$minAge, $maxAge]);
 //         })
@@ -1570,7 +1570,7 @@ public function cupidmatch(Request $request)
             );
 
             if ($sent) {
-                Log::info("✅ Notification sent to user ID {$rendom_1->id}, rendom: {$rendom_1->rendom}");
+                Log::info("Notification sent to user ID {$rendom_1->id}, rendom: {$rendom_1->rendom}");
             } else {
                 Log::warning("No FCM token for user ID: {$rendom_1->id}, rendom: {$rendom_1->rendom}");
                 $responses[] = [
@@ -1598,7 +1598,7 @@ public function cupidmatch(Request $request)
             );
 
             if ($sent) {
-                Log::info("✅ Notification sent to user ID {$rendom_2->id}, rendom: {$rendom_2->rendom}");
+                Log::info("Notification sent to user ID {$rendom_2->id}, rendom: {$rendom_2->rendom}");
             } else {
                 Log::warning("No FCM token for user ID: {$rendom_2->id}, rendom: {$rendom_2->rendom}");
                 $responses[] = [
@@ -1911,7 +1911,7 @@ public function cupidMatchFriend(Request $request)
             );
 
             if ($sent) {
-                Log::info("✅ Notification sent to user ID {$user_1->id}, rendom: {$user_1->rendom}");
+                Log::info("Notification sent to user ID {$user_1->id}, rendom: {$user_1->rendom}");
             } else {
                 Log::warning("No FCM token or notification failed for user ID: {$user_1->id}, rendom: {$user_1->rendom}");
                 $responses[] = [
@@ -1939,7 +1939,7 @@ public function cupidMatchFriend(Request $request)
             );
 
             if ($sent) {
-                Log::info("✅ Notification sent to user ID {$user_2->id}, rendom: {$user_2->rendom}");
+                Log::info("Notification sent to user ID {$user_2->id}, rendom: {$user_2->rendom}");
             } else {
                 Log::warning("No FCM token or notification failed for user ID: {$user_2->id}, rendom: {$user_2->rendom}");
                 $responses[] = [
@@ -2049,6 +2049,8 @@ public function cupidMatchFriend(Request $request)
 
         $cupid = SlideLike::where('matching_user',$authUser->id)->where('matched_user', $request->user_id)->first();
 
+        $sendnotification = User::where('id', $request->user_id)->first();
+
         if (!$cupid) {
             return response()->json([
                 'message' => 'Slide Like match not found',
@@ -2059,6 +2061,39 @@ public function cupidMatchFriend(Request $request)
         if ($request->status == 2) {
 
             $cupid->status = 2;
+
+               $firebaseService = new FirebaseService();
+                $title = $request->title ?? "{$authUser->name} liked you";
+
+                if (!$sendnotification->fcm_token) {
+                    Log::warning("No FCM token for user ID: {$sendnotification->id}, rendom: {$sendnotification->rendom}");
+                    $responses[] = [
+                        'receiver_rendom' => $sendnotification->rendom,
+                        'message' => 'No FCM token available.',
+                        'status' => 400,
+                    ];
+                } else {
+                    $sent = $firebaseService->sendNotification(
+                        $sendnotification->fcm_token,
+                        $title,
+                        $request->message,
+                        [
+                            'sender_rendom' => $sendnotification->rendom,
+                            'screen' => 'People',
+                        ]
+                    );
+
+                    if ($sent) {
+                        Log::info("Notification sent to user ID {$sendnotification->id}");
+                    } else {
+                        Log::warning("Notification failed for user ID: {$sendnotification->id}, rendom: {$sendnotification->rendom}");
+                        $responses[] = [
+                            'receiver_rendom' => $sendnotification->rendom,
+                            'message' => 'Notification failed.',
+                            'status' => 400,
+                        ];
+                    }
+                }
 
         } else {
 
@@ -2208,7 +2243,7 @@ public function updateCupidMatch(Request $request)
             );
 
             if ($sent) {
-                Log::info("✅ Notification sent to user ID {$user_1->id}, rendom: {$user_1->rendom}");
+                Log::info("Notification sent to user ID {$user_1->id}, rendom: {$user_1->rendom}");
             } else {
                 Log::warning("No FCM token or notification failed for user ID: {$user_1->id}, rendom: {$user_1->rendom}");
                 $responses[] = [
@@ -2236,7 +2271,7 @@ public function updateCupidMatch(Request $request)
             );
 
             if ($sent) {
-                Log::info("✅ Notification sent to user ID {$user_2->id}, rendom: {$user_2->rendom}");
+                Log::info("Notification sent to user ID {$user_2->id}, rendom: {$user_2->rendom}");
             } else {
                 Log::warning("No FCM token or notification failed for user ID: {$user_2->id}, rendom: {$user_2->rendom}");
                 $responses[] = [
@@ -2583,6 +2618,40 @@ public function updateCupidMatch(Request $request)
             }
             if ($likedUser) {
                 $slideLike->liked_user = 1;
+
+                 $firebaseService = new FirebaseService();
+                $title = $request->title ?? "{$user->name} liked you";
+
+                if (!$user_id->fcm_token) {
+                    Log::warning("No FCM token for user ID: {$user_id->id}, rendom: {$user_id->rendom}");
+                    $responses[] = [
+                        'receiver_rendom' => $user_id->rendom,
+                        'message' => 'No FCM token available.',
+                        'status' => 400,
+                    ];
+                } else {
+                    $sent = $firebaseService->sendNotification(
+                        $user_id->fcm_token,
+                        $title,
+                        $request->message,
+                        [
+                            'sender_rendom' => $user_id->rendom,
+                            'screen' => 'People',
+                        ]
+                    );
+
+                    if ($sent) {
+                        Log::info("Notification sent to user ID {$user_id->id}");
+                    } else {
+                        Log::warning("Notification failed for user ID: {$user_id->id}, rendom: {$user_id->rendom}");
+                        $responses[] = [
+                            'receiver_rendom' => $user_id->rendom,
+                            'message' => 'Notification failed.',
+                            'status' => 400,
+                        ];
+                    }
+                }
+
             }
             if ($dislike) {
                 $slideLike->dislike = 1;

@@ -134,7 +134,7 @@ public function sendMessage(Request $request)
                         }
 
             // Subscription & message limit check
-             $activeSubscription = UserSubscription::where('user_id', $sender->id)
+            $activeSubscription = UserSubscription::where('user_id', $sender->id)
                 ->where('type', 'Activitys')
                 ->where('is_active', 1)
                 ->where('activated_at', '<=', $now)
@@ -154,6 +154,7 @@ public function sendMessage(Request $request)
             $nowStartOfDay = $now->copy()->startOfDay();
             $currentIntervalStart = $startDate;
 
+            $limitExceeded = false;
             while ($currentIntervalStart->lessThanOrEqualTo($nowStartOfDay)) {
                 $currentIntervalEnd = $currentIntervalStart->copy()->addDays(30)->subSecond();
                 $count = Chat::where('sender_id', $sender->id)
@@ -162,33 +163,27 @@ public function sendMessage(Request $request)
                     ->count();
 
                 if ($count >= $allowedCount) {
-                    $messageText = $activeSubscription
-                        ? 'You have used all your message coins for this month. Please purchase or renew your plan.'
-                        : 'Please subscribe to send more messages.';
-
-                    return response()->json([
-                        'message' => $messageText,
-                        'data' => [
-                            'interval_start' => $currentIntervalStart->toDateString(),
-                            'interval_end' => $currentIntervalEnd->toDateString(),
-                            'messages_sent' => $count,
-                            'allowed_messages' => $allowedCount,
-                        ],
-                        'status' => 203,
-                    ]);
+                    $limitExceeded = true;
+                    break;
                 }
 
                 $currentIntervalStart = $currentIntervalEnd->copy()->addSecond();
             }
 
-            // if ($limitExceeded) {
-            //     $responses[] = [
-            //         'receiver_id' => $receiverId,
-            //         'message' => 'Message limit reached.',
-            //         'status' => 203,
-            //     ];
-            //     continue;
-            // }
+            if ($limitExceeded) {
+                // $responses[] = [
+                //     'receiver_id' => $receiverId,
+                //     'message' => 'Message limit reached.',
+                //     'status' => 203,
+                // ];
+                 return response()->json([
+                    'message' => 'Message limit reached.',
+                    'receiver_id' => $receiverId,
+                    'data' => [],
+                    'status' => 203,
+                ]);
+                // continue;
+            }
 
              $code = rand(100000, 999999);
             while (Chat::where('rendom', $code)->exists()) {

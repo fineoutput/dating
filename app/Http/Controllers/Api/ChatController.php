@@ -356,7 +356,6 @@ public function sendMessage(Request $request)
 
 
 
-
 // public function getMessages(Request $request)
 // {
 //     $authUser = Auth::user();
@@ -457,6 +456,7 @@ public function sendMessage(Request $request)
 //         'status' => 200,
 //     ]);
 // }
+
 
 public function getMessages(Request $request)
 {
@@ -570,7 +570,6 @@ public function getMessages(Request $request)
         'status' => 200,
     ]);
 }
-
 // public function getMessages(Request $request)
 // {
 //     $authUser = Auth::user();

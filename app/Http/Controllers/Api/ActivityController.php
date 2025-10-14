@@ -3438,20 +3438,20 @@ public function friendcount_one(Request $request)
         ->whereIn('confirm', [2, 3, 4, 7])
         ->get();
 
-    // if ($interestRelations->isEmpty()) {
-    //     // No relations, return empty sets
-    //     return response()->json([
-    //         'message' => 'Friend and Cupid data fetched successfully',
-    //         'status' => 200,
-    //         'data' => [
-    //             'match_users' => [],
-    //             'activity_users' => [],
-    //             'group_users' => [],
-    //             'friend_count' => 0,
-    //             'like_count' => 0,
-    //         ],
-    //     ]);
-    // }
+    if ($interestRelations->isEmpty()) {
+        // No relations, return empty sets
+        return response()->json([
+            'message' => 'Friend and Cupid data fetched successfully',
+            'status' => 200,
+            'data' => [
+                'match_users' => [],
+                'activity_users' => [],
+                'group_users' => [],
+                'friend_count' => 0,
+                'like_count' => 0,
+            ],
+        ]);
+    }
 
     // Build all user‑activity pairs from the interest relations
     $userActivityCombos = $interestRelations->flatMap(function ($relation) {

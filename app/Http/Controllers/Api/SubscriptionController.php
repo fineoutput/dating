@@ -30,7 +30,7 @@ class SubscriptionController extends Controller
   
      public function datingsubscriptionlists()
     {
-        $subscriptions = DatingSubscription::where('status', 1)->get();
+        $subscriptions = DatingSubscription::where('status', 1)->where('type','paid')->get();
 
         return response()->json([
             'success' => true,

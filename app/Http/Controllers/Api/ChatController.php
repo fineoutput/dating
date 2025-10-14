@@ -171,18 +171,12 @@ public function sendMessage(Request $request)
             }
 
             if ($limitExceeded) {
-                // $responses[] = [
-                //     'receiver_id' => $receiverId,
-                //     'message' => 'Message limit reached.',
-                //     'status' => 203,
-                // ];
-                 return response()->json([
-                    'message' => 'Message limit reached.',
+                $responses[] = [
                     'receiver_id' => $receiverId,
-                    'data' => [],
+                    'message' => 'Message limit reached.',
                     'status' => 203,
-                ]);
-                // continue;
+                ];
+                continue;
             }
 
              $code = rand(100000, 999999);

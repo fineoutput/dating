@@ -2191,8 +2191,7 @@ $remainingInterests = max(0, $allowedInterest - $interestCount);
         'remainingInterests' => $remainingInterests ?? 0,
         'create_user' => $mainActivity->user->rendom ?? 0,
         'new_time' => Carbon::parse($mainActivity->when_time)->format('l jS M Y'),
-
-
+        'hot' => 3,
     ];
 
     $attendees = OtherInterest::where('activity_id', $mainActivity->id)

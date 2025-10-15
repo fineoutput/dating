@@ -406,7 +406,19 @@ public function addinterest(Request $request)
                             ];
                         }
     
-    // Prevent user from liking their own activity
+    $how_many_user = OtherInterest::where('activity_id', $activity->id)
+    ->whereIn('confirm', [3, 7])
+    ->count();
+    $how_many = Activity::where('id', $activity->id)->first();
+
+    if ($how_many_user >= $how_many->how_many) {
+        return response()->json([
+            'message' => 'The activity has reached its maximum number of confirmed participants.',
+            'data' => [],
+            'status' => 204,
+        ]);
+    }
+
     if ($activity->user_id == $user->id) {
         return response()->json([
             'message' => 'You cannot add interest to your own activity.',

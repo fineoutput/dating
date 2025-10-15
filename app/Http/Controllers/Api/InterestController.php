@@ -371,6 +371,7 @@ public function addinterest(Request $request)
         return response()->json(['message' => $errors, 'data' => [], 'status' => 201], 200);
     }
 
+
     // Fetch activity by rendom
     $activity = Activity::where('rendom', $request->rendom)->first();
 
@@ -379,6 +380,19 @@ public function addinterest(Request $request)
             'message' => 'Activity not found.',
             'data' => [],
             'status' => 404,
+        ]);
+    }
+
+      $how_many_user = OtherInterest::where('activity_id', $activity->id)
+    ->whereIn('confirm', [3, 7])
+    ->count();
+    $how_many = Activity::where('id', $activity->id)->first();
+
+    if ($how_many_user >= $how_many->how_many) {
+        return response()->json([
+            'message' => 'The activity has reached its maximum number of confirmed participants.',
+            'data' => [],
+            'status' => 204,
         ]);
     }
 
@@ -406,19 +420,7 @@ public function addinterest(Request $request)
                             ];
                         }
     
-    $how_many_user = OtherInterest::where('activity_id', $activity->id)
-    ->whereIn('confirm', [3, 7])
-    ->count();
-    $how_many = Activity::where('id', $activity->id)->first();
-
-    if ($how_many_user >= $how_many->how_many) {
-        return response()->json([
-            'message' => 'The activity has reached its maximum number of confirmed participants.',
-            'data' => [],
-            'status' => 204,
-        ]);
-    }
-
+  
     if ($activity->user_id == $user->id) {
         return response()->json([
             'message' => 'You cannot add interest to your own activity.',

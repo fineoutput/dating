@@ -32,6 +32,8 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
 use App\Services\FirebaseService;
 use Illuminate\Support\FacadesLog;
+use Illuminate\Support\Facades\Log;
+
 
 
 
@@ -3431,11 +3433,12 @@ public function friendcount_one(Request $request)
 
     // Get all interest relations involving this user with allowed confirm statuses
     $interestRelations = OtherInterest::where(function ($q) use ($user) {
-            $q->where('user_id', $user->id)
-              ->orWhere('user_id_1', $user->id);
-        })
-        ->whereIn('confirm', [2, 3, 4, 7])
-        ->get();
+        $q->where('user_id', $user->id)
+        ->orWhere('user_id_1', $user->id);
+    })
+    ->whereIn('confirm', [2, 3, 4, 7])
+    ->get();
+    Log::info($interestRelations->toArray());
 
     // if ($interestRelations->isEmpty()) {
     //     // No relations, return empty sets
@@ -3463,6 +3466,7 @@ public function friendcount_one(Request $request)
 
     // Collect all involved user IDs (excluding the auth user if present)
     $userIds = $userActivityCombos->pluck('user_id')->unique()->filter(fn($id) => $id !== $user->id);
+    // return $userIds;
     $users = User::whereIn('id', $userIds)->get()->keyBy('id');
 
     // -------------------------
@@ -3471,15 +3475,18 @@ public function friendcount_one(Request $request)
     $activityUsers = $userActivityCombos->map(function ($combo) use ($user, $users, $interestRelations) {
         $uid = $combo['user_id'];
         $aid = $combo['activity_id'];
+            Log::info('Processing combo:', $combo);
 
         if ($uid === $user->id) {
             return null;
         }
         $userItem = $users->get($uid);
         if (!$userItem) {
+            Log::warning("User ID {$uid} not found in users collection.");
             return null;
         }
-
+     
+  Log::info('User Item:', [$userItem]);
         $activity = Activity::find($aid);
         if (!$activity) {
             return null;
@@ -3541,6 +3548,7 @@ public function friendcount_one(Request $request)
             'user_rendoms' => $confirm,
         ];
     })->filter()->values();
+
 
     // -------------------------
     // Build group_users
@@ -3676,6 +3684,7 @@ public function friendcount_one(Request $request)
     })->filter()->values();
 
 
+
     $CupidMatches = Cupid::where('user_id_1', $user->id)
         ->orWhere('user_id_2', $user->id)
         ->get()
@@ -3712,9 +3721,10 @@ public function friendcount_one(Request $request)
     $filteredLikeUsers = $likeUserList->filter(fn($itm) => $itm['id'] !== $user->id)->values();
     $filteredCupidUsers = $matchedUsers->filter(fn($itm) => $itm['id'] !== $user->id)->values();
 
-    $matchUsers = $filteredLikeUsers->merge($filteredCupidUsers)
-                    ->unique('id')
-                    ->values();
+    $matchUsers = collect($filteredLikeUsers)
+        ->merge(collect($filteredCupidUsers))
+        ->unique('id')
+        ->values();
 
     $friendCount = $filteredActivityUsers->count() + $filteredGroupUsers->count();
     $likeCount = $interestRelations->count();

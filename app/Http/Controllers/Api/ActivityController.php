@@ -3423,485 +3423,215 @@ public function friendcount(Request $request)
 
 
 
-public function friendcount_one(Request $request)
-{
-    $user = Auth::user();
-    
-    if (!$user) {
-        return response()->json(['message' => 'User not authenticated'], 401);
-    }
-
-    // Get all interest relations involving this user with allowed confirm statuses
-    $interestRelations = OtherInterest::where(function ($q) use ($user) {
-        $q->where('user_id', $user->id)
-        ->orWhere('user_id_1', $user->id);
-    })
-    ->whereIn('confirm', [2, 3, 4, 7])
-    ->get();
-    Log::info($interestRelations->toArray());
-
-    // if ($interestRelations->isEmpty()) {
-    //     // No relations, return empty sets
-    //     return response()->json([
-    //         'message' => 'Friend and Cupid data fetched successfully',
-    //         'status' => 200,
-    //         'data' => [
-    //             'match_users' => [],
-    //             'activity_users' => [],
-    //             'group_users' => [],
-    //             'friend_count' => 0,
-    //             'like_count' => 0,
-    //         ],
-    //     ]);
-    // }
-
-    // Build all user‑activity pairs from the interest relations
-    $userActivityCombos = $interestRelations->flatMap(function ($relation) {
-        return [
-            ['user_id' => (int) $relation->user_id, 'activity_id' => (int) $relation->activity_id],
-            ['user_id' => (int) $relation->user_id_1, 'activity_id' => (int) $relation->activity_id],
-        ];
-    })->unique(fn($item) => $item['user_id'] . '-' . $item['activity_id'])
-      ->values();
-
-    // Collect all involved user IDs (excluding the auth user if present)
-    $userIds = $userActivityCombos->pluck('user_id')->unique()->filter(fn($id) => $id !== $user->id);
-    // return $userIds;
-    $users = User::whereIn('id', $userIds)->get()->keyBy('id');
-
-    // -------------------------
-    // Build activity_users (single / interest-based users)
-    // -------------------------
-    $activityUsers = $userActivityCombos->map(function ($combo) use ($user, $users, $interestRelations) {
-        $uid = $combo['user_id'];
-        $aid = $combo['activity_id'];
-            Log::info('Processing combo:', $combo);
-
-        if ($uid === $user->id) {
-            return null;
-        }
-        $userItem = $users->get($uid);
-        if (!$userItem) {
-            Log::warning("User ID {$uid} not found in users collection.");
-            return null;
-        }
-     
-  Log::info('User Item:', [$userItem]);
-        $activity = Activity::find($aid);
-        if (!$activity) {
-            return null;
-        }
-
-        // Only treat this as a “single / interest” if that relation exists and is not marked group
-        $matchingRelation = $interestRelations->first(function ($rel) use ($user, $uid, $aid) {
-            return ($rel->activity_id == $aid)
-                && (
-                    ($rel->user_id == $user->id && $rel->user_id_1 == $uid)
-                    || ($rel->user_id_1 == $user->id && $rel->user_id == $uid)
-                );
-        });
-        if (!$matchingRelation) {
-            return null;
-        }
-
-        // Build the confirm list (other related users for that activity)
-        $howMany = $activity->how_many ?? 0;
-        $confirm = OtherInterest::with('user')
-            ->where('activity_id', $aid)
-            ->whereIn('confirm', [3, 2, 7])
-            ->take($howMany)
-            ->get()
-            ->pluck('user.rendom')
-            ->filter()
-            ->values();
-
-        if ($confirm->isEmpty()) {
-            return null;
-        }
-
-        $imagePath = null;
-        if ($userItem->profile_image) {
-            $imgs = json_decode($userItem->profile_image, true);
-            if (is_array($imgs) && count($imgs)) {
-                $imagePath = reset($imgs);
-            }
-        }
-
-        $chat = Chat::where('sender_id', $user->id)
-            ->where('receiver_id', $userItem->id)
-            ->where('send_type', 'single')
-            ->orderBy('id', 'DESC')
-            ->first();
-
-        return [
-            'id' => $userItem->id,
-            'user_rendom' => $userItem->rendom,
-            'authuser_rendom' => $user->rendom,
-            'name' => $userItem->name,
-            'activity_name' => $activity->title,
-            'activity_image' => $activity->image ? asset($activity->image) : null,
-            'activity_id' => $aid,
-            'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
-            'form' => 'activity',
-            'last_message' => $chat->message ?? null,
-            'send_type' => $chat->send_type ?? null,
-            'user_rendoms' => $confirm,
-        ];
-    })->filter()->values();
-
-
-    // -------------------------
-    // Build group_users
-    // -------------------------
-    $groupUsers = $userActivityCombos->map(function ($combo) use ($user, $users, $interestRelations) {
-        $uid = $combo['user_id'];
-        $aid = $combo['activity_id'];
-
-        if ($uid === $user->id) {
-            return null;
-        }
-        $userItem = $users->get($uid);
-        if (!$userItem) {
-            return null;
-        }
-
-        $activity = Activity::find($aid);
-        if (!$activity) {
-            return null;
-        }
-
-        // Build confirm list
-        $howMany = $activity->how_many ?? 0;
-        // $confirm = OtherInterest::with('user')
-        //     ->where('activity_id', $aid)
-        //     ->where('user_id', $user->id)
-        //     ->where('user_id_1', $userItem->id)
-        //     ->whereIn('confirm', [3, 7])
-        //     ->take($howMany)
-        //     ->get()
-        //     ->pluck('user.rendom')
-        //     ->filter()
-        //     ->values();
-
-        $confirm = OtherInterest::with('user')
-    ->where('activity_id', $aid)
-    ->whereIn('confirm', [3, 7])
-    ->where(function ($query) use ($user, $userItem) {
-        $query->where(function ($q) use ($user, $userItem) {
-            $q->where('user_id', $user->id)
-              ->where('user_id_1', $userItem->id);
-        })->orWhere(function ($q) use ($user, $userItem) {
-            $q->where('user_id', $userItem->id)
-              ->where('user_id_1', $user->id);
-        });
-    })
-    ->take($howMany)
-    ->get()
-    ->pluck('user.rendom')
-    ->filter()
-    ->values();
-
-        if ($confirm->isEmpty()) {
-            return null;
-        }
-
-        $imagePath = null;
-        if ($userItem->profile_image) {
-            $imgs = json_decode($userItem->profile_image, true);
-            if (is_array($imgs) && count($imgs)) {
-                $imagePath = reset($imgs);
-            }
-        }
-
-        $chat = Chat::where('sender_id', $user->id)
-            ->where('receiver_id', $userItem->id)
-            ->where('activity_id',$activity->id)
-            ->where('send_type', 'group')
-            ->orderBy('id', 'DESC')
-            ->first();
-
-        $confirm->push($userItem->rendom);
-        $confirm->skip($user->rendom);
-        return [
-            'id' => $userItem->id,
-            'user_rendom' => $userItem->rendom,
-            'authuser_rendom' => $user->rendom,
-            'name' => $userItem->name,
-            'activity_name' => $activity->title,
-            'activity_id' => $activity->id,
-            // 'activity_rendom' => $activity->rendom,
-            'activity_image' => $activity->image ? asset($activity->image) : null,
-            'activity_id' => $aid,
-            'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
-            'form' => 'group',
-            'last_message' => $chat->message ?? null,
-            'send_type' => $chat->send_type ?? null,
-            'user_rendoms' => $confirm,
-        ];
-    })
-    ->filter()
-    // Optionally you can make unique per user-activity, but likely it's already unique
-    ->unique(fn($item) => $item['id'] . '-' . $item['activity_id'])
-    ->values();
-
-    // -------------------------
-    // Build like / match users
-    // -------------------------
-    $likeUser = SlideLike::where('status', 2)
-        ->where(function ($q) use ($user) {
-            $q->where('matched_user', $user->id)
-              ->orWhere('matching_user', $user->id);
-        })->get();
-    $likeUserIds = $likeUser->map(fn($like) => ($like->matched_user == $user->id ? $like->matching_user : $like->matched_user))
-                           ->unique()
-                           ->values();
-
-    $likeUserDetails = User::whereIn('id', $likeUserIds)->get();
-
-    $likeUserList = $likeUserDetails->map(function ($u) use ($user) {
-        $imagePath = null;
-        if ($u->profile_image) {
-            $imgs = json_decode($u->profile_image, true);
-            if (is_array($imgs) && count($imgs)) {
-                $imagePath = reset($imgs);
-            }
-        }
-        $chat = Chat::where('sender_id', $user->id)
-            ->where('receiver_id', $u->id)
-            ->where('send_type', 'single')
-            ->orderBy('id', 'DESC')
-            ->first();
-
-        return [
-            'id' => $u->id,
-            'user_rendom' => $u->rendom,
-            'authuser_rendom' => $user->rendom,
-            'name' => $u->name,
-            'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
-            'form' => 'match',
-            'last_message' => $chat->message ?? null,
-            'send_type' => $chat->send_type ?? null,
-        ];
-    })->filter()->values();
-
-
-
-    $CupidMatches = Cupid::where('user_id_1', $user->id)
-        ->orWhere('user_id_2', $user->id)
-        ->get()
-        ->unique();
-
-    $matchedUsers = $CupidMatches->map(function ($match) use ($user) {
-        $matchedUserId = ($match->user_id_1 == $user->id) ? $match->user_id_2 : $match->user_id_1;
-        $matchedUser = User::find($matchedUserId);
-        if (!$matchedUser) {
-            return null;
-        }
-        $imgs = json_decode($matchedUser->profile_image, true);
-        $firstImg = (is_array($imgs) && count($imgs)) ? reset($imgs) : null;
-
-        $chat = Chat::where('sender_id', $user->id)
-            ->where('receiver_id', $matchedUser->id)
-            ->orderBy('id', 'DESC')
-            ->first();
-
-        return [
-            'id' => $matchedUser->id,
-            'user_rendom' => $matchedUser->rendom,
-            'name' => $matchedUser->name,
-            'image' => $firstImg ? asset('uploads/app/profile_images/' . $firstImg) : null,
-            'form' => 'match',
-            'last_message' => $chat->message ?? null,
-            'send_type' => $chat->send_type ?? null,
-        ];
-    })->filter()->values();
-
-    // Filter out entries matching the auth user
-    $filteredActivityUsers = $activityUsers->filter(fn($itm) => $itm['id'] !== $user->id)->values();
-    $filteredGroupUsers = $groupUsers->filter(fn($itm) => $itm['id'] !== $user->id)->values();
-    $filteredLikeUsers = $likeUserList->filter(fn($itm) => $itm['id'] !== $user->id)->values();
-    $filteredCupidUsers = $matchedUsers->filter(fn($itm) => $itm['id'] !== $user->id)->values();
-
-    $matchUsers = collect($filteredLikeUsers)
-        ->merge(collect($filteredCupidUsers))
-        ->unique('id')
-        ->values();
-
-    $friendCount = $filteredActivityUsers->count() + $filteredGroupUsers->count();
-    $likeCount = $interestRelations->count();
-
-    return response()->json([
-        'message' => 'Friend and Cupid data fetched successfully',
-        'status' => 200,
-        'data' => [
-            'match_users' => $matchUsers,
-            'activity_users' => $filteredActivityUsers,
-            'group_users' => $filteredGroupUsers,
-            'friend_count' => $friendCount,
-            'like_count' => $likeCount,
-        ],
-    ]);
-}
-
-
-
-
-
-// latest
-
 // public function friendcount_one(Request $request)
 // {
-//     $user = Auth::user(); 
-
+//     $user = Auth::user();
+    
 //     if (!$user) {
 //         return response()->json(['message' => 'User not authenticated'], 401);
 //     }
 
-//     // 🔹 Get all activities by this user where status = 2
-//     $matchingActivities = Activity::where('user_id', $user->id)
-//                                   ->where('status', 2)
-//                                   ->get();
+//     // Get all interest relations involving this user with allowed confirm statuses
+//     $interestRelations = OtherInterest::where(function ($q) use ($user) {
+//         $q->where('user_id', $user->id)
+//         ->orWhere('user_id_1', $user->id);
+//     })
+//     ->whereIn('confirm', [2, 3, 4, 7])
+//     ->get();
+//     Log::info($interestRelations->toArray());
 
-//     $activityIds = $matchingActivities->pluck('id');
+//     // if ($interestRelations->isEmpty()) {
+//     //     // No relations, return empty sets
+//     //     return response()->json([
+//     //         'message' => 'Friend and Cupid data fetched successfully',
+//     //         'status' => 200,
+//     //         'data' => [
+//     //             'match_users' => [],
+//     //             'activity_users' => [],
+//     //             'group_users' => [],
+//     //             'friend_count' => 0,
+//     //             'like_count' => 0,
+//     //         ],
+//     //     ]);
+//     // }
 
-//     $interestRelations = OtherInterest::where(function ($query) use ($user) {
-//         $query->where('user_id', $user->id)
-//             ->orWhere('user_id_1', $user->id);
-//     })->where(function ($query) {
-//         $query->where('confirm', 3)
-//             ->orWhere('confirm', 7)
-//             ->orWhere('confirm', 4)
-//             ->orWhere('confirm', 2);
-//     })->get();             
-    
-
-//     $oppositeUserIds = $interestRelations->map(function ($relation) use ($user) {
-//         return $relation->user_id == $user->id ? $relation->user_id_1 : $relation->user_id;
-//     })->unique()->values();
-    
-
-//     $userDetailsFromInterest2 = User::whereIn('id', $oppositeUserIds)->get()->map(function ($userItem) use ($interestRelations, $user) {
-//     // Find the matching interest relation for this user
-//         $matchingRelation = $interestRelations->first(function ($relation) use ($userItem, $user) {
-//             return ($relation->user_id == $user->id && $relation->user_id_1 == $userItem->id) ||
-//                 ($relation->user_id_1 == $user->id && $relation->user_id == $userItem->id);
-//         });
-
-//         // Attach activity_id to user object temporarily
-//         $userItem->interest_activity_id = $matchingRelation->activity_id ?? null;
-
-//         return $userItem;
-//     });
-
-//        $likeUser = SlideLike::where('status', 2)
-//         ->where(function ($query) use ($user) {
-//             $query->where('matched_user', $user->id)
-//                 ->orWhere('matching_user', $user->id);
-//         })
-//         ->get();
-
-//     $likeUserIds = $likeUser->map(function ($like) use ($user) {
-//         return $like->matched_user == $user->id ? $like->matching_user : $like->matched_user;
-//     })->unique()->values();
-
-//     $likeUserDetails2 = User::whereIn('id', $likeUserIds)->get();
-
-//     // 🔹 Map interest users
-//     $userList = $userDetailsFromInterest2->map(function ($userItem) use ($user) {
-//         $imagePath = null;
-//         if ($userItem->profile_image) {
-//             $images = json_decode($userItem->profile_image, true); 
-//             if (is_array($images) && count($images)) {
-//                 $imagePath = reset($images);
-//             }
-//         }
-
-//         $chat = Chat::where('sender_id', $user->id)
-//                     ->where('receiver_id', $userItem->id)
-//                     ->where('send_type', 'single')
-//                     ->orderBy('id', 'DESC')
-//                     ->first();
-
-
-//     $activity = Activity::where('id', $userItem->interest_activity_id)->first();
-//        $howMany = $activity->how_many;
-
-
-//     $confirm = OtherInterest::with('user')
-//         ->where('activity_id', $userItem->interest_activity_id)
-//         ->whereIn('confirm', [3, 7])
-//         ->take($howMany)
-//         ->get()
-//         ->pluck('user.rendom')
-//         ->filter() // Remove nulls if any user is missing or has no rendom
-//         ->values();
-
-
-//     $activityimagePath = $activity->image ?? null;
-
+//     // Build all user‑activity pairs from the interest relations
+//     $userActivityCombos = $interestRelations->flatMap(function ($relation) {
 //         return [
-//             'id' => $userItem->id,
-//             'user_rendom' => $userItem->rendom,
-//               'authuser_rendom' => $user->rendom,
-//             'name' => $userItem->name,
-//             'activity_name' => $activity->title,
-//             'activity_image' => $activityimagePath ? asset($activityimagePath) : null,
-//             'activity_id' => $userItem->interest_activity_id,
-//             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
-//             'form' => 'activity',
-//             'last_message' => $chat->message ?? null,
-//             'send_type' => $chat->send_type ?? null,
-//             'user_rendoms' => $confirm,
+//             ['user_id' => (int) $relation->user_id, 'activity_id' => (int) $relation->activity_id],
+//             ['user_id' => (int) $relation->user_id_1, 'activity_id' => (int) $relation->activity_id],
 //         ];
-//     });
+//     })->unique(fn($item) => $item['user_id'] . '-' . $item['activity_id'])
+//       ->values();
 
-//     $groupUserList = $userDetailsFromInterest2->map(function ($userItem) use ($user) {
-//         // Skip if no interest activity
-//         if (!$userItem->interest_activity_id) {
+//     // Collect all involved user IDs (excluding the auth user if present)
+//     $userIds = $userActivityCombos->pluck('user_id')->unique()->filter(fn($id) => $id !== $user->id);
+//     // return $userIds;
+//     $users = User::whereIn('id', $userIds)->get()->keyBy('id');
+
+//     // -------------------------
+//     // Build activity_users (single / interest-based users)
+//     // -------------------------
+//     $activityUsers = $userActivityCombos->map(function ($combo) use ($user, $users, $interestRelations) {
+//         $uid = $combo['user_id'];
+//         $aid = $combo['activity_id'];
+//             Log::info('Processing combo:', $combo);
+
+//         if ($uid === $user->id) {
 //             return null;
 //         }
-
-//         $activity = Activity::find($userItem->interest_activity_id);
+//         $userItem = $users->get($uid);
+//         if (!$userItem) {
+//             Log::warning("User ID {$uid} not found in users collection.");
+//             return null;
+//         }
+     
+//   Log::info('User Item:', [$userItem]);
+//         $activity = Activity::find($aid);
 //         if (!$activity) {
 //             return null;
 //         }
 
-//         $imagePath = null;
-//         if ($userItem->profile_image) {
-//             $images = json_decode($userItem->profile_image, true); 
-//             if (is_array($images) && count($images)) {
-//                 $imagePath = reset($images);
-//             }
+//         // Only treat this as a “single / interest” if that relation exists and is not marked group
+//         $matchingRelation = $interestRelations->first(function ($rel) use ($user, $uid, $aid) {
+//             return ($rel->activity_id == $aid)
+//                 && (
+//                     ($rel->user_id == $user->id && $rel->user_id_1 == $uid)
+//                     || ($rel->user_id_1 == $user->id && $rel->user_id == $uid)
+//                 );
+//         });
+//         if (!$matchingRelation) {
+//             return null;
 //         }
 
-//         $chat = Chat::where('sender_id', $user->id)
-//                     ->where('receiver_id', $userItem->id)
-//                     ->where('send_type', 'group')
-//                     ->orderBy('id', 'DESC')
-//                     ->first();
-
+//         // Build the confirm list (other related users for that activity)
 //         $howMany = $activity->how_many ?? 0;
-
 //         $confirm = OtherInterest::with('user')
-//             ->where('activity_id', $userItem->interest_activity_id)
-//             ->whereIn('confirm', [3, 7])
+//             ->where('activity_id', $aid)
+//             ->whereIn('confirm', [3, 2, 7])
 //             ->take($howMany)
 //             ->get()
 //             ->pluck('user.rendom')
 //             ->filter()
 //             ->values();
 
-//         if ($confirm->isEmpty()) return null;
+//         if ($confirm->isEmpty()) {
+//             return null;
+//         }
 
-//         $activityimagePath = $activity->image ?? null;
+//         $imagePath = null;
+//         if ($userItem->profile_image) {
+//             $imgs = json_decode($userItem->profile_image, true);
+//             if (is_array($imgs) && count($imgs)) {
+//                 $imagePath = reset($imgs);
+//             }
+//         }
+
+//         $chat = Chat::where('sender_id', $user->id)
+//             ->where('receiver_id', $userItem->id)
+//             ->where('send_type', 'single')
+//             ->orderBy('id', 'DESC')
+//             ->first();
 
 //         return [
 //             'id' => $userItem->id,
 //             'user_rendom' => $userItem->rendom,
+//             'authuser_rendom' => $user->rendom,
 //             'name' => $userItem->name,
 //             'activity_name' => $activity->title,
-//             'activity_image' => $activityimagePath ? asset($activityimagePath) : null,
-//             'activity_id' => $userItem->interest_activity_id,
+//             'activity_image' => $activity->image ? asset($activity->image) : null,
+//             'activity_id' => $aid,
+//             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+//             'form' => 'activity',
+//             'last_message' => $chat->message ?? null,
+//             'send_type' => $chat->send_type ?? null,
+//             'user_rendoms' => $confirm,
+//         ];
+//     })->filter()->values();
+
+
+//     // -------------------------
+//     // Build group_users
+//     // -------------------------
+//     $groupUsers = $userActivityCombos->map(function ($combo) use ($user, $users, $interestRelations) {
+//         $uid = $combo['user_id'];
+//         $aid = $combo['activity_id'];
+
+//         if ($uid === $user->id) {
+//             return null;
+//         }
+//         $userItem = $users->get($uid);
+//         if (!$userItem) {
+//             return null;
+//         }
+
+//         $activity = Activity::find($aid);
+//         if (!$activity) {
+//             return null;
+//         }
+
+//         // Build confirm list
+//         $howMany = $activity->how_many ?? 0;
+//         // $confirm = OtherInterest::with('user')
+//         //     ->where('activity_id', $aid)
+//         //     ->where('user_id', $user->id)
+//         //     ->where('user_id_1', $userItem->id)
+//         //     ->whereIn('confirm', [3, 7])
+//         //     ->take($howMany)
+//         //     ->get()
+//         //     ->pluck('user.rendom')
+//         //     ->filter()
+//         //     ->values();
+
+//         $confirm = OtherInterest::with('user')
+//         ->where('activity_id', $aid)
+//         ->whereIn('confirm', [3, 7])
+//         ->where(function ($query) use ($user, $userItem) {
+//             $query->where(function ($q) use ($user, $userItem) {
+//                 $q->where('user_id', $user->id)
+//                 ->where('user_id_1', $userItem->id);
+//             })->orWhere(function ($q) use ($user, $userItem) {
+//                 $q->where('user_id', $userItem->id)
+//                 ->where('user_id_1', $user->id);
+//             });
+//         })
+//         ->take($howMany)
+//         ->get()
+//         ->pluck('user.rendom')
+//         ->filter()
+//         ->values();
+
+//         if ($confirm->isEmpty()) {
+//             return null;
+//         }
+
+//         $imagePath = null;
+//         if ($userItem->profile_image) {
+//             $imgs = json_decode($userItem->profile_image, true);
+//             if (is_array($imgs) && count($imgs)) {
+//                 $imagePath = reset($imgs);
+//             }
+//         }
+
+//         $chat = Chat::where('sender_id', $user->id)
+//             ->where('receiver_id', $userItem->id)
+//             ->where('activity_id',$activity->id)
+//             ->where('send_type', 'group')
+//             ->orderBy('id', 'DESC')
+//             ->first();
+
+//         $confirm->push($userItem->rendom);
+//         $confirm->skip($user->rendom);
+//         return [
+//             'id' => $userItem->id,
+//             'user_rendom' => $userItem->rendom,
+//             'authuser_rendom' => $user->rendom,
+//             'name' => $userItem->name,
+//             'activity_name' => $activity->title,
+//             'activity_id' => $activity->id,
+//             // 'activity_rendom' => $activity->rendom,
+//             'activity_image' => $activity->image ? asset($activity->image) : null,
+//             'activity_id' => $aid,
 //             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
 //             'form' => 'group',
 //             'last_message' => $chat->message ?? null,
@@ -3909,150 +3639,422 @@ public function friendcount_one(Request $request)
 //             'user_rendoms' => $confirm,
 //         ];
 //     })
-//     ->filter()               // remove nulls
-//     ->unique('activity_id')  // ✅ keep only one entry per activity_id
-//     ->values(); 
+//     ->filter()
+//     // Optionally you can make unique per user-activity, but likely it's already unique
+//     ->unique(fn($item) => $item['id'] . '-' . $item['activity_id'])
+//     ->values();
 
-//     // $groupUserList = $userDetailsFromInterest2
-//     // ->map(function ($userItem) use ($user) {
-//     //     if (!$userItem->interest_activity_id) return null;
+//     // -------------------------
+//     // Build like / match users
+//     // -------------------------
+//     $likeUser = SlideLike::where('status', 2)
+//         ->where(function ($q) use ($user) {
+//             $q->where('matched_user', $user->id)
+//               ->orWhere('matching_user', $user->id);
+//         })->get();
+//     $likeUserIds = $likeUser->map(fn($like) => ($like->matched_user == $user->id ? $like->matching_user : $like->matched_user))
+//                            ->unique()
+//                            ->values();
 
-//     //     $activity = Activity::find($userItem->interest_activity_id);
-//     //     if (!$activity) return null;
+//     $likeUserDetails = User::whereIn('id', $likeUserIds)->get();
 
-//     //     $imagePath = null;
-//     //     if ($userItem->profile_image) {
-//     //         $images = json_decode($userItem->profile_image, true); 
-//     //         if (is_array($images) && count($images)) {
-//     //             $imagePath = reset($images);
-//     //         }
-//     //     }
-
-//     //     $chat = Chat::where('sender_id', $user->id)
-//     //                 ->where('receiver_id', $userItem->id)
-//     //                 ->where('send_type', 'group')
-//     //                 ->orderBy('id', 'DESC')
-//     //                 ->first();
-
-//     //     $howMany = $activity->how_many ?? 0;
-
-//     //     $confirm = OtherInterest::with('user')
-//     //         ->where('activity_id', $userItem->interest_activity_id)
-//     //         ->whereIn('confirm', [3, 7])
-//     //         ->take($howMany)
-//     //         ->get()
-//     //         ->pluck('user.rendom')
-//     //         ->filter()
-//     //         ->values();
-
-//     //     if ($confirm->isEmpty()) return null;
-//     //     $confirm->push($userItem->rendom);
-
-//     //     $activityimagePath = $activity->image ?? null;
-
-//     //     return [
-//     //         'id' => $userItem->id,
-//     //         'user_rendom' => $userItem->rendom,
-//     //         'authuser_rendom' => $user->rendom,
-//     //         'name' => $userItem->name,
-//     //         'activity_name' => $activity->title,
-//     //         'activity_image' => $activityimagePath ? asset($activityimagePath) : null,
-//     //         'activity_id' => $userItem->interest_activity_id,
-//     //         'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
-//     //         'form' => 'group',
-//     //         'last_message' => $chat->message ?? null,
-//     //         'send_type' => $chat->send_type ?? null,
-//     //         'user_rendoms' => $confirm,
-//     //     ];
-//     // })
-//     // ->filter() // Remove nulls
-//     // ->unique('activity_id') // 🔴 Keep only one user per activity
-//     // ->values(); // Reset keys
-
-//     // return $groupUserList;
-
-//     // 🔹 Map liked users
-//     $likeUserList = $likeUserDetails2->map(function ($userItem) use ($user) {
+//     $likeUserList = $likeUserDetails->map(function ($u) use ($user) {
 //         $imagePath = null;
-//         if ($userItem->profile_image) {
-//             $images = json_decode($userItem->profile_image, true); 
-//             if (is_array($images) && count($images)) {
-//                 $imagePath = reset($images);
+//         if ($u->profile_image) {
+//             $imgs = json_decode($u->profile_image, true);
+//             if (is_array($imgs) && count($imgs)) {
+//                 $imagePath = reset($imgs);
 //             }
 //         }
-
 //         $chat = Chat::where('sender_id', $user->id)
-//                     ->where('receiver_id', $userItem->id)
-//                     ->where('send_type', 'single')
-//                     ->orderBy('id', 'DESC')
-//                     ->first();
+//             ->where('receiver_id', $u->id)
+//             ->where('send_type', 'single')
+//             ->orderBy('id', 'DESC')
+//             ->first();
 
 //         return [
-//             'id' => $userItem->id,
-//             'user_rendom' => $userItem->rendom,
-//               'authuser_rendom' => $user->rendom,
-//             'name' => $userItem->name,
+//             'id' => $u->id,
+//             'user_rendom' => $u->rendom,
+//             'authuser_rendom' => $user->rendom,
+//             'name' => $u->name,
 //             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
 //             'form' => 'match',
 //             'last_message' => $chat->message ?? null,
 //             'send_type' => $chat->send_type ?? null,
 //         ];
-//     });
+//     })->filter()->values();
 
-//     // 🔹 Get Cupid matches
+
+
 //     $CupidMatches = Cupid::where('user_id_1', $user->id)
-//                          ->orWhere('user_id_2', $user->id)
-//                          ->get()
-//                          ->unique();
+//         ->orWhere('user_id_2', $user->id)
+//         ->get()
+//         ->unique();
 
 //     $matchedUsers = $CupidMatches->map(function ($match) use ($user) {
-//         $matchedUserId = $match->user_id_1 == $user->id ? $match->user_id_2 : $match->user_id_1;
+//         $matchedUserId = ($match->user_id_1 == $user->id) ? $match->user_id_2 : $match->user_id_1;
 //         $matchedUser = User::find($matchedUserId);
-
-//         if (!$matchedUser) return null;
-
-//         $images = json_decode($matchedUser->profile_image, true);
-//         $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
+//         if (!$matchedUser) {
+//             return null;
+//         }
+//         $imgs = json_decode($matchedUser->profile_image, true);
+//         $firstImg = (is_array($imgs) && count($imgs)) ? reset($imgs) : null;
 
 //         $chat = Chat::where('sender_id', $user->id)
-//                     ->where('receiver_id', $matchedUser->id)
-//                     ->orderBy('id', 'DESC')
-//                     ->first();
+//             ->where('receiver_id', $matchedUser->id)
+//             ->orderBy('id', 'DESC')
+//             ->first();
 
 //         return [
 //             'id' => $matchedUser->id,
 //             'user_rendom' => $matchedUser->rendom,
 //             'name' => $matchedUser->name,
-//             'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
+//             'image' => $firstImg ? asset('uploads/app/profile_images/' . $firstImg) : null,
 //             'form' => 'match',
 //             'last_message' => $chat->message ?? null,
-//              'send_type' => $chat->send_type ?? null,
+//             'send_type' => $chat->send_type ?? null,
 //         ];
-//     })->filter(); // remove nulls
+//     })->filter()->values();
 
-//    $filteredUserList = $userList->filter(fn($u) => $u['id'] !== $user->id)->values();
-//     $filteredGroupList = $groupUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
-//     $filteredLikeList = $likeUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
-//     $filteredCupidList = $matchedUsers->filter(fn($u) => $u['id'] !== $user->id)->values();
+//     // Filter out entries matching the auth user
+//     $filteredActivityUsers = $activityUsers->filter(fn($itm) => $itm['id'] !== $user->id)->values();
+//     $filteredGroupUsers = $groupUsers->filter(fn($itm) => $itm['id'] !== $user->id)->values();
+//     $filteredLikeUsers = $likeUserList->filter(fn($itm) => $itm['id'] !== $user->id)->values();
+//     $filteredCupidUsers = $matchedUsers->filter(fn($itm) => $itm['id'] !== $user->id)->values();
 
-//     // Combine matches only
-//     $matchUsers = $filteredLikeList->merge($filteredCupidList)
+//     $matchUsers = collect($filteredLikeUsers)
+//         ->merge(collect($filteredCupidUsers))
 //         ->unique('id')
 //         ->values();
 
-//     // 🔚 Final Response
+//     $friendCount = $filteredActivityUsers->count() + $filteredGroupUsers->count();
+//     $likeCount = $interestRelations->count();
+
 //     return response()->json([
 //         'message' => 'Friend and Cupid data fetched successfully',
 //         'status' => 200,
 //         'data' => [
 //             'match_users' => $matchUsers,
-//             'activity_users' => $filteredUserList,
-//             'group_users' => $filteredGroupList,
-//             'friend_count' => $filteredUserList->count() + $filteredGroupList->count(),
-//             'like_count' => $interestRelations->count(),
-//         ]
+//             'activity_users' => $filteredActivityUsers,
+//             'group_users' => $filteredGroupUsers,
+//             'friend_count' => $friendCount,
+//             'like_count' => $likeCount,
+//         ],
 //     ]);
 // }
+
+
+
+
+
+// latest
+
+public function friendcount_one(Request $request)
+{
+    $user = Auth::user(); 
+
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], 401);
+    }
+
+    // 🔹 Get all activities by this user where status = 2
+    $matchingActivities = Activity::where('user_id', $user->id)
+                                  ->where('status', 2)
+                                  ->get();
+
+    $activityIds = $matchingActivities->pluck('id');
+
+    $interestRelations = OtherInterest::where(function ($query) use ($user) {
+        $query->where('user_id', $user->id)
+            ->orWhere('user_id_1', $user->id);
+    })->where(function ($query) {
+        $query->where('confirm', 3)
+            ->orWhere('confirm', 7)
+            ->orWhere('confirm', 4)
+            ->orWhere('confirm', 2);
+    })->get();             
+    
+
+    $oppositeUserIds = $interestRelations->map(function ($relation) use ($user) {
+        return $relation->user_id == $user->id ? $relation->user_id_1 : $relation->user_id;
+    })->unique()->values();
+    
+
+    $userDetailsFromInterest2 = User::whereIn('id', $oppositeUserIds)->get()->map(function ($userItem) use ($interestRelations, $user) {
+    // Find the matching interest relation for this user
+        $matchingRelation = $interestRelations->first(function ($relation) use ($userItem, $user) {
+            return ($relation->user_id == $user->id && $relation->user_id_1 == $userItem->id) ||
+                ($relation->user_id_1 == $user->id && $relation->user_id == $userItem->id);
+        });
+
+        // Attach activity_id to user object temporarily
+        $userItem->interest_activity_id = $matchingRelation->activity_id ?? null;
+
+        return $userItem;
+    });
+
+       $likeUser = SlideLike::where('status', 2)
+        ->where(function ($query) use ($user) {
+            $query->where('matched_user', $user->id)
+                ->orWhere('matching_user', $user->id);
+        })
+        ->get();
+
+    $likeUserIds = $likeUser->map(function ($like) use ($user) {
+        return $like->matched_user == $user->id ? $like->matching_user : $like->matched_user;
+    })->unique()->values();
+
+    $likeUserDetails2 = User::whereIn('id', $likeUserIds)->get();
+
+    // 🔹 Map interest users
+    $userList = $userDetailsFromInterest2->map(function ($userItem) use ($user) {
+        $imagePath = null;
+        if ($userItem->profile_image) {
+            $images = json_decode($userItem->profile_image, true); 
+            if (is_array($images) && count($images)) {
+                $imagePath = reset($images);
+            }
+        }
+
+        $chat = Chat::where('sender_id', $user->id)
+                    ->where('receiver_id', $userItem->id)
+                    ->where('send_type', 'single')
+                    ->orderBy('id', 'DESC')
+                    ->first();
+
+
+    $activity = Activity::where('id', $userItem->interest_activity_id)->first();
+       $howMany = $activity->how_many;
+
+
+    $confirm = OtherInterest::with('user')
+        ->where('activity_id', $userItem->interest_activity_id)
+        ->whereIn('confirm', [3, 7])
+        ->take($howMany)
+        ->get()
+        ->pluck('user.rendom')
+        ->filter() // Remove nulls if any user is missing or has no rendom
+        ->values();
+
+
+    $activityimagePath = $activity->image ?? null;
+
+        return [
+            'id' => $userItem->id,
+            'user_rendom' => $userItem->rendom,
+              'authuser_rendom' => $user->rendom,
+            'name' => $userItem->name,
+            'activity_name' => $activity->title,
+            'activity_image' => $activityimagePath ? asset($activityimagePath) : null,
+            'activity_id' => $userItem->interest_activity_id,
+            'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+            'form' => 'activity',
+            'last_message' => $chat->message ?? null,
+            'send_type' => $chat->send_type ?? null,
+            'user_rendoms' => $confirm,
+        ];
+    });
+
+    $groupUserList = $userDetailsFromInterest2->map(function ($userItem) use ($user) {
+        // Skip if no interest activity
+        if (!$userItem->interest_activity_id) {
+            return null;
+        }
+
+        $activity = Activity::find($userItem->interest_activity_id);
+        if (!$activity) {
+            return null;
+        }
+
+        $imagePath = null;
+        if ($userItem->profile_image) {
+            $images = json_decode($userItem->profile_image, true); 
+            if (is_array($images) && count($images)) {
+                $imagePath = reset($images);
+            }
+        }
+
+        $chat = Chat::where('sender_id', $user->id)
+                    ->where('receiver_id', $userItem->id)
+                    ->where('send_type', 'group')
+                    ->orderBy('id', 'DESC')
+                    ->first();
+
+        $howMany = $activity->how_many ?? 0;
+
+        $confirm = OtherInterest::with('user')
+            ->where('activity_id', $userItem->interest_activity_id)
+            ->whereIn('confirm', [3, 7])
+            ->take($howMany)
+            ->get()
+            ->pluck('user.rendom')
+            ->filter()
+            ->values();
+            $confirm->push($userItem->rendom);
+
+        if ($confirm->isEmpty()) return null;
+
+        $activityimagePath = $activity->image ?? null;
+
+        return [
+            'id' => $userItem->id,
+            'user_rendom' => $userItem->rendom,
+              'authuser_rendom' => $user->rendom,
+            'name' => $userItem->name,
+            'activity_name' => $activity->title,
+            'activity_image' => $activityimagePath ? asset($activityimagePath) : null,
+            'activity_id' => $userItem->interest_activity_id,
+            'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+            'form' => 'group',
+            'last_message' => $chat->message ?? null,
+            'send_type' => $chat->send_type ?? null,
+            'user_rendoms' => $confirm,
+        ];
+    })
+    ->filter()               // remove nulls
+    ->unique('activity_id')  // ✅ keep only one entry per activity_id
+    ->values(); 
+
+    // $groupUserList = $userDetailsFromInterest2
+    // ->map(function ($userItem) use ($user) {
+    //     if (!$userItem->interest_activity_id) return null;
+
+    //     $activity = Activity::find($userItem->interest_activity_id);
+    //     if (!$activity) return null;
+
+    //     $imagePath = null;
+    //     if ($userItem->profile_image) {
+    //         $images = json_decode($userItem->profile_image, true); 
+    //         if (is_array($images) && count($images)) {
+    //             $imagePath = reset($images);
+    //         }
+    //     }
+
+    //     $chat = Chat::where('sender_id', $user->id)
+    //                 ->where('receiver_id', $userItem->id)
+    //                 ->where('send_type', 'group')
+    //                 ->orderBy('id', 'DESC')
+    //                 ->first();
+
+    //     $howMany = $activity->how_many ?? 0;
+
+    //     $confirm = OtherInterest::with('user')
+    //         ->where('activity_id', $userItem->interest_activity_id)
+    //         ->whereIn('confirm', [3, 7])
+    //         ->take($howMany)
+    //         ->get()
+    //         ->pluck('user.rendom')
+    //         ->filter()
+    //         ->values();
+
+    //     if ($confirm->isEmpty()) return null;
+    //     $confirm->push($userItem->rendom);
+
+    //     $activityimagePath = $activity->image ?? null;
+
+    //     return [
+    //         'id' => $userItem->id,
+    //         'user_rendom' => $userItem->rendom,
+    //         'authuser_rendom' => $user->rendom,
+    //         'name' => $userItem->name,
+    //         'activity_name' => $activity->title,
+    //         'activity_image' => $activityimagePath ? asset($activityimagePath) : null,
+    //         'activity_id' => $userItem->interest_activity_id,
+    //         'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+    //         'form' => 'group',
+    //         'last_message' => $chat->message ?? null,
+    //         'send_type' => $chat->send_type ?? null,
+    //         'user_rendoms' => $confirm,
+    //     ];
+    // })
+    // ->filter() // Remove nulls
+    // ->unique('activity_id') // 🔴 Keep only one user per activity
+    // ->values(); // Reset keys
+
+    // return $groupUserList;
+
+    // 🔹 Map liked users
+    $likeUserList = $likeUserDetails2->map(function ($userItem) use ($user) {
+        $imagePath = null;
+        if ($userItem->profile_image) {
+            $images = json_decode($userItem->profile_image, true); 
+            if (is_array($images) && count($images)) {
+                $imagePath = reset($images);
+            }
+        }
+
+        $chat = Chat::where('sender_id', $user->id)
+                    ->where('receiver_id', $userItem->id)
+                    ->where('send_type', 'single')
+                    ->orderBy('id', 'DESC')
+                    ->first();
+
+        return [
+            'id' => $userItem->id,
+            'user_rendom' => $userItem->rendom,
+              'authuser_rendom' => $user->rendom,
+            'name' => $userItem->name,
+            'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+            'form' => 'match',
+            'last_message' => $chat->message ?? null,
+            'send_type' => $chat->send_type ?? null,
+        ];
+    });
+
+    // 🔹 Get Cupid matches
+    $CupidMatches = Cupid::where('user_id_1', $user->id)
+                         ->orWhere('user_id_2', $user->id)
+                         ->get()
+                         ->unique();
+
+    $matchedUsers = $CupidMatches->map(function ($match) use ($user) {
+        $matchedUserId = $match->user_id_1 == $user->id ? $match->user_id_2 : $match->user_id_1;
+        $matchedUser = User::find($matchedUserId);
+
+        if (!$matchedUser) return null;
+
+        $images = json_decode($matchedUser->profile_image, true);
+        $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
+
+        $chat = Chat::where('sender_id', $user->id)
+                    ->where('receiver_id', $matchedUser->id)
+                    ->orderBy('id', 'DESC')
+                    ->first();
+
+        return [
+            'id' => $matchedUser->id,
+            'user_rendom' => $matchedUser->rendom,
+            'name' => $matchedUser->name,
+            'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
+            'form' => 'match',
+            'last_message' => $chat->message ?? null,
+             'send_type' => $chat->send_type ?? null,
+        ];
+    })->filter(); // remove nulls
+
+   $filteredUserList = $userList->filter(fn($u) => $u['id'] !== $user->id)->values();
+    $filteredGroupList = $groupUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
+    $filteredLikeList = $likeUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
+    $filteredCupidList = $matchedUsers->filter(fn($u) => $u['id'] !== $user->id)->values();
+
+    // Combine matches only
+    $matchUsers = $filteredLikeList->merge($filteredCupidList)
+        ->unique('id')
+        ->values();
+
+    // 🔚 Final Response
+    return response()->json([
+        'message' => 'Friend and Cupid data fetched successfully',
+        'status' => 200,
+        'data' => [
+            'match_users' => $matchUsers,
+            'activity_users' => $filteredUserList,
+            'group_users' => $filteredGroupList,
+            'friend_count' => $filteredUserList->count() + $filteredGroupList->count(),
+            'like_count' => $interestRelations->count(),
+        ]
+    ]);
+}
 
 
     

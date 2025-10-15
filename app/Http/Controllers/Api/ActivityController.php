@@ -3612,7 +3612,7 @@ public function friendcount_one(Request $request)
             ->orderBy('id', 'DESC')
             ->first();
 
-        $confirm->push($user->rendom);
+        // $confirm->push($user->rendom);
         return [
             'id' => $userItem->id,
             'user_rendom' => $userItem->rendom,

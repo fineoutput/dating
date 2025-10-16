@@ -4961,7 +4961,7 @@ public function updateConfirm(Request $request)
        $howMany = $activity_rendom_1->how_many;
 
         $confirmedCount = OtherInterest::where('activity_id', $activity_rendom_1->id)
-                                       ->where('confirm', 2)
+                                       ->where('confirm', 1)
                                        ->count();
         if ($confirmedCount >= $howMany) {
             return response()->json([

@@ -2020,6 +2020,103 @@ public function cupidMatchFriend(Request $request)
 
 
 
+// public function acceptslide(Request $request)
+// {
+//     if (!Auth::check()) {
+//         return response()->json([
+//             'message' => 'User not authenticated',
+//             'status' => 401
+//         ], 401);
+//     }
+
+//     $request->validate([
+//         'user_id' => 'required',
+//         'status' => 'required|in:2,3', // Ensure status is either 2 or 3
+//     ]);
+
+//     $authUser = Auth::user();
+//     $responses = []; // Initialize responses array
+
+//     $cupid = SlideLike::where('matching_user', $authUser->id)
+//         ->where('matched_user', $request->user_id)
+//         ->first();
+
+//     $sendnotification = User::where('id', $request->user_id)->first();
+
+//     if (!$cupid) {
+//         return response()->json([
+//             'message' => 'Slide Like match not found',
+//             'status' => 404
+//         ], 404);
+//     }
+
+//     if (!$sendnotification) {
+//         return response()->json([
+//             'message' => 'User not found',
+//             'status' => 404
+//         ], 404);
+//     }
+
+//     if ($request->status == 2) {
+//         $cupid->status = 2;
+
+//         $firebaseService = new FirebaseService();
+//         $title = $request->title ?? "{$authUser->name} Accept Your Like Request";
+
+//         if (!$sendnotification->fcm_token) {
+//             Log::warning("No FCM token for user ID: {$sendnotification->id}, rendom: {$sendnotification->rendom}");
+//             // $responses[] = [
+//             //     'receiver_rendom' => $sendnotification->rendom,
+//             //     'message' => 'No FCM token available.',
+//             //     'status' => 400,
+//             // ];
+//         } else {
+//             try {
+//                 $sent = $firebaseService->sendNotification(
+//                     $sendnotification->fcm_token,
+//                     $title,
+//                     $request->message ?? 'You have a new like!',
+//                     [
+//                         'sender_rendom' => $sendnotification->rendom,
+//                         'screen' => 'Chat',
+//                     ]
+//                 );
+
+//                 if ($sent) {
+//                     Log::info("Notification sent to user ID {$sendnotification->id}");
+//                 } else {
+//                     Log::warning("Notification failed for user ID: {$sendnotification->id}, rendom: {$sendnotification->rendom}");
+//                     // $responses[] = [
+//                     //     'receiver_rendom' => $sendnotification->rendom,
+//                     //     'message' => 'Notification failed.',
+//                     //     'status' => 400,
+//                     // ];
+//                 }
+//             } catch (\Exception $e) {
+//                 Log::error("Failed to send FCM notification to user ID {$sendnotification->id}: {$e->getMessage()}");
+//                 $responses[] = [
+//                     'receiver_rendom' => $sendnotification->rendom,
+//                     'message' => 'Failed to send notification: ' . $e->getMessage(),
+//                     'status' => 400,
+//                 ];
+//             }
+//         }
+//     } else {
+//         $cupid->status = 3;
+//     }
+
+//     $cupid->save();
+
+//     return response()->json([
+//         'message' => 'Slide Like status updated successfully!',
+//         'status' => 200,
+//         'data' => [
+//             'slide_like' => $cupid,
+//             'notification_responses' => $responses // Include notification responses
+//         ]
+//     ], 200);
+// }
+
 public function acceptslide(Request $request)
 {
     if (!Auth::check()) {
@@ -2031,17 +2128,15 @@ public function acceptslide(Request $request)
 
     $request->validate([
         'user_id' => 'required',
-        'status' => 'required|in:2,3', // Ensure status is either 2 or 3
+        'status' => 'required|in:2,3', // Status must be 2 (accept) or 3 (reject)
     ]);
 
     $authUser = Auth::user();
-    $responses = []; // Initialize responses array
+    $responses = []; // For optional notification messages
 
     $cupid = SlideLike::where('matching_user', $authUser->id)
         ->where('matched_user', $request->user_id)
         ->first();
-
-    $sendnotification = User::where('id', $request->user_id)->first();
 
     if (!$cupid) {
         return response()->json([
@@ -2050,6 +2145,8 @@ public function acceptslide(Request $request)
         ], 404);
     }
 
+    $sendnotification = User::find($request->user_id);
+
     if (!$sendnotification) {
         return response()->json([
             'message' => 'User not found',
@@ -2057,20 +2154,15 @@ public function acceptslide(Request $request)
         ], 404);
     }
 
+    // Process Accept
     if ($request->status == 2) {
         $cupid->status = 2;
 
         $firebaseService = new FirebaseService();
-        $title = $request->title ?? "{$authUser->name} Accept Your Like Request";
+        $title = $request->title ?? "{$authUser->name} accepted your like request";
 
-        if (!$sendnotification->fcm_token) {
-            Log::warning("No FCM token for user ID: {$sendnotification->id}, rendom: {$sendnotification->rendom}");
-            // $responses[] = [
-            //     'receiver_rendom' => $sendnotification->rendom,
-            //     'message' => 'No FCM token available.',
-            //     'status' => 400,
-            // ];
-        } else {
+        // Attempt to send FCM notification (non-blocking)
+        if ($sendnotification->fcm_token) {
             try {
                 $sent = $firebaseService->sendNotification(
                     $sendnotification->fcm_token,
@@ -2086,22 +2178,30 @@ public function acceptslide(Request $request)
                     Log::info("Notification sent to user ID {$sendnotification->id}");
                 } else {
                     Log::warning("Notification failed for user ID: {$sendnotification->id}, rendom: {$sendnotification->rendom}");
-                    // $responses[] = [
-                    //     'receiver_rendom' => $sendnotification->rendom,
-                    //     'message' => 'Notification failed.',
-                    //     'status' => 400,
-                    // ];
+                    $responses[] = [
+                        'receiver_rendom' => $sendnotification->rendom,
+                        'message' => 'Notification failed to send.',
+                        'status' => 400,
+                    ];
                 }
             } catch (\Exception $e) {
-                Log::error("Failed to send FCM notification to user ID {$sendnotification->id}: {$e->getMessage()}");
+                Log::error("FCM error for user ID {$sendnotification->id}: {$e->getMessage()}");
                 $responses[] = [
                     'receiver_rendom' => $sendnotification->rendom,
                     'message' => 'Failed to send notification: ' . $e->getMessage(),
                     'status' => 400,
                 ];
             }
+        } else {
+            Log::warning("No FCM token for user ID: {$sendnotification->id}, rendom: {$sendnotification->rendom}");
+            $responses[] = [
+                'receiver_rendom' => $sendnotification->rendom,
+                'message' => 'No FCM token available. Notification not sent.',
+                'status' => 200, // Still OK, just no notification
+            ];
         }
     } else {
+        // Process Reject
         $cupid->status = 3;
     }
 
@@ -2112,10 +2212,11 @@ public function acceptslide(Request $request)
         'status' => 200,
         'data' => [
             'slide_like' => $cupid,
-            'notification_responses' => $responses // Include notification responses
+            'notification_responses' => $responses
         ]
-    ], 200);
+    ]);
 }
+
 
 //  public function acceptslide(Request $request)
 //     {

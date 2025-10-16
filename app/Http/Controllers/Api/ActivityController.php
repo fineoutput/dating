@@ -3863,14 +3863,22 @@ public function friendcount_one(Request $request)
 
            $currentTime = Carbon::now('Asia/Kolkata'); 
 
-        $activity = Activity::where('id',$userItem->interest_activity_id)->where('status', 2)
-        ->where(function ($query) use ($currentTime) {
-            $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
-                ->orWhereRaw("
-                    STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
-                ", [$currentTime]);
-        })
-        ->first();
+            $activity = Activity::where('id', $userItem->interest_activity_id)
+                ->where('status', 2)
+                ->first();
+
+            if (!$activity) {
+                return null;
+            }
+
+            // Step 2: Check if activity expired more than 24 hours ago
+            $endDateTimeString = $activity->when_time . ' ' . str_replace(' ', ' ', $activity->end_time);
+            $activityEndDateTime = Carbon::createFromFormat('Y-m-d h:i A', $endDateTimeString, 'Asia/Kolkata');
+
+            if ($activityEndDateTime->lt($currentTime->copy()->subHours(24))) {
+                // If the activity ended more than 24 hours ago, skip it
+                return null;
+            }
 
         if (!$activity) {
             return null;

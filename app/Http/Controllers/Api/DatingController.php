@@ -2065,11 +2065,11 @@ public function acceptslide(Request $request)
 
         if (!$sendnotification->fcm_token) {
             Log::warning("No FCM token for user ID: {$sendnotification->id}, rendom: {$sendnotification->rendom}");
-            $responses[] = [
-                'receiver_rendom' => $sendnotification->rendom,
-                'message' => 'No FCM token available.',
-                'status' => 400,
-            ];
+            // $responses[] = [
+            //     'receiver_rendom' => $sendnotification->rendom,
+            //     'message' => 'No FCM token available.',
+            //     'status' => 400,
+            // ];
         } else {
             try {
                 $sent = $firebaseService->sendNotification(
@@ -2086,11 +2086,11 @@ public function acceptslide(Request $request)
                     Log::info("Notification sent to user ID {$sendnotification->id}");
                 } else {
                     Log::warning("Notification failed for user ID: {$sendnotification->id}, rendom: {$sendnotification->rendom}");
-                    $responses[] = [
-                        'receiver_rendom' => $sendnotification->rendom,
-                        'message' => 'Notification failed.',
-                        'status' => 400,
-                    ];
+                    // $responses[] = [
+                    //     'receiver_rendom' => $sendnotification->rendom,
+                    //     'message' => 'Notification failed.',
+                    //     'status' => 400,
+                    // ];
                 }
             } catch (\Exception $e) {
                 Log::error("Failed to send FCM notification to user ID {$sendnotification->id}: {$e->getMessage()}");

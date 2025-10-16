@@ -857,6 +857,11 @@ public function MatchingUsersdetailes(Request $request)
         ->pluck('matching_user')
         ->toArray();
 
+    $excludedUserIddislike = SlideLike::where('matched_user', $user->id)
+        ->where('dislike', 1)
+        ->pluck('matching_user')
+        ->toArray();
+
     $reportedUserIds = Report::where('reporting_user_id', $user->id)
         ->pluck('reported_user_id')
         ->toArray();
@@ -871,6 +876,7 @@ public function MatchingUsersdetailes(Request $request)
         $excludedUserIdStatus,
         $excludedUserIdStatus3,
         $reportedUserIds,
+        $excludedUserIddislike,
         $OtherInterestUserIds,
     );
 

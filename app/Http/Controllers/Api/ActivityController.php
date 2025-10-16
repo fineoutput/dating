@@ -3861,7 +3861,17 @@ public function friendcount_one(Request $request)
             return null;
         }
 
-        $activity = Activity::find($userItem->interest_activity_id);
+           $currentTime = Carbon::now('Asia/Kolkata'); 
+
+        $activity = Activity::where('id',$userItem->interest_activity_id)->where('status', 2)
+        ->where(function ($query) use ($currentTime) {
+            $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
+                ->orWhereRaw("
+                    STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
+                ", [$currentTime]);
+        })
+        ->first();
+
         if (!$activity) {
             return null;
         }
@@ -3911,8 +3921,8 @@ public function friendcount_one(Request $request)
             'user_rendoms' => $confirm,
         ];
     })
-    ->filter()               // remove nulls
-    ->unique('activity_id')  // ✅ keep only one entry per activity_id
+    ->filter()               
+    ->unique('activity_id') 
     ->values(); 
 
     // $groupUserList = $userDetailsFromInterest2

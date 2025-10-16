@@ -841,14 +841,38 @@ public function MatchingUsersdetailes(Request $request)
     }
 
     // Exclude matched and reported users
-    $excludedUserIds = SlideLike::where('matched_user', $user->id)
-        ->where('liked_user', 1)
-        ->pluck('matching_user')->toArray();
+   $excludedUserIds = SlideLike::where('matched_user', $user->id)
+    ->where('liked_user', 1)
+    ->pluck('matching_user')
+    ->toArray();
+
+    $excludedUserIdStatus = SlideLike::where('matched_user', $user->id)
+        ->where('status', 2)
+        ->pluck('matching_user')
+        ->toArray();
+
+    // New: Exclude users with status = 3
+    $excludedUserIdStatus3 = SlideLike::where('matched_user', $user->id)
+        ->where('status', 3)
+        ->pluck('matching_user')
+        ->toArray();
 
     $reportedUserIds = Report::where('reporting_user_id', $user->id)
-        ->pluck('reported_user_id')->toArray();
+        ->pluck('reported_user_id')
+        ->toArray();
 
-    $excludeIds = array_merge($excludedUserIds, $reportedUserIds);
+    $OtherInterestUserIds = OtherInterest::where('user_id', $user->id)->whereIn('confirm',[3,7])
+        ->pluck('user_id')
+        ->toArray();
+
+    // Merge all exclusion lists
+    $excludeIds = array_merge(
+        $excludedUserIds,
+        $excludedUserIdStatus,
+        $excludedUserIdStatus3,
+        $reportedUserIds,
+        $OtherInterestUserIds,
+    );
 
     // Base query
     $query = User::where('id', '!=', $user->id)
@@ -878,7 +902,23 @@ public function MatchingUsersdetailes(Request $request)
     }
 
     $attendUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 6)->count();
-    $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
+       $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata
+
+    $activities = Activity::orderBy('id', 'DESC')
+    ->where('user_id', $user->id)
+    ->where('status', 2)
+    ->where(function ($query) use ($currentTime) {
+        $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
+            ->orWhereRaw("
+                STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
+            ", [$currentTime]);
+    })
+    ->get();
+
+    $ghostUsers = OtherInterest::whereIn('activity_id', $activities->pluck('id'))->where('user_id', $user->id)
+        ->where('confirm', 3)
+        ->count();
+    // $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
     $hostedActivity = Activity::where('user_id', $user->id)->count();
 
     $usersWithInterests = [];

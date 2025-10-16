@@ -376,7 +376,7 @@ public function sendMessage(Request $request)
     $now = Carbon::now('Asia/Kolkata');
 
     if ($request->send_type === 'group') {
-        $receiverRendomsRaw = $request->receiver_rendom;
+         $receiverRendomsRaw = $request->receiver_rendom;
 
         $receiverRendoms = is_array($receiverRendomsRaw)
             ? $receiverRendomsRaw
@@ -471,9 +471,18 @@ public function sendMessage(Request $request)
 
         $implodedReceiverIds = implode(',', $validReceiverIds);
 
-        // Send notifications to valid receivers
+        $activity_detailes = Activity::where('id',$request->activity_id)->first();
+        if(!$activity_detailes){
+            return response()->json([
+                    'message' => 'Activity Not Found',
+                    'data' => [],
+                    'status' => 203,
+                ]);
+        }
         $firebaseService = new FirebaseService();
-        $title = $request->title ?? 'New Group Message';
+       $title = $activity_detailes->title 
+        ? 'New Message From ' . $activity_detailes->title . ' Group' 
+        : 'New Group Message';
 
         foreach ($validReceiverIds as $receiverId) {
             $receiver = User::find($receiverId);

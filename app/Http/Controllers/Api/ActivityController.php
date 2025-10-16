@@ -4943,87 +4943,87 @@ public function vibeactivitydetails(Request $request)
 
 
 
-public function updateConfirm(Request $request)
-{
-    $request->validate([
-        'random' => 'required|string', 
-        'pactup' => 'required', 
-        'activity_rendom' => 'required', 
-    ]);
+ public function updateConfirm(Request $request)
+    {
+        $request->validate([
+            'random' => 'required|string', 
+            'pactup' => 'required', 
+            'activity_rendom' => 'required', 
+        ]);
 
-    $random = $request->input('random');
-    $pactup = $request->input('pactup');
-    $activity_rendom = $request->input('activity_rendom');
+        $random = $request->input('random');
+        $pactup = $request->input('pactup');
+        $activity_rendom = $request->input('activity_rendom');
 
 
 
-    $user = User::where('rendom', $random)->first();
-    $activity_rendom_1 = Activity::where('rendom', $activity_rendom)->first();
+        $user = User::where('rendom', $random)->first();
+        $activity_rendom_1 = Activity::where('rendom', $activity_rendom)->first();
 
-    if (!$activity_rendom_1) {
+        if (!$activity_rendom_1) {
+            return response()->json([
+            'message' => 'Activity not found',
+            'data'=>[],
+            'status'=>201
+        ], 200);
+        }
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found.',
+                'status' => 201,
+                'data' => [],
+        ], 201);
+        }
+
+        $howMany = $activity_rendom_1->how_many;
+
+        //    if($pactup == 3){
+            $confirmedCount = OtherInterest::where('activity_id', $activity_rendom_1->id)
+                                        ->whereIn('confirm', [2,3])
+                                        ->count();
+            if ($confirmedCount >= $howMany) {
+                return response()->json([
+                    'message' => 'The activity has reached its maximum number of confirmed participants.',
+                    'status' => 201,
+                    'data' => [],
+                ], 201);
+            }
+            // }
+
+
+    $otherInterest = OtherInterest::where('user_id', $user->id)
+        ->where('activity_id', $activity_rendom_1->id)
+        ->first();
+
+    if ($otherInterest && $otherInterest->confirm == 2) {
         return response()->json([
-        'message' => 'Activity not found',
-        'data'=>[],
-        'status'=>201
-    ], 200);
+            'message' => 'You have already sent Pactup.',
+            'status' => 200,
+            'data' => [
+                'status' => true,
+            ],
+        ]);
     }
 
-    if (!$user) {
+    if ($otherInterest) {
+        $otherInterest->update(['confirm' => 2]);
+
         return response()->json([
-            'message' => 'User not found.',
+            'message' => 'Confirm updated successfully.',
+            'status' => 200,
+            'data' => [
+                'status' => false,
+            ],
+        ]);
+    }
+
+        return response()->json([
+            'message' => 'No matching record in OtherInterest table.',
             'status' => 201,
             'data' => [],
     ], 201);
     }
-
-       $howMany = $activity_rendom_1->how_many;
-
-    //    if($pactup == 3){
-        $confirmedCount = OtherInterest::where('activity_id', $activity_rendom_1->id)
-                                       ->whereIn('confirm', [2,3])
-                                       ->count();
-        if ($confirmedCount >= $howMany) {
-            return response()->json([
-                'message' => 'The activity has reached its maximum number of confirmed participants.',
-                'status' => 201,
-                'data' => [],
-            ], 201);
-        }
-        // }
-
-
- $otherInterest = OtherInterest::where('user_id', $user->id)
-    ->where('activity_id', $activity_rendom_1->id)
-    ->first();
-
-if ($otherInterest && $otherInterest->confirm == 2) {
-    return response()->json([
-        'message' => 'You have already sent Pactup.',
-        'status' => 200,
-        'data' => [
-            'status' => true,
-        ],
-    ]);
-}
-
-if ($otherInterest) {
-    $otherInterest->update(['confirm' => 2]);
-
-    return response()->json([
-        'message' => 'Confirm updated successfully.',
-        'status' => 200,
-        'data' => [
-            'status' => false,
-        ],
-    ]);
-}
-
-    return response()->json([
-        'message' => 'No matching record in OtherInterest table.',
-        'status' => 201,
-        'data' => [],
-], 201);
-}
 
 
 public function acceptnumber(Request $request)
@@ -5104,14 +5104,11 @@ public function acceptpactup(Request $request)
     // return $activity_id;
 
 
-
     $user = User::where('rendom', $random)->first();
     $user_auth = Auth::user();
     // $activity_id = Activity::where('rendom', $activity_rendom)->first();
 
   
-
-
     if($pactup == null){
 
         $otherInterest = OtherInterest::where('user_id', $user_auth->id)
@@ -5189,7 +5186,7 @@ public function acceptpactup(Request $request)
         if($pactup == 'accept'){
          $otherInterest->update(['confirm' => 3]);
         }else{
-         $otherInterest->update(['confirm' => 4]);
+         $otherInterest->update(['confirm' => 0]);
         }
         return response()->json([
             'message' => 'Confirm updated successfully to',

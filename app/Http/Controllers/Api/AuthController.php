@@ -831,7 +831,20 @@ class AuthController extends Controller
         ->where('confirm', 6)
         ->count();
 
-    $ghostUsers = OtherInterest::where('user_id', $user->id)
+    $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata
+
+    $activities = Activity::orderBy('id', 'DESC')
+    ->where('user_id', $user->id)
+    ->where('status', 2)
+    ->where(function ($query) use ($currentTime) {
+        $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
+            ->orWhereRaw("
+                STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
+            ", [$currentTime]);
+    })
+    ->get();
+
+    $ghostUsers = OtherInterest::whereIn('activity_id', $activities->pluck('id'))->where('user_id', $user->id)
         ->where('confirm', 3)
         ->count();
 

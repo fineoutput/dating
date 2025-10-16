@@ -867,7 +867,7 @@ public function MatchingUsersdetailes(Request $request)
         ->toArray();
 
     $OtherInterestUserIds = OtherInterest::where('user_id', $user->id)->whereIn('confirm',[3,7])
-        ->pluck('user_id')
+        ->pluck('user_id_1')
         ->toArray();
 
     // Merge all exclusion lists

@@ -4960,8 +4960,9 @@ public function updateConfirm(Request $request)
 
        $howMany = $activity_rendom_1->how_many;
 
+    //    if($pactup == 3){
         $confirmedCount = OtherInterest::where('activity_id', $activity_rendom_1->id)
-                                       ->where('confirm', 1)
+                                       ->whereIn('confirm', [2,3])
                                        ->count();
         if ($confirmedCount >= $howMany) {
             return response()->json([
@@ -4970,6 +4971,7 @@ public function updateConfirm(Request $request)
                 'data' => [],
             ], 201);
         }
+        // }
 
 
  $otherInterest = OtherInterest::where('user_id', $user->id)

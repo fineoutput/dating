@@ -907,7 +907,7 @@ public function MatchingUsersdetailes(Request $request)
         ]);
     }
 
-    $attendUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 6)->count();
+    $attendUsers = OtherInterest::where('user_id', $user->id)->whereIn('confirm', [6,3,7])->count();
        $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata
 
     $activities = Activity::orderBy('id', 'DESC')
@@ -3352,7 +3352,7 @@ public function updateCupidMatch(Request $request)
             $matchingActivities = Activity::where('user_id', $user->id)->where('status', 2)->get();
             $activityIds = $matchingActivities->pluck('id');
 
-            $attendUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 6)->count();
+            $attendUsers = OtherInterest::where('user_id', $user->id)->whereIn('confirm', [6,3,7])->count();
             $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
             $hostedActivity = Activity::where('user_id', $user->id)->count();
 

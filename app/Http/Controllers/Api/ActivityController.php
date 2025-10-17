@@ -3855,83 +3855,158 @@ public function friendcount_one(Request $request)
         ];
     });
 
+
     $groupUserList = $userDetailsFromInterest2->map(function ($userItem) use ($user) {
-        // Skip if no interest activity
-        if (!$userItem->interest_activity_id) {
-            return null;
+    if (!$userItem->interest_activity_id) {
+        return null;
+    }
+
+    $currentTime = Carbon::now('Asia/Kolkata');
+
+    $activity = Activity::where('id', $userItem->interest_activity_id)
+        ->where('status', 2)
+        ->first();
+
+    if (!$activity) {
+        return null;
+    }
+
+    // Check 24 hour expiry logic
+    $endDateTimeString = $activity->when_time . ' ' . str_replace(' ', ' ', $activity->end_time);
+    $activityEndDateTime = Carbon::createFromFormat('Y-m-d h:i A', $endDateTimeString, 'Asia/Kolkata');
+
+    if ($activityEndDateTime->lt($currentTime->copy()->subHours(24))) {
+        return null;
+    }
+
+    $imagePath = null;
+    if ($userItem->profile_image) {
+        $images = json_decode($userItem->profile_image, true);
+        if (is_array($images) && count($images)) {
+            $imagePath = reset($images);
         }
+    }
 
-           $currentTime = Carbon::now('Asia/Kolkata'); 
-
-            $activity = Activity::where('id', $userItem->interest_activity_id)
-                ->where('status', 2)
+    $chat = Chat::where('sender_id', $user->id)
+                ->where('receiver_id', $userItem->id)
+                ->where('send_type', 'group')
+                ->orderBy('id', 'DESC')
                 ->first();
 
-            if (!$activity) {
-                return null;
-            }
+    $howMany = $activity->how_many ?? 0;
 
-            // Step 2: Check if activity expired more than 24 hours ago
-            $endDateTimeString = $activity->when_time . ' ' . str_replace(' ', ' ', $activity->end_time);
-            $activityEndDateTime = Carbon::createFromFormat('Y-m-d h:i A', $endDateTimeString, 'Asia/Kolkata');
+    // ✅ Only confirm 3 and 7 included here
+    $confirm = OtherInterest::with('user')
+        ->where('activity_id', $userItem->interest_activity_id)
+        ->whereIn('confirm', [3, 7])
+        ->take($howMany)
+        ->get()
+        ->pluck('user.rendom')
+        ->filter()
+        ->values();
 
-            if ($activityEndDateTime->lt($currentTime->copy()->subHours(24))) {
-                // If the activity ended more than 24 hours ago, skip it
-                return null;
-            }
+    $confirm->push($userItem->rendom);
 
-        if (!$activity) {
-            return null;
-        }
+    if ($confirm->isEmpty()) return null;
 
-        $imagePath = null;
-        if ($userItem->profile_image) {
-            $images = json_decode($userItem->profile_image, true); 
-            if (is_array($images) && count($images)) {
-                $imagePath = reset($images);
-            }
-        }
+    $activityimagePath = $activity->image ?? null;
 
-        $chat = Chat::where('sender_id', $user->id)
-                    ->where('receiver_id', $userItem->id)
-                    ->where('send_type', 'group')
-                    ->orderBy('id', 'DESC')
-                    ->first();
+    return [
+        'id' => $userItem->id,
+        'user_rendom' => $userItem->rendom,
+        'authuser_rendom' => $user->rendom,
+        'name' => $userItem->name,
+        'activity_name' => $activity->title,
+        'activity_image' => $activityimagePath ? asset($activityimagePath) : null,
+        'activity_id' => $userItem->interest_activity_id,
+        'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+        'form' => 'group',
+        'last_message' => $chat->message ?? null,
+        'send_type' => $chat->send_type ?? null,
+        'user_rendoms' => $confirm,
+    ];
+})
+->filter()
+->unique('activity_id')
+->values();
 
-        $howMany = $activity->how_many ?? 0;
+    // $groupUserList = $userDetailsFromInterest2->map(function ($userItem) use ($user) {
+    //     // Skip if no interest activity
+    //     if (!$userItem->interest_activity_id) {
+    //         return null;
+    //     }
 
-        $confirm = OtherInterest::with('user')
-            ->where('activity_id', $userItem->interest_activity_id)
-            ->whereIn('confirm', [3, 7])
-            ->take($howMany)
-            ->get()
-            ->pluck('user.rendom')
-            ->filter()
-            ->values();
-            $confirm->push($userItem->rendom);
+    //        $currentTime = Carbon::now('Asia/Kolkata'); 
 
-        if ($confirm->isEmpty()) return null;
+    //         $activity = Activity::where('id', $userItem->interest_activity_id)
+    //             ->where('status', 2)
+    //             ->first();
 
-        $activityimagePath = $activity->image ?? null;
+    //         if (!$activity) {
+    //             return null;
+    //         }
 
-        return [
-            'id' => $userItem->id,
-            'user_rendom' => $userItem->rendom,
-              'authuser_rendom' => $user->rendom,
-            'name' => $userItem->name,
-            'activity_name' => $activity->title,
-            'activity_image' => $activityimagePath ? asset($activityimagePath) : null,
-            'activity_id' => $userItem->interest_activity_id,
-            'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
-            'form' => 'group',
-            'last_message' => $chat->message ?? null,
-            'send_type' => $chat->send_type ?? null,
-            'user_rendoms' => $confirm,
-        ];
-    })
-    ->filter()               
-    ->unique('activity_id') 
-    ->values(); 
+    //         // Step 2: Check if activity expired more than 24 hours ago
+    //         $endDateTimeString = $activity->when_time . ' ' . str_replace(' ', ' ', $activity->end_time);
+    //         $activityEndDateTime = Carbon::createFromFormat('Y-m-d h:i A', $endDateTimeString, 'Asia/Kolkata');
+
+    //         if ($activityEndDateTime->lt($currentTime->copy()->subHours(24))) {
+    //             // If the activity ended more than 24 hours ago, skip it
+    //             return null;
+    //         }
+
+    //     if (!$activity) {
+    //         return null;
+    //     }
+
+    //     $imagePath = null;
+    //     if ($userItem->profile_image) {
+    //         $images = json_decode($userItem->profile_image, true); 
+    //         if (is_array($images) && count($images)) {
+    //             $imagePath = reset($images);
+    //         }
+    //     }
+
+    //     $chat = Chat::where('sender_id', $user->id)
+    //                 ->where('receiver_id', $userItem->id)
+    //                 ->where('send_type', 'group')
+    //                 ->orderBy('id', 'DESC')
+    //                 ->first();
+
+    //     $howMany = $activity->how_many ?? 0;
+
+    //     $confirm = OtherInterest::with('user')
+    //         ->where('activity_id', $userItem->interest_activity_id)
+    //         ->whereIn('confirm', [3, 7])
+    //         ->take($howMany)
+    //         ->get()
+    //         ->pluck('user.rendom')
+    //         ->filter()
+    //         ->values();
+    //         $confirm->push($userItem->rendom);
+
+    //     if ($confirm->isEmpty()) return null;
+
+    //     $activityimagePath = $activity->image ?? null;
+
+    //     return [
+    //         'id' => $userItem->id,
+    //         'user_rendom' => $userItem->rendom,
+    //           'authuser_rendom' => $user->rendom,
+    //         'name' => $userItem->name,
+    //         'activity_name' => $activity->title,
+    //         'activity_image' => $activityimagePath ? asset($activityimagePath) : null,
+    //         'activity_id' => $userItem->interest_activity_id,
+    //         'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+    //         'form' => 'group',
+    //         'last_message' => $chat->message ?? null,
+    //         'send_type' => $chat->send_type ?? null,
+    //         'user_rendoms' => $confirm,
+    //     ];
+    // })
+    // ->filter()               
+    // ->unique('activity_id') 
+    // ->values(); 
 
     // $groupUserList = $userDetailsFromInterest2
     // ->map(function ($userItem) use ($user) {
@@ -4050,15 +4125,16 @@ public function friendcount_one(Request $request)
         ];
     })->filter(); // remove nulls
 
-   $filteredUserList = $userList->filter(fn($u) => $u['id'] !== $user->id)->values();
+    $filteredUserList = $userList->filter(fn($u) => $u['id'] !== $user->id)->values();
     $filteredGroupList = $groupUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
-    $filteredLikeList = $likeUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
-    $filteredCupidList = $matchedUsers->filter(fn($u) => $u['id'] !== $user->id)->values();
+    $filteredLikeUsers = $likeUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
+    $filteredCupidUsers = $matchedUsers->filter(fn($u) => $u['id'] !== $user->id)->values();
 
-    // Combine matches only
-    $matchUsers = $filteredLikeList->merge($filteredCupidList)
+    $matchUsers = collect($filteredLikeUsers)
+        ->merge(collect($filteredCupidUsers))
         ->unique('id')
         ->values();
+
 
     // 🔚 Final Response
     return response()->json([

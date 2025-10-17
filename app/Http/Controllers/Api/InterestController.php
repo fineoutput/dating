@@ -877,7 +877,7 @@ public function removeinterest(Request $request)
         $existingInterest->delete();
 
         return response()->json([
-            'message' => 'Interest updated to confirm = 5.',
+            'message' => 'Interest Remove Successfully!',
             'data' => [
                 'user_rendom'     => $user->rendom,
                 'activity_rendom' => $request->rendom,

@@ -3388,10 +3388,12 @@ public function friendcount(Request $request)
         return [
             'id' => $matchedUser->id,
             'user_rendom' => $matchedUser->rendom,
+              'authuser_rendom' => $user->rendom,
             'name' => $matchedUser->name,
             'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
             'form' => 'match',
             'last_message' => $chat->message ?? null,
+            'send_type' => $chat->send_type ?? null,
         ];
     })->filter(); // remove nulls
 
@@ -4117,6 +4119,7 @@ public function friendcount_one(Request $request)
         return [
             'id' => $matchedUser->id,
             'user_rendom' => $matchedUser->rendom,
+              'authuser_rendom' => $user->rendom,
             'name' => $matchedUser->name,
             'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
             'form' => 'match',

@@ -1236,7 +1236,7 @@ public function removeinterest(Request $request)
         'user_profile' => $profileImageUrl,
         'activity_rendom' => $interest->activity->rendom ?? '',
         'activity_id' => $interest->activity->id ?? '',
-        'confirm' => $interest->confirm,
+        'confirm' => $interest->confirm->count(),
         'ghosted' => $ghosted,
         'attended' => $attended,
         'created' => $created,

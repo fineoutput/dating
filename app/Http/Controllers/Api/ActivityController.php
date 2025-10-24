@@ -4526,26 +4526,25 @@ public function filteractivity(Request $request)
         $filterApplied = true;
     }
 
-    // 🟩 Get filtered activities
     $filteredActivities = $query->with('user', 'vibe')->get();
 
-    // 🟩 If "other" == true, also get ALL activities
     if ($other === true || $other === 'true' || $other == 1) {
         $allActivities = Activity::where('user_id', '!=', Auth::id())
                             ->with('user', 'vibe')
-                            ->get();
+                 ->where(function ($query) use ($currentTime) {
+            $query->whereDate('when_time', '>', $currentTime->toDateString())
+                ->orWhereRaw("
+                    STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+                ", [$currentTime->format('Y-m-d H:i:s')]);
+        })->get();
 
-        // 🟩 Merge filtered + all activities
         $activities = $filteredActivities->merge($allActivities)->unique('id');
     } else {
-        // 🟩 Only filtered activities
         $activities = $filteredActivities;
     }
 
-    // Hide some fields
     $activities->makeHidden(['created_at', 'updated_at', 'deleted_at', 'id', 'user_id']);
 
-    // 🟩 Format response (same as your existing logic)
     $responseData = $activities->map(function($activity) {
         $hash = md5($activity->id);
         $r = hexdec(substr($hash, 0, 2));

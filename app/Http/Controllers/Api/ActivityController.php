@@ -4158,6 +4158,239 @@ public function friendcount_one(Request $request)
     
     
 
+// public function filteractivity(Request $request)
+// {
+//     $location = $request->input('location');
+//     $how_many = $request->input('how_many');
+//     $when_time = $request->input('when_time');
+//     $end_time = $request->input('end_time');
+//     $expense_id = $request->input('expense_id'); 
+//     $vibe_id = $request->input('vibe_id'); 
+//     $date_type = $request->input('date_type'); 
+
+//     $currentTime = Carbon::now('Asia/Kolkata');
+//     $todayDate = Carbon::today('Asia/Kolkata');
+
+//     $endTime = Carbon::createFromFormat('H:i:s', '08:28:00')
+//         ->setDate($todayDate->year, $todayDate->month, $todayDate->day)
+//         ->format('Y-m-d H:i:s');
+
+//     $query = Activity::query();
+    
+//     // $filterApplied = false;
+
+//     if (!$date_type || $date_type !== 'Today') {
+//     $query->where(function ($query) use ($endTime, $currentTime) {
+//         $query->whereRaw("
+//             STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+//         ", [$endTime])
+//         ->where('when_time', '>=', $currentTime);
+//     });
+//   }
+
+
+//     if ($query) {
+//         $query->where('user_id', '!=',Auth::id());
+//         $filterApplied = true;
+//     }
+//     // if ($query) {
+//     //     $query->where('admin_city',Auth::user()->admin_city);
+//     //     $filterApplied = true;
+//     // }
+
+//     if ($location) {
+//     $location = trim($location); // Optional cleanup
+//     $query->where('location', 'like', '%' . $location . '%');
+//     $filterApplied = true;
+//   }
+
+//     if ($how_many) {
+//         $query->where('how_many',$how_many);
+//         $filterApplied = true;
+//     }
+
+//     if ($when_time) {
+//         $query->where('when_time', $when_time);
+//         $filterApplied = true;
+//     }
+
+//     if ($end_time) {
+//         $cleanedEndTime = preg_replace('/[^\x20-\x7E]/', '', $end_time);
+//         $endTimeFormatted = \Carbon\Carbon::parse($cleanedEndTime)->format('H:i:s');
+//         $query->whereTime('end_time', '>=', $endTimeFormatted);
+//         $filterApplied = true;
+//     }
+
+
+//    //    $filterApplied = false;
+//     $firstExpenseName = null;
+
+//     // return $expense_id;
+//     if (!empty($expense_id)) {
+//         if (is_string($expense_id)) {
+//             $expenseIds = json_decode($expense_id, true);
+//         } elseif (is_array($expense_id)) {
+//             $expenseIds = $expense_id;
+//         } else {
+//             $expenseIds = [];
+//         }
+
+//         if (is_array($expenseIds) && count($expenseIds) > 0) {
+//             // Apply filter on query
+//             $query->where(function ($q) use ($expenseIds) {
+//                 foreach ($expenseIds as $id) {
+//                     $q->orWhereJsonContains('expense_id', $id);
+//                 }
+//             });
+
+//             $filterApplied = true;
+
+//             // Get all matching expenses
+//             $expenses = Expense::whereIn('id', $expenseIds)->get();
+
+//             // Get names and join them with comma
+//             $firstExpenseName = $expenses->pluck('name')->implode(', ');
+//         }
+//     }
+
+
+//        if ($vibe_id && is_array($vibe_id)) {
+//     $query->where(function ($q) use ($vibe_id) {
+//         foreach ($vibe_id as $id) {
+//             $q->orWhere('vibe_id', 'like', '%'.$id.'%');
+//         }
+//     });
+//         $filterApplied = true;
+//     }
+
+//     //      if ($vibe_id && is_array($vibe_id)) {
+//     //     $query->where(function ($q) use ($vibe_id) {
+//     //         foreach ($vibe_id as $id) {
+//     //             $q->orWhereRaw("FIND_IN_SET(?, REPLACE(REPLACE(vibe_id, '[', ''), ']', ''))", [$id]);
+//     //         }
+//     //     });
+
+//     //      $filterApplied = true;
+//     // }
+
+
+
+//     if ($date_type) {
+//         $today = Carbon::now('Asia/Kolkata')->format('Y-m-d');
+//         $tomorrow = Carbon::now('Asia/Kolkata')->addDay()->format('Y-m-d');
+//         $saturday = Carbon::now('Asia/Kolkata')->next(Carbon::SATURDAY)->format('Y-m-d');
+//         $sunday = Carbon::now('Asia/Kolkata')->next(Carbon::SUNDAY)->format('Y-m-d');
+
+//         if ($date_type == 'Today') {
+//             $query->where('when_time', $today);
+//         } elseif ($date_type == 'Tomorrow') {
+//             $query->where('when_time', $tomorrow);
+//         } elseif ($date_type == 'Weekend') {
+//             $query->where(function ($q) use ($saturday, $sunday) {
+//                 $q->where('when_time', $saturday)
+//                 ->orWhere('when_time', $sunday);
+//             });
+//         }
+
+//         $filterApplied = true;
+//     }
+
+//     if (!$filterApplied) {
+//         return response()->json([
+//             'message' => 'No filters applied, returning all activities',
+//             'status' => 200,
+//             'data' => [],
+//         ], 200);
+//     }
+
+//     $activities = $query->with('user', 'vibe')->get();  
+//     $activities->makeHidden(['created_at', 'updated_at', 'deleted_at', 'id', 'user_id']);
+
+//     $responseData = $activities->map(function($activity) {
+//         $hash = md5($activity->id);
+//         $r = hexdec(substr($hash, 0, 2));
+//         $g = hexdec(substr($hash, 2, 2));
+//         $b = hexdec(substr($hash, 4, 2));
+//         $lightenFactor = 0.5; 
+//         $r = round($r + (255 - $r) * $lightenFactor);
+//         $g = round($g + (255 - $g) * $lightenFactor);
+//         $b = round($b + (255 - $b) * $lightenFactor);
+//         $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
+
+//     $userDetails = $activity->user;
+//     $profileImageUrl = null;
+//     if ($userDetails && $userDetails->profile_image) {
+//         $profileImages = json_decode($userDetails->profile_image, true);
+//         if (is_array($profileImages) && isset($profileImages[1])) {
+//             $profileImageUrl = url('uploads/app/profile_images/' . $profileImages[1]);
+//         }
+//     }
+
+
+//         $vibeNames = [];
+//         $vibeImages = [];
+
+//         $vibeIdsRaw = json_decode($activity->vibe_id, true); 
+//         if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
+//             $vibeIdList = explode(',', $vibeIdsRaw[0]); 
+
+//             $vibes = Vibes::whereIn('id', $vibeIdList)->get();
+
+//             foreach ($vibes as $vibe) {
+//                 $vibeNames[] = $vibe->name;
+//                 $vibeImages[] = asset($vibe->icon);
+//             }
+//         }
+
+//         // 🟩 Get expense name
+//         $expenseName = '';
+//         $expenseIds = json_decode($activity->expense_id, true);
+//         if (is_array($expenseIds) && count($expenseIds) > 0) {
+//             $expenses = Expense::whereIn('id', $expenseIds)->pluck('name')->toArray();
+//             $expenseName = implode(', ', $expenses);
+//         }
+
+//         $authuser = Auth::user();
+//         $actlike = false;
+//         if ($authuser) {
+//             $liked_Act = LikeActivity::where('activity_id', $activity->id)
+//                 ->where('user_id', $authuser->id)
+//                 ->where('status', 1)
+//                 ->first();
+//             $actlike = $liked_Act ? true : false;
+//         }
+
+        
+//         if($activity->image){
+//             $activimage = asset($activity->image); 
+//         }else{
+//             $activimage = null;
+//         }
+//         return [
+//             'title' => $activity->title ?? '',
+//             'rendom' => $activity->rendom ?? '',
+//             'location' => $activity->location ?? '',
+//             'bg_color' => $bgColor ?? '',
+//             'is_like' => false,
+//             'like' => $actlike,
+//             'vibe_name' => $vibeNames ?? '',
+//             'vibe_image' => $vibeImages ?? '',
+//             'user_name' => $userDetails->name ?? '',
+//             'user_profile_image' => $profileImageUrl ?? '',
+//             'activity_image' => $activimage,
+//             'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
+            
+//             'expense_name' => $expenseName,
+//         ];
+//     });
+//     return response()->json([
+//         'message' => 'Activities retrieved successfully',
+//         'status' => 200,
+//         'data' => $responseData,
+//     ], 200);
+// }
+
+
 public function filteractivity(Request $request)
 {
     $location = $request->input('location');
@@ -4167,6 +4400,7 @@ public function filteractivity(Request $request)
     $expense_id = $request->input('expense_id'); 
     $vibe_id = $request->input('vibe_id'); 
     $date_type = $request->input('date_type'); 
+    $other = $request->input('other'); // 🟩 New field
 
     $currentTime = Carbon::now('Asia/Kolkata');
     $todayDate = Carbon::today('Asia/Kolkata');
@@ -4176,33 +4410,27 @@ public function filteractivity(Request $request)
         ->format('Y-m-d H:i:s');
 
     $query = Activity::query();
-    
-    // $filterApplied = false;
+    $filterApplied = false;
 
     if (!$date_type || $date_type !== 'Today') {
-    $query->where(function ($query) use ($endTime, $currentTime) {
-        $query->whereRaw("
-            STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
-        ", [$endTime])
-        ->where('when_time', '>=', $currentTime);
-    });
-  }
-
+        $query->where(function ($query) use ($endTime, $currentTime) {
+            $query->whereRaw("
+                STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+            ", [$endTime])
+            ->where('when_time', '>=', $currentTime);
+        });
+    }
 
     if ($query) {
         $query->where('user_id', '!=',Auth::id());
         $filterApplied = true;
     }
-    // if ($query) {
-    //     $query->where('admin_city',Auth::user()->admin_city);
-    //     $filterApplied = true;
-    // }
 
     if ($location) {
-    $location = trim($location); // Optional cleanup
-    $query->where('location', 'like', '%' . $location . '%');
-    $filterApplied = true;
-  }
+        $location = trim($location);
+        $query->where('location', 'like', '%' . $location . '%');
+        $filterApplied = true;
+    }
 
     if ($how_many) {
         $query->where('how_many',$how_many);
@@ -4221,11 +4449,8 @@ public function filteractivity(Request $request)
         $filterApplied = true;
     }
 
-
-   //    $filterApplied = false;
     $firstExpenseName = null;
 
-    // return $expense_id;
     if (!empty($expense_id)) {
         if (is_string($expense_id)) {
             $expenseIds = json_decode($expense_id, true);
@@ -4236,7 +4461,6 @@ public function filteractivity(Request $request)
         }
 
         if (is_array($expenseIds) && count($expenseIds) > 0) {
-            // Apply filter on query
             $query->where(function ($q) use ($expenseIds) {
                 foreach ($expenseIds as $id) {
                     $q->orWhereJsonContains('expense_id', $id);
@@ -4244,36 +4468,17 @@ public function filteractivity(Request $request)
             });
 
             $filterApplied = true;
-
-            // Get all matching expenses
-            $expenses = Expense::whereIn('id', $expenseIds)->get();
-
-            // Get names and join them with comma
-            $firstExpenseName = $expenses->pluck('name')->implode(', ');
         }
     }
 
-
-       if ($vibe_id && is_array($vibe_id)) {
-    $query->where(function ($q) use ($vibe_id) {
-        foreach ($vibe_id as $id) {
-            $q->orWhere('vibe_id', 'like', '%'.$id.'%');
-        }
-    });
+    if ($vibe_id && is_array($vibe_id)) {
+        $query->where(function ($q) use ($vibe_id) {
+            foreach ($vibe_id as $id) {
+                $q->orWhere('vibe_id', 'like', '%'.$id.'%');
+            }
+        });
         $filterApplied = true;
     }
-
-    //      if ($vibe_id && is_array($vibe_id)) {
-    //     $query->where(function ($q) use ($vibe_id) {
-    //         foreach ($vibe_id as $id) {
-    //             $q->orWhereRaw("FIND_IN_SET(?, REPLACE(REPLACE(vibe_id, '[', ''), ']', ''))", [$id]);
-    //         }
-    //     });
-
-    //      $filterApplied = true;
-    // }
-
-
 
     if ($date_type) {
         $today = Carbon::now('Asia/Kolkata')->format('Y-m-d');
@@ -4288,24 +4493,33 @@ public function filteractivity(Request $request)
         } elseif ($date_type == 'Weekend') {
             $query->where(function ($q) use ($saturday, $sunday) {
                 $q->where('when_time', $saturday)
-                ->orWhere('when_time', $sunday);
+                  ->orWhere('when_time', $sunday);
             });
         }
 
         $filterApplied = true;
     }
 
-    if (!$filterApplied) {
-        return response()->json([
-            'message' => 'No filters applied, returning all activities',
-            'status' => 200,
-            'data' => [],
-        ], 200);
+    // 🟩 Get filtered activities
+    $filteredActivities = $query->with('user', 'vibe')->get();
+
+    // 🟩 If "other" == true, also get ALL activities
+    if ($other === true || $other === 'true' || $other == 1) {
+        $allActivities = Activity::where('user_id', '!=', Auth::id())
+                            ->with('user', 'vibe')
+                            ->get();
+
+        // 🟩 Merge filtered + all activities
+        $activities = $filteredActivities->merge($allActivities)->unique('id');
+    } else {
+        // 🟩 Only filtered activities
+        $activities = $filteredActivities;
     }
 
-    $activities = $query->with('user', 'vibe')->get();  
+    // Hide some fields
     $activities->makeHidden(['created_at', 'updated_at', 'deleted_at', 'id', 'user_id']);
 
+    // 🟩 Format response (same as your existing logic)
     $responseData = $activities->map(function($activity) {
         $hash = md5($activity->id);
         $r = hexdec(substr($hash, 0, 2));
@@ -4317,23 +4531,20 @@ public function filteractivity(Request $request)
         $b = round($b + (255 - $b) * $lightenFactor);
         $bgColor = sprintf('#%02x%02x%02x', $r, $g, $b);
 
-    $userDetails = $activity->user;
-    $profileImageUrl = null;
-    if ($userDetails && $userDetails->profile_image) {
-        $profileImages = json_decode($userDetails->profile_image, true);
-        if (is_array($profileImages) && isset($profileImages[1])) {
-            $profileImageUrl = url('uploads/app/profile_images/' . $profileImages[1]);
+        $userDetails = $activity->user;
+        $profileImageUrl = null;
+        if ($userDetails && $userDetails->profile_image) {
+            $profileImages = json_decode($userDetails->profile_image, true);
+            if (is_array($profileImages) && isset($profileImages[1])) {
+                $profileImageUrl = url('uploads/app/profile_images/' . $profileImages[1]);
+            }
         }
-    }
-
 
         $vibeNames = [];
         $vibeImages = [];
-
         $vibeIdsRaw = json_decode($activity->vibe_id, true); 
         if (is_array($vibeIdsRaw) && count($vibeIdsRaw) > 0) {
             $vibeIdList = explode(',', $vibeIdsRaw[0]); 
-
             $vibes = Vibes::whereIn('id', $vibeIdList)->get();
 
             foreach ($vibes as $vibe) {
@@ -4342,7 +4553,6 @@ public function filteractivity(Request $request)
             }
         }
 
-        // 🟩 Get expense name
         $expenseName = '';
         $expenseIds = json_decode($activity->expense_id, true);
         if (is_array($expenseIds) && count($expenseIds) > 0) {
@@ -4360,12 +4570,8 @@ public function filteractivity(Request $request)
             $actlike = $liked_Act ? true : false;
         }
 
-        
-        if($activity->image){
-            $activimage = asset($activity->image); 
-        }else{
-            $activimage = null;
-        }
+        $activimage = $activity->image ? asset($activity->image) : null;
+
         return [
             'title' => $activity->title ?? '',
             'rendom' => $activity->rendom ?? '',
@@ -4379,10 +4585,10 @@ public function filteractivity(Request $request)
             'user_profile_image' => $profileImageUrl ?? '',
             'activity_image' => $activimage,
             'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
-            
             'expense_name' => $expenseName,
         ];
     });
+
     return response()->json([
         'message' => 'Activities retrieved successfully',
         'status' => 200,

@@ -2169,6 +2169,7 @@ $remainingInterests = max(0, $allowedInterest - $interestCount);
 
     $mainActivityData = [
         'user_name' => $mainActivity->user->name ?? '',
+        'activity_city' => $mainActivity->admin_city ?? '',
         'rendom' => $mainActivity->rendom ?? '',
         'profile_image' => $profileImageUrl ?? null,
         'activity_image' => (!empty($mainActivity->image)) ? asset($mainActivity->image): null,
@@ -4379,7 +4380,6 @@ public function filteractivity(Request $request)
             'activity_image' => $activimage,
             'user_time' => \Carbon\Carbon::parse($activity->when_time)->format('d M') . ' at ' . \Carbon\Carbon::parse($activity->end_time)->format('g:i A'),
             
-            // ✅ Add expense name
             'expense_name' => $expenseName,
         ];
     });

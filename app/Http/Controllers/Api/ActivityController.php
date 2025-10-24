@@ -4414,8 +4414,10 @@ public function filteractivity(Request $request)
     $filterApplied = false;
 
     $user = Auth::user();
-
-    $query = $query->where('admin_city',$user->admin_city);
+    
+    if ($user && $user->admin_city) {
+        $query->where('admin_city', $user->admin_city);
+    }
 
     if (!$date_type || $date_type !== 'Today') {
         $query->where(function ($query) use ($endTime, $currentTime) {

@@ -2086,7 +2086,7 @@ $remainingInterests = max(0, $allowedInterest - $interestCount);
 
     // $hostNames = array_unique(array_merge($friendNames, $userNames));
 
-    $mainActivity = Activity::with('user', 'vibe')
+    $mainActivity = Activity::with('user', 'vibe','admincity')
     ->where('rendom', $request->rendom)
     ->first();
 
@@ -2166,10 +2166,11 @@ $remainingInterests = max(0, $allowedInterest - $interestCount);
                 $alinters = false;
             }
 
+    // $adminCity = AdminCity::where('id',)
 
     $mainActivityData = [
         'user_name' => $mainActivity->user->name ?? '',
-        'activity_city' => $mainActivity->admin_city ?? '',
+        'activity_city' => $mainActivity->admincity->city_name ?? '',
         'rendom' => $mainActivity->rendom ?? '',
         'profile_image' => $profileImageUrl ?? null,
         'activity_image' => (!empty($mainActivity->image)) ? asset($mainActivity->image): null,

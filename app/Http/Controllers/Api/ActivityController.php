@@ -4411,27 +4411,40 @@ public function filteractivity(Request $request)
         ->format('Y-m-d H:i:s');
 
     $query = Activity::query();
-    $filterApplied = false;
 
+        $query = Activity::
+                orderBy('id', 'DESC')
+                 ->where(function ($query) use ($currentTime) {
+            $query->whereDate('when_time', '>', $currentTime->toDateString())
+                ->orWhereRaw("
+                    STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+                ", [$currentTime->format('Y-m-d H:i:s')]);
+        });
+
+    $filterApplied = false;
     $user = Auth::user();
     
     if ($user && $user->admin_city) {
         $query->where('admin_city', $user->admin_city);
     }
+    
 
-    if (!$date_type || $date_type !== 'Today') {
-        $query->where(function ($query) use ($endTime, $currentTime) {
-            $query->whereRaw("
-                STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
-            ", [$endTime])
-            ->where('when_time', '>=', $currentTime);
-        });
-    }
+        if (!$date_type || $date_type !== 'Today') {
+            $query->where(function ($query) use ($endTime, $currentTime) {
+                $query->whereRaw("
+                    STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+                ", [$endTime])
+                ->where('when_time', '>=', $currentTime);
+            });
+        }
+
+
 
     if ($query) {
         $query->where('user_id', '!=',Auth::id());
         $filterApplied = true;
     }
+
 
     if ($location) {
         $location = trim($location);
@@ -4439,10 +4452,13 @@ public function filteractivity(Request $request)
         $filterApplied = true;
     }
 
+
+
     if ($how_many) {
         $query->where('how_many',$how_many);
         $filterApplied = true;
     }
+
 
     if ($when_time) {
         $query->where('when_time', $when_time);
@@ -4455,6 +4471,9 @@ public function filteractivity(Request $request)
         $query->whereTime('end_time', '>=', $endTimeFormatted);
         $filterApplied = true;
     }
+
+        // return $query->get();
+
 
     $firstExpenseName = null;
 

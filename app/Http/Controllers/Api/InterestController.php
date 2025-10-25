@@ -750,7 +750,7 @@ public function addconfirms(Request $request)
     // ✅ Step 2: Update OtherInterest records
     $updated = OtherInterest::where('activity_id', $activity->id)
         ->whereIn('user_id', $userIds)
-        ->update(['confirm' => 6]);
+        ->update(['confirm' => 8]);
 
     return response()->json([
         'message' => $updated > 0 ? 'Confirm status updated.' : 'No matching interests found to update.',
@@ -1236,7 +1236,7 @@ public function removeinterest(Request $request)
         'user_profile' => $profileImageUrl,
         'activity_rendom' => $interest->activity->rendom ?? '',
         'activity_id' => $interest->activity->id ?? '',
-        'confirm' => $interest->confirm->count(),
+        'confirm' => $interest->confirm,
         'ghosted' => $ghosted,
         'attended' => $attended,
         'created' => $created,

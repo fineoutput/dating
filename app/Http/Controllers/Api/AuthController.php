@@ -857,6 +857,27 @@ class AuthController extends Controller
             return response()->json(['error' => 'Contact not found or not authorized'], 404);
         }
 
+        $receiver =  User::where('number', $contact->number)->first();
+        
+        if($request->status == 1){
+             $code = rand(100000, 999999);
+        while (Chat::where('rendom', $code)->exists()) {
+            $code = rand(100000, 999999);
+        }
+        $user =Auth::user();
+          $chat = Chat::create([
+            'sender_id' => Auth::id(),
+            'receiver_id' => $receiver->id,
+            'message' => 'Hello'. $user->name,
+            'status' => 'sent',
+            'rendom' => $code,
+            'send_type' => 'contact',
+            'chat_type' => 'contact',
+            'activity_id' =>  null,
+        ]);
+
+        }
+
         $contact->status = $request->status;
         $contact->save();
 

@@ -746,8 +746,7 @@ class AuthController extends Controller
     
      public function getPhoneNumbers(): JsonResponse
     {
-        $phoneNumbers = User::pluck('number'); // or whatever your column name is
-
+        $phoneNumbers = User::pluck('number'); 
         return response()->json([
             'message' => 'Successfully logged out',
                 'data' =>$phoneNumbers,
@@ -755,6 +754,30 @@ class AuthController extends Controller
         ]);
     }
 
+
+   public function checkNumbers(Request $request)
+    {
+        $request->validate([
+            'numbers' => 'required|array',
+            'numbers.*' => 'integer'
+        ]);
+
+        $numbers = $request->input('numbers');
+
+        $userNumbers = User::pluck('number')->toArray();
+
+        $mismatchedNumbers = array_diff($numbers, $userNumbers);
+
+        $matchedNumbers = array_intersect($numbers, $userNumbers);
+
+        return response()->json([
+            'message' => 'Numbers fetched successfully',
+            'data' => [
+            'mismatched_numbers' => array_values($mismatchedNumbers),
+            'matched_numbers' => array_values($matchedNumbers)
+            ]
+        ]);
+    }
    
  
     // public function userprofile(Request $request)

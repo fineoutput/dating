@@ -26,6 +26,7 @@ Route::post('verify_auth_otp', [AuthController::class, 'verify_auth_otp']);
 Route::post('login', [AuthController::class, 'login']);
 
 Route::get('phone-numbers', [AuthController::class, 'getPhoneNumbers']);
+Route::post('/check_numbers', [AuthController::class, 'checkNumbers']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/device', [AuthController::class, 'fcmUpdate']);

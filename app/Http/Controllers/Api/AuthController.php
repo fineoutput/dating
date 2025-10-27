@@ -800,15 +800,26 @@ class AuthController extends Controller
             'status' => 200,
         ], 201);
     }
-
-    public function contact_get()
+ 
+ public function contact_get()
     {
         $user = auth()->user(); 
-        $contacts = Contact::where('user_id',$user->id)->get();
+
+        $contacts = Contact::where('user_id', $user->id)->get();
+
+        $contacts_with_user_name = $contacts->map(function($contact) {
+            $contact_user = User::where('number', $contact->number)->first(); 
+            return [
+                'id' => $contact->id,
+                'number' => $contact->number,
+                'status' => $contact->status,
+                'user_name' => $contact_user ? $contact_user->name : null,
+            ];
+        });
 
         return response()->json([
-            'message' => 'Contacts fetch Successfully',
-            'data' => $contacts,
+            'message' => 'Contacts fetched successfully',
+            'data' => $contacts_with_user_name,
             'status' => 200,
         ], 200);
     }

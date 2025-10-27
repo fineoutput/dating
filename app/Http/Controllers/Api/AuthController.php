@@ -789,9 +789,9 @@ class AuthController extends Controller
         ]);
 
         $contact = Contact::create([
-            'user_id' => Auth::id(), // gets authenticated user's id
+            'user_id' => Auth::id(),
             'number' => $request->number,
-            'status' => $request->status,
+            'status' => 0,
         ]);
 
         return response()->json([

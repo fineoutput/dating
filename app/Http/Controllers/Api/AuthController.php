@@ -15,6 +15,7 @@ use App\Mail\OtpMail;
 use App\Models\Activity;
 use App\Models\AdminCity;
 use App\Models\Chat;
+use App\Models\Contact;
 use App\Models\Cupid;
 use App\Models\OtherInterest;
 use App\Models\SlideLike;
@@ -777,6 +778,26 @@ class AuthController extends Controller
             'matched_numbers' => array_values($matchedNumbers)
             ]
         ]);
+    }
+
+
+     public function contact_store(Request $request)
+    {
+        $request->validate([
+            'number' => 'required|string|max:20',
+            'status' => 'required|string|max:20',
+        ]);
+
+        $contact = Contact::create([
+            'user_id' => Auth::id(), // gets authenticated user's id
+            'number' => $request->number,
+            'status' => $request->status,
+        ]);
+
+        return response()->json([
+            'message' => 'Contact added successfully',
+            'contact' => $contact
+        ], 201);
     }
    
  

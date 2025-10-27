@@ -782,15 +782,31 @@ class AuthController extends Controller
     }
 
 
-     public function contact_store(Request $request)
+   public function contact_store(Request $request)
     {
         $request->validate([
             'number' => 'required|string|max:20',
         ]);
 
+        $user_id = Auth::id();
+        $number = $request->number;
+
+        // Check if contact already exists for this user
+        $existing_contact = Contact::where('user_id', $user_id)
+                                ->where('number', $number)
+                                ->first();
+
+        if ($existing_contact) {
+            return response()->json([
+                'message' => 'You have already sent a request to this contact.',
+                'status' => 409, // Conflict
+            ], 409);
+        }
+
+        // Create new contact if not exists
         $contact = Contact::create([
-            'user_id' => Auth::id(),
-            'number' => $request->number,
+            'user_id' => $user_id,
+            'number' => $number,
             'status' => 0,
         ]);
 
@@ -800,6 +816,7 @@ class AuthController extends Controller
             'status' => 200,
         ], 201);
     }
+
  
  public function contact_get()
     {

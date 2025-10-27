@@ -850,7 +850,6 @@ class AuthController extends Controller
         ]);
 
         $contact = Contact::where('id', $request->contact_id)
-                        ->where('user_id', auth()->id())
                         ->first();
 
         if (!$contact) {
@@ -858,7 +857,7 @@ class AuthController extends Controller
         }
 
         $receiver =  User::where('number', $contact->number)->first();
-        
+
         if($request->status == 1){
              $code = rand(100000, 999999);
         while (Chat::where('rendom', $code)->exists()) {
@@ -866,8 +865,8 @@ class AuthController extends Controller
         }
         $user =Auth::user();
           $chat = Chat::create([
-            'sender_id' => Auth::id(),
-            'receiver_id' => $receiver->id,
+            'sender_id' => $receiver->id,
+            'receiver_id' => Auth::id(),
             'message' => 'Hello'. $user->name,
             'status' => 'sent',
             'rendom' => $code,

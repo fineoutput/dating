@@ -805,7 +805,7 @@ class AuthController extends Controller
     {
         $user = auth()->user(); 
 
-        $contacts = Contact::where('user_id', $user->id)->get();
+        $contacts = Contact::where('status',0)->where('user_id', $user->id)->get();
 
         $contacts_with_user_name = $contacts->map(function($contact) {
             $contact_user = User::where('number', $contact->number)->first(); 

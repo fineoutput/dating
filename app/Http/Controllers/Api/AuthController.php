@@ -776,7 +776,8 @@ class AuthController extends Controller
             'data' => [
             'mismatched_numbers' => array_values($mismatchedNumbers),
             'matched_numbers' => array_values($matchedNumbers)
-            ]
+            ],
+            'status' => 200,
         ]);
     }
 
@@ -785,7 +786,6 @@ class AuthController extends Controller
     {
         $request->validate([
             'number' => 'required|string|max:20',
-            'status' => 'required|string|max:20',
         ]);
 
         $contact = Contact::create([
@@ -796,10 +796,47 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Contact added successfully',
-            'contact' => $contact
+            'contact' => $contact,
+            'status' => 200,
         ], 201);
     }
-   
+
+    public function contact_get()
+    {
+        $user = auth()->user(); 
+        $contacts = Contact::where('user_id',$user->id)->get();
+
+        return response()->json([
+            'message' => 'Contacts fetch Successfully',
+            'data' => $contacts,
+            'status' => 200,
+        ], 200);
+    }
+
+    public function contact_update(Request $request)
+    {
+        $request->validate([
+            'status' => 'required|string|max:20',
+            'contact_id' => 'required|string|max:20',
+        ]);
+
+        $contact = Contact::where('id', $request->contact_id)
+                        ->where('user_id', auth()->id())
+                        ->first();
+
+        if (!$contact) {
+            return response()->json(['error' => 'Contact not found or not authorized'], 404);
+        }
+
+        $contact->status = $request->status;
+        $contact->save();
+
+        return response()->json([
+            'message' => 'Status updated successfully',
+            'contact' => $contact
+        ], 200);
+    }
+        
  
     // public function userprofile(Request $request)
     //     {

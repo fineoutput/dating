@@ -3337,7 +3337,7 @@ public function friendcount(Request $request)
             'name' => $userItem->name,
             'activity_id' => $userItem->interest_activity_id,
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
-            'form' => 'activity',
+            'form' => 'match',
             'last_message' => $chat->message ?? null,
         ];
     });

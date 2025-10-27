@@ -853,7 +853,10 @@ class AuthController extends Controller
                         ->first();
 
         if (!$contact) {
-            return response()->json(['error' => 'Contact not found or not authorized'], 404);
+            return response()->json([
+                'message' => 'Contact not found or not authorized',
+                'status' => 201,
+            ], 201);
         }
 
         $receiver =  User::where('number', $contact->number)->first();
@@ -882,7 +885,8 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Status updated successfully',
-            'contact' => $contact
+            'contact' => $contact,
+            'status' => 200,
         ], 200);
     }
         

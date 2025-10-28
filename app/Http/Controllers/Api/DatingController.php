@@ -907,7 +907,7 @@ public function MatchingUsersdetailes(Request $request)
         ]);
     }
 
-    $attendUsers = OtherInterest::where('user_id', $user->id)->whereIn('confirm', [6,3,7])->count();
+    $attendUsers = OtherInterest::where('user_id', $user->id)->whereIn('confirm', 8)->count();
        $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata
 
     $activities = Activity::orderBy('id', 'DESC')
@@ -922,7 +922,7 @@ public function MatchingUsersdetailes(Request $request)
     ->get();
 
     $ghostUsers = OtherInterest::whereIn('activity_id', $activities->pluck('id'))->where('user_id', $user->id)
-        ->where('confirm', 3)
+        ->where('confirm', [3,7])
         ->count();
     // $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
     $hostedActivity = Activity::where('user_id', $user->id)->count();
@@ -3352,8 +3352,32 @@ public function updateCupidMatch(Request $request)
             $matchingActivities = Activity::where('user_id', $user->id)->where('status', 2)->get();
             $activityIds = $matchingActivities->pluck('id');
 
-            $attendUsers = OtherInterest::where('user_id', $user->id)->whereIn('confirm', [6,3,7])->count();
-            $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
+            $attendUsers = OtherInterest::where('user_id', $user->id)->whereIn('confirm', 8)->count();
+
+            $currentTime = Carbon::now('Asia/Kolkata');
+
+            $interests = OtherInterest::where('user_id', $user->id)
+                ->whereIn('confirm', [3, 7])
+                ->get();
+
+            $activityIds = $interests->pluck('activity_id')->filter()->unique();
+
+            $expiredActivityIds = Activity::whereIn('id', $activityIds)
+                ->where(function ($query) use ($currentTime) {
+                    $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
+                        ->orWhereRaw("
+                                STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
+                        ", [$currentTime]);
+                })
+                ->pluck('id');
+
+            $ghostUsers = OtherInterest::where('user_id', $user->id)
+                ->whereIn('confirm', [3, 7])
+                ->whereIn('activity_id', $expiredActivityIds)
+                ->count();
+
+            // $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
+
             $hostedActivity = Activity::where('user_id', $user->id)->count();
 
             $interestIds = OtherInterest::whereIn('activity_id', $activityIds)->pluck('user_id');

@@ -791,7 +791,7 @@ public function getConfirmedUsers(Request $request)
 
     $confirmedUsers = OtherInterest::with('user')
         ->where('activity_id', $activity->id)
-        ->where('confirm', 6)
+        ->where('confirm', 8)
         ->get()
         ->map(function ($interest) {
             $user = $interest->user;
@@ -1209,9 +1209,29 @@ public function removeinterest(Request $request)
     // Mapping user data
    $mapUserInterest = function ($interest) {
     $user = $interest->user;
+    $currentTime = Carbon::now('Asia/Kolkata');
 
-    $ghosted = OtherInterest::where('user_id', $user->id)->where('confirm', 0)->count();
-    $attended = OtherInterest::where('user_id', $user->id)->where('confirm', 1)->count();
+    $interests = OtherInterest::where('user_id', $user->id)
+        ->whereIn('confirm', [3, 7])
+        ->get();
+
+    $activityIds = $interests->pluck('activity_id')->filter()->unique();
+
+    $expiredActivityIds = Activity::whereIn('id', $activityIds)
+        ->where(function ($query) use ($currentTime) {
+            $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) 
+                ->orWhereRaw("
+                        STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
+                ", [$currentTime]);
+        })
+        ->pluck('id');
+
+    $ghosted = OtherInterest::where('user_id', $user->id)
+        ->whereIn('confirm', [3, 7])
+        ->whereIn('activity_id', $expiredActivityIds)
+        ->count();
+        
+    $attended = OtherInterest::where('user_id', $user->id)->where('confirm', 8)->count();
     $created = Activity::where('user_id', $user->id)->count();
 
     $profileImages = json_decode($user->profile_image ?? '[]', true);

@@ -979,7 +979,7 @@ class AuthController extends Controller
     ->get();
 
     $ghostUsers = OtherInterest::whereIn('activity_id', $activities->pluck('id'))->where('user_id', $user->id)
-        ->where('confirm', 3)
+        ->where('confirm', [3,7])
         ->count();
 
     $hostedActivity = Activity::where('user_id', $user->id)

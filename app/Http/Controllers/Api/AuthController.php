@@ -968,7 +968,7 @@ class AuthController extends Controller
     $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata
 
     $activities = Activity::orderBy('id', 'DESC')
-    ->where('user_id', $user->id)
+    // ->where('user_id', $user->id)
     ->where('status', 2)
     ->where(function ($query) use ($currentTime) {
         $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date

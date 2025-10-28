@@ -20,6 +20,7 @@ use App\Models\ActivityTemp;
 use App\Models\AdminCity;
 use App\Models\Chat;
 use App\Models\CoinCategory;
+use App\Models\Contact;
 use App\Models\Cupid;
 use App\Models\LikeActivity;
 use App\Models\SlideLike;

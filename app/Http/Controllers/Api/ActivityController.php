@@ -3400,14 +3400,15 @@ public function friendcount(Request $request)
         ];
     })->filter(); 
 
-     $contacts = Contact::all(); // ya where clause laga lo agar zarurat ho
+     $contacts = Contact::all(); 
+    //  return $contacts;
 
     $contactUsers = collect();
 
     foreach ($contacts as $contact) {
         // case 1: contact.user_id == auth user
         if ($contact->user_id == $user->id) {
-            $matchedUser = User::where('phone', $contact->number)->first();
+            $matchedUser = User::where('number', $contact->number)->first();
 
             if ($matchedUser) {
                 $images = json_decode($matchedUser->profile_image, true);

@@ -3844,7 +3844,8 @@ public function friendcount_one(Request $request)
             ->orWhere('confirm', 7)
             ->orWhere('confirm', 4)
             ->orWhere('confirm', 2);
-    })->get();             
+    })->get();         
+    // return $interestRelations;    
     
 
     $oppositeUserIds = $interestRelations->map(function ($relation) use ($user) {
@@ -3852,18 +3853,23 @@ public function friendcount_one(Request $request)
     })->unique()->values();
     
 
-    $userDetailsFromInterest2 = User::whereIn('id', $oppositeUserIds)->get()->map(function ($userItem) use ($interestRelations, $user) {
-    // Find the matching interest relation for this user
-        $matchingRelation = $interestRelations->first(function ($relation) use ($userItem, $user) {
-            return ($relation->user_id == $user->id && $relation->user_id_1 == $userItem->id) ||
-                ($relation->user_id_1 == $user->id && $relation->user_id == $userItem->id);
+    $userDetailsFromInterest2 = collect();
+
+    foreach ($oppositeUserIds as $oppositeId) {
+        // उस user के सारे relations निकालो
+        $relations = $interestRelations->filter(function ($relation) use ($user, $oppositeId) {
+            return ($relation->user_id == $user->id && $relation->user_id_1 == $oppositeId)
+                || ($relation->user_id_1 == $user->id && $relation->user_id == $oppositeId);
         });
 
-        // Attach activity_id to user object temporarily
-        $userItem->interest_activity_id = $matchingRelation->activity_id ?? null;
-
-        return $userItem;
-    });
+        foreach ($relations as $relation) {
+            $u = User::find($oppositeId);
+            if ($u) {
+                $u->interest_activity_id = $relation->activity_id;
+                $userDetailsFromInterest2->push($u);
+            }
+        }
+    }
 
        $likeUser = SlideLike::where('status', 2)
         ->where(function ($query) use ($user) {
@@ -3929,214 +3935,79 @@ public function friendcount_one(Request $request)
 
 
     $groupUserList = $userDetailsFromInterest2->map(function ($userItem) use ($user) {
-    if (!$userItem->interest_activity_id) {
-        return null;
-    }
-
-    $currentTime = Carbon::now('Asia/Kolkata');
-
-    $activity = Activity::where('id', $userItem->interest_activity_id)
-        ->where('status', 2)
-        ->first();
-
-    if (!$activity) {
-        return null;
-    }
-
-    // Check 24 hour expiry logic
-    $endDateTimeString = $activity->when_time . ' ' . str_replace(' ', ' ', $activity->end_time);
-    $activityEndDateTime = Carbon::createFromFormat('Y-m-d h:i A', $endDateTimeString, 'Asia/Kolkata');
-
-    if ($activityEndDateTime->lt($currentTime->copy()->subHours(24))) {
-        return null;
-    }
-
-    $imagePath = null;
-    if ($userItem->profile_image) {
-        $images = json_decode($userItem->profile_image, true);
-        if (is_array($images) && count($images)) {
-            $imagePath = reset($images);
+        if (!$userItem->interest_activity_id) {
+            return null;
         }
-    }
 
-    $chat = Chat::where('sender_id', $user->id)
-                ->where('receiver_id', $userItem->id)
-                ->where('send_type', 'group')
-                ->orderBy('id', 'DESC')
-                ->first();
+        $currentTime = Carbon::now('Asia/Kolkata');
 
-    $howMany = $activity->how_many ?? 0;
+        $activity = Activity::where('id', $userItem->interest_activity_id)
+            ->where('status', 2)
+            ->first();
 
-    // ✅ Only confirm 3 and 7 included here
-    $confirm = OtherInterest::with('user')
-        ->where('activity_id', $userItem->interest_activity_id)
-        ->whereIn('confirm', [3, 7])
-        ->take($howMany)
-        ->get()
-        ->pluck('user.rendom')
-        ->filter()
-        ->values();
+        if (!$activity) {
+            return null;
+        }
 
-    $confirm->push($userItem->rendom);
+        // 24-hour expiry logic
+        $endDateTimeString = $activity->when_time . ' ' . str_replace(' ', ' ', $activity->end_time);
+        $activityEndDateTime = Carbon::createFromFormat('Y-m-d h:i A', $endDateTimeString, 'Asia/Kolkata');
 
-    if ($confirm->isEmpty()) return null;
+        if ($activityEndDateTime->lt($currentTime->copy()->subHours(24))) {
+            return null;
+        }
 
-    $activityimagePath = $activity->image ?? null;
+        $imagePath = null;
+        if ($userItem->profile_image) {
+            $images = json_decode($userItem->profile_image, true);
+            if (is_array($images) && count($images)) {
+                $imagePath = reset($images);
+            }
+        }
 
-    return [
-        'id' => $userItem->id,
-        'user_rendom' => $userItem->rendom,
-        'authuser_rendom' => $user->rendom,
-        'name' => $userItem->name,
-        'activity_name' => $activity->title,
-        'activity_image' => $activityimagePath ? asset($activityimagePath) : null,
-        'activity_id' => $userItem->interest_activity_id,
-        'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
-        'form' => 'group',
-        'last_message' => $chat->message ?? null,
-        'send_type' => $chat->send_type ?? null,
-        'user_rendoms' => $confirm,
-    ];
-})
-->filter()
-->unique('activity_id')
-->values();
+        $chat = Chat::where('sender_id', $user->id)
+                    ->where('receiver_id', $userItem->id)
+                    ->where('send_type', 'group')
+                    ->orderBy('id', 'DESC')
+                    ->first();
 
-    // $groupUserList = $userDetailsFromInterest2->map(function ($userItem) use ($user) {
-    //     // Skip if no interest activity
-    //     if (!$userItem->interest_activity_id) {
-    //         return null;
-    //     }
+        $howMany = $activity->how_many ?? 0;
 
-    //        $currentTime = Carbon::now('Asia/Kolkata'); 
+        $confirm = OtherInterest::with('user')
+            ->where('activity_id', $userItem->interest_activity_id)
+            ->whereIn('confirm', [3, 7])
+            ->take($howMany)
+            ->get()
+            ->pluck('user.rendom')
+            ->filter()
+            ->values();
 
-    //         $activity = Activity::where('id', $userItem->interest_activity_id)
-    //             ->where('status', 2)
-    //             ->first();
+        $confirm->push($userItem->rendom);
 
-    //         if (!$activity) {
-    //             return null;
-    //         }
+        if ($confirm->isEmpty()) return null;
 
-    //         // Step 2: Check if activity expired more than 24 hours ago
-    //         $endDateTimeString = $activity->when_time . ' ' . str_replace(' ', ' ', $activity->end_time);
-    //         $activityEndDateTime = Carbon::createFromFormat('Y-m-d h:i A', $endDateTimeString, 'Asia/Kolkata');
+        $activityimagePath = $activity->image ?? null;
 
-    //         if ($activityEndDateTime->lt($currentTime->copy()->subHours(24))) {
-    //             // If the activity ended more than 24 hours ago, skip it
-    //             return null;
-    //         }
+        return [
+            'id' => $userItem->id,
+            'user_rendom' => $userItem->rendom,
+            'authuser_rendom' => $user->rendom,
+            'name' => $userItem->name,
+            'activity_name' => $activity->title,
+            'activity_image' => $activityimagePath ? asset($activityimagePath) : null,
+            'activity_id' => $userItem->interest_activity_id,
+            'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+            'form' => 'group',
+            'last_message' => $chat->message ?? null,
+            'send_type' => $chat->send_type ?? null,
+            'user_rendoms' => $confirm,
+        ];
+    })
+    ->filter()
+    // ->unique('activity_id') ❌ remove this
+    ->unique(fn($item) => $item['id'].'_'.$item['activity_id']) // ✅ better uniqueness
+    ->values();
 
-    //     if (!$activity) {
-    //         return null;
-    //     }
-
-    //     $imagePath = null;
-    //     if ($userItem->profile_image) {
-    //         $images = json_decode($userItem->profile_image, true); 
-    //         if (is_array($images) && count($images)) {
-    //             $imagePath = reset($images);
-    //         }
-    //     }
-
-    //     $chat = Chat::where('sender_id', $user->id)
-    //                 ->where('receiver_id', $userItem->id)
-    //                 ->where('send_type', 'group')
-    //                 ->orderBy('id', 'DESC')
-    //                 ->first();
-
-    //     $howMany = $activity->how_many ?? 0;
-
-    //     $confirm = OtherInterest::with('user')
-    //         ->where('activity_id', $userItem->interest_activity_id)
-    //         ->whereIn('confirm', [3, 7])
-    //         ->take($howMany)
-    //         ->get()
-    //         ->pluck('user.rendom')
-    //         ->filter()
-    //         ->values();
-    //         $confirm->push($userItem->rendom);
-
-    //     if ($confirm->isEmpty()) return null;
-
-    //     $activityimagePath = $activity->image ?? null;
-
-    //     return [
-    //         'id' => $userItem->id,
-    //         'user_rendom' => $userItem->rendom,
-    //           'authuser_rendom' => $user->rendom,
-    //         'name' => $userItem->name,
-    //         'activity_name' => $activity->title,
-    //         'activity_image' => $activityimagePath ? asset($activityimagePath) : null,
-    //         'activity_id' => $userItem->interest_activity_id,
-    //         'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
-    //         'form' => 'group',
-    //         'last_message' => $chat->message ?? null,
-    //         'send_type' => $chat->send_type ?? null,
-    //         'user_rendoms' => $confirm,
-    //     ];
-    // })
-    // ->filter()               
-    // ->unique('activity_id') 
-    // ->values(); 
-
-    // $groupUserList = $userDetailsFromInterest2
-    // ->map(function ($userItem) use ($user) {
-    //     if (!$userItem->interest_activity_id) return null;
-
-    //     $activity = Activity::find($userItem->interest_activity_id);
-    //     if (!$activity) return null;
-
-    //     $imagePath = null;
-    //     if ($userItem->profile_image) {
-    //         $images = json_decode($userItem->profile_image, true); 
-    //         if (is_array($images) && count($images)) {
-    //             $imagePath = reset($images);
-    //         }
-    //     }
-
-    //     $chat = Chat::where('sender_id', $user->id)
-    //                 ->where('receiver_id', $userItem->id)
-    //                 ->where('send_type', 'group')
-    //                 ->orderBy('id', 'DESC')
-    //                 ->first();
-
-    //     $howMany = $activity->how_many ?? 0;
-
-    //     $confirm = OtherInterest::with('user')
-    //         ->where('activity_id', $userItem->interest_activity_id)
-    //         ->whereIn('confirm', [3, 7])
-    //         ->take($howMany)
-    //         ->get()
-    //         ->pluck('user.rendom')
-    //         ->filter()
-    //         ->values();
-
-    //     if ($confirm->isEmpty()) return null;
-    //     $confirm->push($userItem->rendom);
-
-    //     $activityimagePath = $activity->image ?? null;
-
-    //     return [
-    //         'id' => $userItem->id,
-    //         'user_rendom' => $userItem->rendom,
-    //         'authuser_rendom' => $user->rendom,
-    //         'name' => $userItem->name,
-    //         'activity_name' => $activity->title,
-    //         'activity_image' => $activityimagePath ? asset($activityimagePath) : null,
-    //         'activity_id' => $userItem->interest_activity_id,
-    //         'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
-    //         'form' => 'group',
-    //         'last_message' => $chat->message ?? null,
-    //         'send_type' => $chat->send_type ?? null,
-    //         'user_rendoms' => $confirm,
-    //     ];
-    // })
-    // ->filter() // Remove nulls
-    // ->unique('activity_id') // 🔴 Keep only one user per activity
-    // ->values(); // Reset keys
-
-    // return $groupUserList;
 
     // 🔹 Map liked users
     $likeUserList = $likeUserDetails2->map(function ($userItem) use ($user) {

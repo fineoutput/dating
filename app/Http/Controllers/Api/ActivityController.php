@@ -3982,6 +3982,13 @@ public function friendcount_one(Request $request)
             ->filter()
             ->values();
 
+        $confirmmatch = OtherInterest::with('user')->where('activity_id', $userItem->interest_activity_id)
+            // ->whereIn('confirm', [3, 7])
+            ->take($howMany)
+            ->get()
+            ->filter()
+            ->values();
+
         $confirm->push($userItem->rendom);
 
         if ($confirm->isEmpty()) return null;
@@ -4001,6 +4008,7 @@ public function friendcount_one(Request $request)
             'last_message' => $chat->message ?? null,
             'send_type' => $chat->send_type ?? null,
             'user_rendoms' => $confirm,
+            'confirmmatch' => $confirmmatch,
         ];
     })
     ->filter()

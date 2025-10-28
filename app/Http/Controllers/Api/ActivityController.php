@@ -3401,7 +3401,7 @@ public function friendcount(Request $request)
             'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
             'form' => 'match',
             'last_message' => $chat->message ?? null,
-            'send_type' => 'single',
+            // 'send_type' => 'single',
             'z' => 'z',
 
         ];

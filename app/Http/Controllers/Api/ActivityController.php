@@ -3856,7 +3856,7 @@ public function friendcount_one(Request $request)
     $userDetailsFromInterest2 = collect();
 
     foreach ($oppositeUserIds as $oppositeId) {
-        // उस user के सारे relations निकालो
+
         $relations = $interestRelations->filter(function ($relation) use ($user, $oppositeId) {
             return ($relation->user_id == $user->id && $relation->user_id_1 == $oppositeId)
                 || ($relation->user_id_1 == $user->id && $relation->user_id == $oppositeId);
@@ -4094,7 +4094,9 @@ public function friendcount_one(Request $request)
         'authuser_rendom' => $user->rendom,
         'name' => $userItem->name,
         'activity_name' => $activity->title,
-        'activity_image' => $activityimagePath ? asset($activityimagePath) : null,
+        'activity_image' => $activityimagePath
+        ? asset($activityimagePath) // ✅ show activity image if available
+        : ($imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null),
         'activity_id' => $userItem->interest_activity_id,
         'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
         'form' => 'group',

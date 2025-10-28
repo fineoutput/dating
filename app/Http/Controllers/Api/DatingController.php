@@ -898,7 +898,6 @@ public function MatchingUsersdetailes(Request $request)
     }
 
     $matchingUsers = $query->get();
-
     if ($matchingUsers->isEmpty()) {
         return response()->json([
             'message' => 'No matching users found',
@@ -907,9 +906,8 @@ public function MatchingUsersdetailes(Request $request)
         ]);
     }
 
-    $attendUsers = OtherInterest::where('user_id', $user->id)->whereIn('confirm', 8)->count();
-       $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata
-
+    $attendUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 8)->count();
+       $currentTime = Carbon::now('Asia/Kolkata');  
     $activities = Activity::orderBy('id', 'DESC')
     ->where('user_id', $user->id)
     ->where('status', 2)
@@ -922,9 +920,9 @@ public function MatchingUsersdetailes(Request $request)
     ->get();
 
     $ghostUsers = OtherInterest::whereIn('activity_id', $activities->pluck('id'))
-     ->where('user_id', $user->id)
-        ->whereIn('confirm', [3,7])
-        ->count();
+    ->where('user_id', $user->id)
+    ->whereIn('confirm', [3,7]) // ✅ fixed
+    ->count();
     // $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
     $hostedActivity = Activity::where('user_id', $user->id)->count();
 

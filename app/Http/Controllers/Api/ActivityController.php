@@ -3335,6 +3335,7 @@ public function friendcount(Request $request)
         return [
             'id' => $userItem->id,
             'user_rendom' => $userItem->rendom,
+              'authuser_rendom' => $user->rendom,
             'name' => $userItem->name,
             'activity_id' => $userItem->interest_activity_id,
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
@@ -3361,6 +3362,7 @@ public function friendcount(Request $request)
         return [
             'id' => $userItem->id,
             'user_rendom' => $userItem->rendom,
+              'authuser_rendom' => $user->rendom,
             'name' => $userItem->name,
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
             'form' => 'match',
@@ -3421,6 +3423,7 @@ public function friendcount(Request $request)
                 $contactUsers->push([
                     'id' => $matchedUser->id,
                     'user_rendom' => $matchedUser->rendom,
+              'authuser_rendom' => $user->rendom,
                     'name' => $matchedUser->name,
                     'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
                     'form' => 'contact',
@@ -3444,6 +3447,7 @@ public function friendcount(Request $request)
                 $contactUsers->push([
                     'id' => $matchedUser->id,
                     'user_rendom' => $matchedUser->rendom,
+                  'authuser_rendom' => $user->rendom,
                     'name' => $matchedUser->name,
                     'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
                     'form' => 'contact',
@@ -3452,7 +3456,6 @@ public function friendcount(Request $request)
             }
         }
     }
-    return $contactUsers;
 
     // 🔹 Combine and remove duplicates, prioritize 'match'
     $matchUsers = collect($userList)

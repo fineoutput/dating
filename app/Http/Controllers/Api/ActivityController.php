@@ -3397,12 +3397,67 @@ public function friendcount(Request $request)
             'last_message' => $chat->message ?? null,
             'send_type' => $chat->send_type ?? null,
         ];
-    })->filter(); // remove nulls
+    })->filter(); 
+
+     $contacts = Contact::all(); // ya where clause laga lo agar zarurat ho
+
+    $contactUsers = collect();
+
+    foreach ($contacts as $contact) {
+        // case 1: contact.user_id == auth user
+        if ($contact->user_id == $user->id) {
+            $matchedUser = User::where('phone', $contact->number)->first();
+
+            if ($matchedUser) {
+                $images = json_decode($matchedUser->profile_image, true);
+                $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
+
+                $chat = Chat::where('sender_id', $user->id)
+                            ->where('receiver_id', $matchedUser->id)
+                            ->orderBy('id', 'DESC')
+                            ->first();
+
+                $contactUsers->push([
+                    'id' => $matchedUser->id,
+                    'user_rendom' => $matchedUser->rendom,
+                    'name' => $matchedUser->name,
+                    'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
+                    'form' => 'contact',
+                    'last_message' => $chat->message ?? null,
+                ]);
+            }
+        } 
+        // case 2: auth user ka number == contact.number
+        elseif ($user->phone == $contact->number) {
+            $matchedUser = User::find($contact->user_id);
+
+            if ($matchedUser) {
+                $images = json_decode($matchedUser->profile_image, true);
+                $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
+
+                $chat = Chat::where('sender_id', $user->id)
+                            ->where('receiver_id', $matchedUser->id)
+                            ->orderBy('id', 'DESC')
+                            ->first();
+
+                $contactUsers->push([
+                    'id' => $matchedUser->id,
+                    'user_rendom' => $matchedUser->rendom,
+                    'name' => $matchedUser->name,
+                    'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
+                    'form' => 'contact',
+                    'last_message' => $chat->message ?? null,
+                ]);
+            }
+        }
+    }
+    
 
     // 🔹 Combine and remove duplicates, prioritize 'match'
     $matchUsers = collect($userList)
             ->merge($likeUserList)
             ->merge($matchedUsers)
+            ->merge($contactUsers)
             ->filter(function ($userItem) use ($user) {
                 return $userItem['id'] !== $user->id; 
             })

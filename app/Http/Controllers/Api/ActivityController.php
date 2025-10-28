@@ -3341,6 +3341,7 @@ public function friendcount(Request $request)
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
             'form' => 'activity',
             'last_message' => $chat->message ?? null,
+            'z' => 'z',
         ];
     });
 
@@ -3367,6 +3368,8 @@ public function friendcount(Request $request)
             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
             'form' => 'match',
             'last_message' => $chat->message ?? null,
+            'z' => 'z',
+
         ];
     });
 
@@ -3399,6 +3402,8 @@ public function friendcount(Request $request)
             'form' => 'match',
             'last_message' => $chat->message ?? null,
             'send_type' => $chat->send_type ?? null,
+            'z' => 'z',
+
         ];
     })->filter(); 
 
@@ -3428,6 +3433,8 @@ public function friendcount(Request $request)
                     'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
                     'form' => 'contact',
                     'last_message' => $chat->message ?? null,
+            'z' => 'z',
+
                 ]);
             }
         } 
@@ -3452,6 +3459,8 @@ public function friendcount(Request $request)
                     'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
                     'form' => 'contact',
                     'last_message' => $chat->message ?? null,
+            'z' => 'z',
+
                 ]);
             }
         }

@@ -962,7 +962,7 @@ class AuthController extends Controller
     
 
     $attendUsers = OtherInterest::where('user_id_1', $user->id)
-        ->where('confirm', 6)
+        ->where('confirm', 8)
         ->count();
 
     $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata

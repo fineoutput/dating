@@ -3934,87 +3934,180 @@ public function friendcount_one(Request $request)
     });
 
 
+    // $groupUserList = $userDetailsFromInterest2->map(function ($userItem) use ($user) {
+    //     if (!$userItem->interest_activity_id) {
+    //         return null;
+    //     }
+
+    //     $currentTime = Carbon::now('Asia/Kolkata');
+
+    //     $activity = Activity::where('id', $userItem->interest_activity_id)
+    //         ->where('status', 2)
+    //         ->first();
+
+    //     if (!$activity) {
+    //         return null;
+    //     }
+
+    //     // 24-hour expiry logic
+    //     $endDateTimeString = $activity->when_time . ' ' . str_replace(' ', ' ', $activity->end_time);
+    //     $activityEndDateTime = Carbon::createFromFormat('Y-m-d h:i A', $endDateTimeString, 'Asia/Kolkata');
+
+    //     if ($activityEndDateTime->lt($currentTime->copy()->subHours(24))) {
+    //         return null;
+    //     }
+
+    //     $imagePath = null;
+    //     if ($userItem->profile_image) {
+    //         $images = json_decode($userItem->profile_image, true);
+    //         if (is_array($images) && count($images)) {
+    //             $imagePath = reset($images);
+    //         }
+    //     }
+
+    //     $chat = Chat::where('sender_id', $user->id)
+    //                 ->where('receiver_id', $userItem->id)
+    //                 ->where('send_type', 'group')
+    //                 ->orderBy('id', 'DESC')
+    //                 ->first();
+
+    //     $howMany = $activity->how_many ?? 0;
+
+    //     $confirm = OtherInterest::with('user')
+    //         ->where('activity_id', $userItem->interest_activity_id)
+    //         ->whereIn('confirm', [3, 7])
+    //         ->take($howMany)
+    //         ->get()
+    //         ->pluck('user.rendom')
+    //         ->filter()
+    //         ->values();
+
+    //     $confirmmatch = OtherInterest::with('user')->where('activity_id', $userItem->interest_activity_id)
+    //         // ->whereIn('confirm', [3, 7])
+    //         ->take($howMany)
+    //         ->get()
+    //         ->filter()
+    //         ->values();
+
+    //     $confirm->push($userItem->rendom);
+
+    //     if ($confirm->isEmpty()) return null;
+
+    //     $activityimagePath = $activity->image ?? null;
+
+    //     return [
+    //         'id' => $userItem->id,
+    //         'user_rendom' => $userItem->rendom,
+    //         'authuser_rendom' => $user->rendom,
+    //         'name' => $userItem->name,
+    //         'activity_name' => $activity->title,
+    //         'activity_image' => $activityimagePath ? asset($activityimagePath) : null,
+    //         'activity_id' => $userItem->interest_activity_id,
+    //         'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+    //         'form' => 'group',
+    //         'last_message' => $chat->message ?? null,
+    //         'send_type' => $chat->send_type ?? null,
+    //         'user_rendoms' => $confirm,
+    //         'confirmmatch' => $confirmmatch,
+    //     ];
+    // })
+    // ->filter()
+    // // ->unique('activity_id') ❌ remove this
+    // ->unique(fn($item) => $item['id'].'_'.$item['activity_id']) // ✅ better uniqueness
+    // ->values();
+
     $groupUserList = $userDetailsFromInterest2->map(function ($userItem) use ($user) {
-        if (!$userItem->interest_activity_id) {
-            return null;
+    if (!$userItem->interest_activity_id) {
+        return null;
+    }
+
+    $currentTime = Carbon::now('Asia/Kolkata');
+
+    $activity = Activity::where('id', $userItem->interest_activity_id)
+        ->where('status', 2)
+        ->first();
+
+    if (!$activity) {
+        return null;
+    }
+
+    // 24-hour expiry logic
+    $endDateTimeString = $activity->when_time . ' ' . str_replace(' ', ' ', $activity->end_time);
+    $activityEndDateTime = Carbon::createFromFormat('Y-m-d h:i A', $endDateTimeString, 'Asia/Kolkata');
+
+    if ($activityEndDateTime->lt($currentTime->copy()->subHours(24))) {
+        return null;
+    }
+
+    $imagePath = null;
+    if ($userItem->profile_image) {
+        $images = json_decode($userItem->profile_image, true);
+        if (is_array($images) && count($images)) {
+            $imagePath = reset($images);
         }
+    }
 
-        $currentTime = Carbon::now('Asia/Kolkata');
+    $chat = Chat::where('sender_id', $user->id)
+                ->where('receiver_id', $userItem->id)
+                ->where('send_type', 'group')
+                ->orderBy('id', 'DESC')
+                ->first();
 
-        $activity = Activity::where('id', $userItem->interest_activity_id)
-            ->where('status', 2)
-            ->first();
+    $howMany = $activity->how_many ?? 0;
 
-        if (!$activity) {
-            return null;
-        }
+    // ✅ Confirmed (3,7) members rendoms
+    $confirm = OtherInterest::with('user')
+        ->where('activity_id', $userItem->interest_activity_id)
+        ->whereIn('confirm', [3, 7])
+        ->take($howMany)
+        ->get()
+        ->pluck('user.rendom')
+        ->filter()
+        ->values();
 
-        // 24-hour expiry logic
-        $endDateTimeString = $activity->when_time . ' ' . str_replace(' ', ' ', $activity->end_time);
-        $activityEndDateTime = Carbon::createFromFormat('Y-m-d h:i A', $endDateTimeString, 'Asia/Kolkata');
+    // ✅ All members including confirm 2,3,7 (for filtering logic)
+    $confirmmatch = OtherInterest::with('user')
+        ->where('activity_id', $userItem->interest_activity_id)
+        ->take($howMany)
+        ->get()
+        ->filter()
+        ->values();
 
-        if ($activityEndDateTime->lt($currentTime->copy()->subHours(24))) {
-            return null;
-        }
+    // 🧩 Skip group if auth user has confirm = 2
+    $hasRejected = $confirmmatch->contains(function ($cm) use ($user) {
+        return $cm->user_id == $user->id && $cm->confirm == 2;
+    });
 
-        $imagePath = null;
-        if ($userItem->profile_image) {
-            $images = json_decode($userItem->profile_image, true);
-            if (is_array($images) && count($images)) {
-                $imagePath = reset($images);
-            }
-        }
+    if ($hasRejected) {
+        return null; // ❌ skip this group
+    }
 
-        $chat = Chat::where('sender_id', $user->id)
-                    ->where('receiver_id', $userItem->id)
-                    ->where('send_type', 'group')
-                    ->orderBy('id', 'DESC')
-                    ->first();
+    $confirm->push($userItem->rendom);
 
-        $howMany = $activity->how_many ?? 0;
+    if ($confirm->isEmpty()) return null;
 
-        $confirm = OtherInterest::with('user')
-            ->where('activity_id', $userItem->interest_activity_id)
-            ->whereIn('confirm', [3, 7])
-            ->take($howMany)
-            ->get()
-            ->pluck('user.rendom')
-            ->filter()
-            ->values();
+    $activityimagePath = $activity->image ?? null;
 
-        $confirmmatch = OtherInterest::with('user')->where('activity_id', $userItem->interest_activity_id)
-            // ->whereIn('confirm', [3, 7])
-            ->take($howMany)
-            ->get()
-            ->filter()
-            ->values();
+    return [
+        'id' => $userItem->id,
+        'user_rendom' => $userItem->rendom,
+        'authuser_rendom' => $user->rendom,
+        'name' => $userItem->name,
+        'activity_name' => $activity->title,
+        'activity_image' => $activityimagePath ? asset($activityimagePath) : null,
+        'activity_id' => $userItem->interest_activity_id,
+        'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+        'form' => 'group',
+        'last_message' => $chat->message ?? null,
+        'send_type' => $chat->send_type ?? null,
+        'user_rendoms' => $confirm,
+        'confirmmatch' => $confirmmatch,
+    ];
+})
+->filter()
+->unique(fn($item) => $item['id'].'_'.$item['activity_id'])
+->values();
 
-        $confirm->push($userItem->rendom);
-
-        if ($confirm->isEmpty()) return null;
-
-        $activityimagePath = $activity->image ?? null;
-
-        return [
-            'id' => $userItem->id,
-            'user_rendom' => $userItem->rendom,
-            'authuser_rendom' => $user->rendom,
-            'name' => $userItem->name,
-            'activity_name' => $activity->title,
-            'activity_image' => $activityimagePath ? asset($activityimagePath) : null,
-            'activity_id' => $userItem->interest_activity_id,
-            'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
-            'form' => 'group',
-            'last_message' => $chat->message ?? null,
-            'send_type' => $chat->send_type ?? null,
-            'user_rendoms' => $confirm,
-            'confirmmatch' => $confirmmatch,
-        ];
-    })
-    ->filter()
-    // ->unique('activity_id') ❌ remove this
-    ->unique(fn($item) => $item['id'].'_'.$item['activity_id']) // ✅ better uniqueness
-    ->values();
 
 
     // 🔹 Map liked users

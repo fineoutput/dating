@@ -921,8 +921,9 @@ public function MatchingUsersdetailes(Request $request)
     })
     ->get();
 
-    $ghostUsers = OtherInterest::whereIn('activity_id', $activities->pluck('id'))->where('user_id', $user->id)
-        ->where('confirm', [3,7])
+    $ghostUsers = OtherInterest::whereIn('activity_id', $activities->pluck('id'))
+     ->where('user_id', $user->id)
+        ->whereIn('confirm', [3,7])
         ->count();
     // $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
     $hostedActivity = Activity::where('user_id', $user->id)->count();

@@ -3406,7 +3406,6 @@ public function friendcount(Request $request)
     $contactUsers = collect();
 
     foreach ($contacts as $contact) {
-        // case 1: contact.user_id == auth user
         if ($contact->user_id == $user->id) {
             $matchedUser = User::where('number', $contact->number)->first();
 
@@ -3430,7 +3429,7 @@ public function friendcount(Request $request)
             }
         } 
         // case 2: auth user ka number == contact.number
-        elseif ($user->phone == $contact->number) {
+        elseif ($user->number == $contact->number) {
             $matchedUser = User::find($contact->user_id);
 
             if ($matchedUser) {
@@ -3453,7 +3452,7 @@ public function friendcount(Request $request)
             }
         }
     }
-    
+    return $contactUsers;
 
     // 🔹 Combine and remove duplicates, prioritize 'match'
     $matchUsers = collect($userList)

@@ -3349,22 +3349,27 @@ public function updateCupidMatch(Request $request)
                 ]);
             }
 
-            $matchingActivities = Activity::where('user_id', $user->id)->where('status', 2)->get();
+          $matchingActivities = Activity::where('user_id', $user->id)
+            ->where('status', 2)
+            ->get();
+
             $activityIds = $matchingActivities->pluck('id');
 
-            $attendUsers = OtherInterest::where('user_id', $user->id)->whereIn('confirm', 8)->count();
+            $attendUsers = OtherInterest::where('user_id', $user->id)
+                ->where('confirm', 8)
+                ->count();
 
             $currentTime = Carbon::now('Asia/Kolkata');
 
-            $interests = OtherInterest::where('user_id', $user->id)
+            $interestsForGhost = OtherInterest::where('user_id', $user->id)
                 ->whereIn('confirm', [3, 7])
                 ->get();
 
-            $activityIds = $interests->pluck('activity_id')->filter()->unique();
+            $ghostActivityIds = $interestsForGhost->pluck('activity_id')->filter()->unique();
 
-            $expiredActivityIds = Activity::whereIn('id', $activityIds)
+            $expiredActivityIds = Activity::whereIn('id', $ghostActivityIds)
                 ->where(function ($query) use ($currentTime) {
-                    $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
+                    $query->whereDate('when_time', '<', substr($currentTime, 0, 10))
                         ->orWhereRaw("
                                 STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
                         ", [$currentTime]);
@@ -3501,7 +3506,6 @@ public function updateCupidMatch(Request $request)
                 }
             }
 
-            // Final User Data
             $userData = [
                 'number' => $user->number,
                 'name' => $user->name,

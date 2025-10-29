@@ -17,6 +17,7 @@ use App\Models\Cupid;
 use App\Models\Vibes;
 use App\Models\Activity;
 use App\Models\ActivitySubscription;
+use App\Models\Contact;
 use App\Models\SlideLike;
 use App\Models\OtherInterest;
 use App\Models\DatingSubscription;
@@ -533,7 +534,25 @@ public function MatchingUsersdetailes(Request $request)
         return $relation->user_id == $user->id ? $relation->user_id_1 : $relation->user_id;
     })->unique()->values()->toArray();
 
-        // return $OtherInterestUserIds;
+        $contacts = Contact::all();
+        $contactUserIds = [];
+
+        foreach ($contacts as $contact) {
+            if ($contact->user_id == $user->id) {
+                $matchedUser = User::where('number', $contact->number)->first();
+                if ($matchedUser) {
+                    $contactUserIds[] = $matchedUser->id;
+                }
+            }
+            elseif ($user->number == $contact->number) {
+                $matchedUser = User::find($contact->user_id);
+                if ($matchedUser) {
+                    $contactUserIds[] = $matchedUser->id;
+                }
+            }
+        }
+
+        $contactUserIds = array_unique($contactUserIds);
 
     // Merge all exclusion lists
     $excludeIds = array_merge(
@@ -543,6 +562,7 @@ public function MatchingUsersdetailes(Request $request)
         $reportedUserIds,
         $excludedUserIddislike,
         $OtherInterestUserIds,
+        $contactUserIds,
     );
 
     // Base query

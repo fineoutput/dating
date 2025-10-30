@@ -604,10 +604,15 @@ public function MatchingUsersdetailes(Request $request)
     })
     ->get();
 
+    if($attendUsers){
     $ghostUsers = OtherInterest::whereIn('activity_id', $activities->pluck('id'))
     ->where('user_id', $user->id)
     ->whereIn('confirm', [3,7]) // ✅ fixed
     ->count();
+    }
+    else{
+        $ghostUsers = 0;
+    }
     // $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
     $hostedActivity = Activity::where('user_id', $user->id)->count();
 
@@ -2512,10 +2517,14 @@ public function updateCupidMatch(Request $request)
                 })
                 ->pluck('id');
 
+                if($attendUsers){
             $ghostUsers = OtherInterest::where('user_id', $user->id)
                 ->whereIn('confirm', [3, 7])
                 ->whereIn('activity_id', $expiredActivityIds)
                 ->count();
+                }else{
+                    $ghostUsers = 0;
+                }
 
             // $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
 

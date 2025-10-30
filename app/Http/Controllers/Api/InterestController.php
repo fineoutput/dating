@@ -1226,12 +1226,16 @@ public function removeinterest(Request $request)
         })
         ->pluck('id');
 
+    $attended = OtherInterest::where('user_id', $user->id)->where('confirm', 8)->count();
+        if($attended){
     $ghosted = OtherInterest::where('user_id', $user->id)
         ->whereIn('confirm', [3, 7])
         ->whereIn('activity_id', $expiredActivityIds)
         ->count();
+        }else{
+            $ghosted = 0;
+        }
         
-    $attended = OtherInterest::where('user_id', $user->id)->where('confirm', 8)->count();
     $created = Activity::where('user_id', $user->id)->count();
 
     $profileImages = json_decode($user->profile_image ?? '[]', true);

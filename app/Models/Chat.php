@@ -17,6 +17,7 @@ class Chat extends Model
         'rendom',
         'chat_type',
         'send_type',
+        'confirm_type',
         'activity_id'
     ];
 

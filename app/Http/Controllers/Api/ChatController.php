@@ -643,6 +643,7 @@ public function sendMessage(Request $request)
             'rendom' => $code,
             'send_type' => $request->send_type,
             'chat_type' => $request->chat_type,
+            'confirm_type' => $request->confirm_type,
             'activity_id' => $request->activity_id ?? null,
         ]);
 

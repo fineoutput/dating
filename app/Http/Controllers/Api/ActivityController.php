@@ -5385,9 +5385,12 @@ public function acceptpactup(Request $request)
 
     $user = User::where('rendom', $random)->first();
     $user_auth = Auth::user();
-    $activity_id = Activity::where('rendom', $activity_id)->first();
+
 
   
+    if($activity_id){
+    $activity_id = Activity::where('rendom', $activity_id)->first();
+
      $confirmedCount = OtherInterest::where('activity_id', $activity_id->id)
                                         ->whereIn('confirm', [3,7])
                                         ->count();
@@ -5397,7 +5400,7 @@ public function acceptpactup(Request $request)
             'status' => 201,
             'data' => [],
         ], 201);
-    }
+    }}
 
     if($pactup == null){
 

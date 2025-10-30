@@ -396,14 +396,14 @@ public function addinterest(Request $request)
         ]);
     }
 
-     $title = $request->title ?? 'Confirm Intrest';
+     $title = $request->title ?? 'You Have New Interest';
 
                 $firebaseService = new FirebaseService();
 
                         $sent = $firebaseService->sendNotification(
                         $activity->user->fcm_token,
                         $title,
-                        $activity->user->name,
+                        $user->name,
                         [
                             'screen' => 'Chat',
                         ]

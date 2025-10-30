@@ -4006,9 +4006,9 @@ public function friendcount_one(Request $request)
         return null; // ❌ skip this group
     }
 
-    $confirmmatch->push($userItem->rendom);
+    $confirm->push($userItem->rendom);
 
-    if ($confirm->isEmpty()) return null;
+    // if ($confirm->isEmpty()) return null;
 
     $activityimagePath = $activity->image ?? null;
 

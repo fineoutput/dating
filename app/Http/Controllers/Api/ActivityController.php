@@ -4139,10 +4139,53 @@ public function friendcount_one(Request $request)
     ->filter()
     ->values();
 
+     $activityChats = Chat::where('chat_type', 'activity')->where('confirm_type', 1)
+        ->where(function ($q) use ($user) {
+            $q->where('sender_id', $user->id)
+              ->orWhere('receiver_id', $user->id);
+        })
+        ->orderBy('id', 'DESC')
+        ->get()
+        ->unique(function ($activitychat) use ($user) {
+            // avoid duplicate same pair of users
+            $pair = [$activitychat->sender_id, $activitychat->receiver_id];
+            sort($pair);
+            return implode('-', $pair);
+        })
+        ->values();
+
+    // 🔹 Map chat data to desired format
+    $activitychatList = $activityChats->map(function ($activitychat) use ($user) {
+        // Get the other participant (not auth user)
+        $activitymatchedUserId = $activitychat->sender_id == $user->id ? $activitychat->receiver_id : $activitychat->sender_id;
+        $activitymatchedUser = User::find($activitymatchedUserId);
+
+        if (!$activitymatchedUser) {
+            return null; // skip if user not found
+        }
+
+        $images = json_decode($activitymatchedUser->profile_image, true);
+        $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
+
+        return [
+            'id' => $activitymatchedUser->id,
+            'user_rendom' => $activitymatchedUser->rendom,
+            'authuser_rendom' => $user->rendom,
+            'name' => $activitymatchedUser->name,
+            'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
+            'form' => 'activity_intrest',
+            'last_message' => $activitychat->message ?? null,
+            'send_type' => $activitychat->send_type ?? null,
+        ];
+    })
+    ->filter()
+    ->values();
+
     $filteredUserList = $userList->filter(fn($u) => $u['id'] !== $user->id)->values();
     $filteredGroupList = $groupUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
     $filteredLikeUsers = $likeUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
     $filteredCupidUsers = $matchedUsers->filter(fn($u) => $u['id'] !== $user->id)->values();
+    $filteredactivityChatsUsers = $activitychatList->filter(fn($u) => $u['id'] !== $user->id)->values();
     $filteredChatUsers = $chatList->filter(fn($u) => $u['id'] !== $user->id)->values();
 
 
@@ -4162,6 +4205,7 @@ public function friendcount_one(Request $request)
             'match_users' => $matchUsers,
             'activity_users' => $filteredUserList,
             'group_users' => $filteredGroupList,
+            'activity_chat_users' => $filteredactivityChatsUsers,
             'chat_users' => $filteredChatUsers,
             'friend_count' => $filteredUserList->count() + $filteredGroupList->count(),
             'like_count' => $interestRelations->count(),

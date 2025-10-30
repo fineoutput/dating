@@ -4003,7 +4003,7 @@ public function friendcount_one(Request $request)
     });
 
     if ($hasRejected) {
-        return null; // ❌ skip this group
+        return null;
     }
 
     $confirm->push($user->rendom);
@@ -4028,6 +4028,7 @@ public function friendcount_one(Request $request)
         'send_type' => $chat->send_type ?? null,
         'user_rendoms' => $confirm,
         'confirmmatch' => $confirmmatch,
+        'z' => 'z',
     ];
     })
     ->filter()

@@ -57,6 +57,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('filter-activity', [ActivityController::class, 'filteractivity']);
 
     Route::get('friend-count', [ActivityController::class, 'friendcount']);
+    Route::get('contact-users', [ActivityController::class, 'contact_users']);
     Route::get('friend-count-one', [ActivityController::class, 'friendcount_one']);
 
     Route::post('add-interest', [InterestController::class, 'addinterest']);

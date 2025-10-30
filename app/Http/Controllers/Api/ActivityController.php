@@ -4094,12 +4094,59 @@ public function friendcount_one(Request $request)
             'last_message' => $chat->message ?? null,
              'send_type' => $chat->send_type ?? null,
         ];
-    })->filter(); // remove nulls
+    })->filter(); 
+
+
+     $interestChats = Chat::where('chat_type', 'intrest')
+        ->where(function ($q) use ($user) {
+            $q->where('sender_id', $user->id)
+              ->orWhere('receiver_id', $user->id);
+        })
+        ->orderBy('id', 'DESC')
+        ->get()
+        ->unique(function ($chat) use ($user) {
+            // avoid duplicate same pair of users
+            $pair = [$chat->sender_id, $chat->receiver_id];
+            sort($pair);
+            return implode('-', $pair);
+        })
+        ->values();
+
+    // 🔹 Map chat data to desired format
+    $chatList = $interestChats->map(function ($chat) use ($user) {
+        // Get the other participant (not auth user)
+        $matchedUserId = $chat->sender_id == $user->id ? $chat->receiver_id : $chat->sender_id;
+        $matchedUser = User::find($matchedUserId);
+
+        if (!$matchedUser) {
+            return null; // skip if user not found
+        }
+
+        $images = json_decode($matchedUser->profile_image, true);
+        $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
+
+        return [
+            'id' => $matchedUser->id,
+            'user_rendom' => $matchedUser->rendom,
+            'authuser_rendom' => $user->rendom,
+            'name' => $matchedUser->name,
+            'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
+            'form' => 'interest',
+            'last_message' => $chat->message ?? null,
+            'send_type' => $chat->send_type ?? null,
+        ];
+    })
+    ->filter()
+    ->values();
 
     $filteredUserList = $userList->filter(fn($u) => $u['id'] !== $user->id)->values();
     $filteredGroupList = $groupUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
     $filteredLikeUsers = $likeUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
     $filteredCupidUsers = $matchedUsers->filter(fn($u) => $u['id'] !== $user->id)->values();
+    $filteredChatUsers = $chatList->filter(fn($u) => $u['id'] !== $user->id)->values();
+
+
+
 
     $matchUsers = collect($filteredLikeUsers)
         ->merge(collect($filteredCupidUsers))
@@ -4115,6 +4162,7 @@ public function friendcount_one(Request $request)
             'match_users' => $matchUsers,
             'activity_users' => $filteredUserList,
             'group_users' => $filteredGroupList,
+            'chat_users' => $filteredChatUsers,
             'friend_count' => $filteredUserList->count() + $filteredGroupList->count(),
             'like_count' => $interestRelations->count(),
         ]

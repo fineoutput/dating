@@ -5387,20 +5387,20 @@ public function vibeactivitydetails(Request $request)
                 $firebaseService = new FirebaseService();
 
                         $sent = $firebaseService->sendNotification(
-                        $activity_rendom_1->user->fcm_token,
+                        $user->fcm_token,
                         $title,
-                        $activity_rendom_1->user->name,
+                        $user->name,
                         [
                             'screen' => 'Chat',
                         ]
                     );
 
                     if ($sent) {
-                            Log::info("✅ Notification sent to user ID { $activity_rendom_1->user->fcm_token,}");
+                            Log::info("✅ Notification sent to user ID { $user->fcm_token,}");
                         } else {
-                            Log::warning("No FCM token for user ID: { $activity_rendom_1->user->fcm_token,}, rendom: { $activity_rendom_1->user->fcm_token,}");
+                            Log::warning("No FCM token for user ID: { $user->fcm_token,}, rendom: { $user->fcm_token,}");
                             $responses[] = [
-                                'receiver_rendom' =>  $activity_rendom_1->user->fcm_token,
+                                'receiver_rendom' =>  $user->fcm_token,
                                 'message' => 'No FCM token available.',
                                 'status' => 400,
                             ];

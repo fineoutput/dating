@@ -3899,7 +3899,7 @@ public function friendcount_one(Request $request)
 
         // 🕒 Skip if older than 24 hours
         if ($latestInterest && $latestInterest->created_at < $now->copy()->subHours(24)) {
-            return null; // ❌ skip user entirely from response
+            return null; 
         }
 
         // ✅ Get confirmed users within 24 hours only
@@ -3913,9 +3913,9 @@ public function friendcount_one(Request $request)
             ->filter()
             ->values();
 
-            if ($confirm->isEmpty()) {
-                return null;
-            }
+            // if ($confirm->isEmpty()) {
+            //     return null;
+            // }
 
         $activityimagePath = $activity->image ?? null;
 

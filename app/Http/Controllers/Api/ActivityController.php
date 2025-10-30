@@ -5389,7 +5389,7 @@ public function vibeactivitydetails(Request $request)
                         $sent = $firebaseService->sendNotification(
                         $user->fcm_token,
                         $title,
-                        $user->name,
+                        $activity_rendom_1->user->name,
                         [
                             'screen' => 'Chat',
                         ]

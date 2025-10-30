@@ -4197,14 +4197,6 @@ public function friendcount_one(Request $request)
         ->unique('id')
         ->values();
 
-        $mergedChatUsers = collect($filteredChatUsers)
-    ->merge($filteredactivityChatsUsers)
-    ->sortByDesc(function ($chat) {
-        return strtotime($chat['last_message'] ?? now());
-    })
-    ->unique('id')
-    ->values();
-
 
     // 🔚 Final Response
     return response()->json([
@@ -4214,8 +4206,8 @@ public function friendcount_one(Request $request)
             'match_users' => $matchUsers,
             'activity_users' => $filteredUserList,
             'group_users' => $filteredGroupList,
-            'activity_chat_users' => [],
-            'chat_users' => $mergedChatUsers,
+            'activity_chat_users' => $filteredactivityChatsUsers,
+            'chat_users' => $filteredChatUsers,
             'friend_count' => $filteredUserList->count() + $filteredGroupList->count(),
             'like_count' => $interestRelations->count(),
         ]

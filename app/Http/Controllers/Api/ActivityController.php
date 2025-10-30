@@ -5603,7 +5603,7 @@ public function acceptpactup(Request $request)
                         $sent = $firebaseService->sendNotification(
                         $user->fcm_token,
                         $title,
-                        $user->name,
+                        $activity->user->name,
                         [
                             'screen' => 'Chat',
                         ]
@@ -5629,7 +5629,7 @@ public function acceptpactup(Request $request)
                         $sent = $firebaseService->sendNotification(
                         $user->fcm_token,
                         $title,
-                        $user->name,
+                        $activity->user->name,
                         [
                             'screen' => 'Chat',
                         ]

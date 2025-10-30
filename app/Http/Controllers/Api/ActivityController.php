@@ -4443,7 +4443,7 @@ public function filteractivity(Request $request)
     $expense_id = $request->input('expense_id'); 
     $vibe_id = $request->input('vibe_id'); 
     $date_type = $request->input('date_type'); 
-    $other = $request->input('other'); // 🟩 New field
+    $other = $request->input('other');
 
     $currentTime = Carbon::now('Asia/Kolkata');
     $todayDate = Carbon::today('Asia/Kolkata');
@@ -4463,6 +4463,8 @@ public function filteractivity(Request $request)
                 ", [$currentTime->format('Y-m-d H:i:s')]);
         });
 
+        // return $query->get();
+
     $filterApplied = false;
     $user = Auth::user();
     
@@ -4471,15 +4473,7 @@ public function filteractivity(Request $request)
     }
     
 
-        if (!$date_type || $date_type !== 'Today') {
-            $query->where(function ($query) use ($endTime, $currentTime) {
-                $query->whereRaw("
-                    STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
-                ", [$endTime])
-                ->where('when_time', '>=', $currentTime);
-            });
-        }
-
+    
 
 
     if ($query) {
@@ -4501,11 +4495,21 @@ public function filteractivity(Request $request)
         $filterApplied = true;
     }
 
-
     if ($when_time) {
-        $query->where('when_time', $when_time);
+        $query->where('when_time', 'like', '%' . $when_time . '%');
         $filterApplied = true;
     }
+    
+
+        // if (!$date_type || $date_type !== 'Today') {
+        //     $query->where(function ($query) use ($endTime, $currentTime) {
+        //         $query->whereRaw("
+        //             STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+        //         ", [$endTime])
+        //         ->where('when_time', '>=', $currentTime);
+        //     });
+        // }
+
 
     if ($end_time) {
         $cleanedEndTime = preg_replace('/[^\x20-\x7E]/', '', $end_time);

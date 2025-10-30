@@ -5336,7 +5336,7 @@ public function vibeactivitydetails(Request $request)
 
         //    if($pactup == 3){
             $confirmedCount = OtherInterest::where('activity_id', $activity_rendom_1->id)
-                                        ->whereIn('confirm', [2,3])
+                                        ->whereIn('confirm', [2,3,7])
                                         ->count();
             if ($confirmedCount >= $howMany) {
                 return response()->json([
@@ -5462,9 +5462,20 @@ public function acceptpactup(Request $request)
 
     $user = User::where('rendom', $random)->first();
     $user_auth = Auth::user();
-    // $activity_id = Activity::where('rendom', $activity_rendom)->first();
+    $activity_id = Activity::where('rendom', $activity_id)->first();
 
   
+     $confirmedCount = OtherInterest::where('activity_id', $activity_id->id)
+                                        ->whereIn('confirm', [3,7])
+                                        ->count();
+    if ($confirmedCount >= $activity_id->how_many) {
+        return response()->json([
+            'message' => 'The activity has reached its maximum number of confirmed participants.',
+            'status' => 201,
+            'data' => [],
+        ], 201);
+    }
+
     if($pactup == null){
 
         $otherInterest = OtherInterest::where('user_id', $user_auth->id)

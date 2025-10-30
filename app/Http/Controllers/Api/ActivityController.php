@@ -4006,7 +4006,7 @@ public function friendcount_one(Request $request)
         return null; // ❌ skip this group
     }
 
-    $confirm->push($userItem->rendom);
+    $confirmmatch->push($userItem->rendom);
 
     if ($confirm->isEmpty()) return null;
 

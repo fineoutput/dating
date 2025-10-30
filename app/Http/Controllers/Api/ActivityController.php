@@ -4035,9 +4035,9 @@ public function friendcount_one(Request $request)
     $endDateTimeString = $activity->when_time . ' ' . str_replace(' ', ' ', $activity->end_time);
     $activityEndDateTime = Carbon::createFromFormat('Y-m-d h:i A', $endDateTimeString, 'Asia/Kolkata');
 
-    if ($activityEndDateTime->lt($currentTime->copy()->subHours(24))) {
-        return null;
-    }
+    // if ($activityEndDateTime->lt($currentTime->copy()->subHours(24))) {
+    //     return null;
+    // }
 
     $imagePath = null;
     if ($userItem->profile_image) {

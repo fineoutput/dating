@@ -5389,12 +5389,12 @@ public function acceptpactup(Request $request)
 
   
     if($activity_id){
-    $activity_id = Activity::where('rendom', $activity_id)->first();
+    $activity = Activity::where('id', $activity_id)->first();
 
-     $confirmedCount = OtherInterest::where('activity_id', $activity_id->id)
+     $confirmedCount = OtherInterest::where('activity_id', $activity->id)
                                         ->whereIn('confirm', [3,7])
                                         ->count();
-    if ($confirmedCount >= $activity_id->how_many) {
+    if ($confirmedCount >= $activity->how_many) {
         return response()->json([
             'message' => 'The activity has reached its maximum number of confirmed participants.',
             'status' => 201,

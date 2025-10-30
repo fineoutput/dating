@@ -4097,7 +4097,8 @@ public function friendcount_one(Request $request)
     })->filter(); 
 
 
-     $interestChats = Chat::where('chat_type', 'intrest')
+            $now = Carbon::now('Asia/Kolkata');
+     $interestChats = Chat::where('chat_type', 'intrest')->where('created_at', '>=', $now->copy()->subHours(24))
         ->where(function ($q) use ($user) {
             $q->where('sender_id', $user->id)
               ->orWhere('receiver_id', $user->id);
@@ -4139,7 +4140,7 @@ public function friendcount_one(Request $request)
     ->filter()
     ->values();
 
-     $activityChats = Chat::where('chat_type', 'activity')->where('confirm_type', 1)
+     $activityChats = Chat::where('chat_type', 'activity')->where('confirm_type', 1)->where('created_at', '>=', $now->copy()->subHours(24))
         ->where(function ($q) use ($user) {
             $q->where('sender_id', $user->id)
               ->orWhere('receiver_id', $user->id);

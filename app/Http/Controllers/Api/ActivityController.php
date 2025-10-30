@@ -5596,6 +5596,8 @@ public function acceptpactup(Request $request)
 
     if ($otherInterest) {
         if($pactup == 'accept'){
+            $authuser = Auth::user();
+
              $title = $request->title ?? 'Pactup Request Accepted';
 
                 $firebaseService = new FirebaseService();
@@ -5603,7 +5605,7 @@ public function acceptpactup(Request $request)
                         $sent = $firebaseService->sendNotification(
                         $user->fcm_token,
                         $title,
-                        $activity->user->name,
+                        $authuser->name,
                         [
                             'screen' => 'Chat',
                         ]
@@ -5622,6 +5624,7 @@ public function acceptpactup(Request $request)
 
          $otherInterest->update(['confirm' => 3]);
         }else{
+            $authuser = Auth::user();
               $title = $request->title ?? 'Pactup Request Diclined';
 
                 $firebaseService = new FirebaseService();
@@ -5629,7 +5632,7 @@ public function acceptpactup(Request $request)
                         $sent = $firebaseService->sendNotification(
                         $user->fcm_token,
                         $title,
-                        $activity->user->name,
+                        $authuser->name,
                         [
                             'screen' => 'Chat',
                         ]

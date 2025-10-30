@@ -987,7 +987,13 @@ class AuthController extends Controller
             $ghostUsers = 0;
         }
 
-    $hostedActivity = Activity::where('user_id', $user->id)
+    $hostedActivity = Activity::where('user_id', $user->id)->where('status', 2)
+    ->where(function ($query) use ($currentTime) {
+        $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
+            ->orWhereRaw("
+                STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
+            ", [$currentTime]);
+    })
         ->count();
 
     $matchingActivities = Activity::where('user_id', $user->id)

@@ -614,7 +614,16 @@ public function MatchingUsersdetailes(Request $request)
         $ghostUsers = 0;
     }
     // $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
-    $hostedActivity = Activity::where('user_id', $user->id)->count();
+    // $hostedActivity = Activity::where('user_id', $user->id)->count();
+
+    $hostedActivity = Activity::where('user_id', $user->id)->where('status', 2)
+    ->where(function ($query) use ($currentTime) {
+        $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
+            ->orWhereRaw("
+                STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
+            ", [$currentTime]);
+    })
+        ->count();
 
     $usersWithInterests = [];
     $totalMatchingUsers = 0;
@@ -2528,7 +2537,15 @@ public function updateCupidMatch(Request $request)
 
             // $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
 
-            $hostedActivity = Activity::where('user_id', $user->id)->count();
+            // $hostedActivity = Activity::where('user_id', $user->id)->count();
+            $hostedActivity = Activity::where('user_id', $user->id)->where('status', 2)
+    ->where(function ($query) use ($currentTime) {
+        $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
+            ->orWhereRaw("
+                STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
+            ", [$currentTime]);
+    })
+        ->count();
 
             $interestIds = OtherInterest::whereIn('activity_id', $activityIds)->pluck('user_id');
             $userDetailsFromInterest2 = User::whereIn('id', $interestIds)->whereNotIn('id', $reportedUserIds)->get();

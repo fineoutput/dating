@@ -779,11 +779,19 @@ public function MatchingUsersdetailes(Request $request)
             $dating = DatingSubscription::find($activeSubscription->plan_id);
             $allowedInterest = $dating ? $dating->unlimited_swipes : 0;
 
-            $usedSwipes = SlideLike::where('matching_user', $userId)
-                ->where('liked_user', 1)
-                ->whereNotIn('status', [2, 3])
-                ->whereBetween('created_at', [$activeSubscription->activated_at, $activeSubscription->expires_at])
-                ->count();
+              $likedCount = SlideLike::where('matched_user', $user->id)
+                            ->where('liked_user', 1)
+                            ->count();
+                
+                        $dislikedCount = SlideLike::where('matched_user', $user->id)
+                            ->where('dislike', 1)
+                            ->count();
+                
+                        $superLikedCount = SlideLike::where('matched_user', $user->id)
+                            ->where('super_like', 1)
+                            ->count();
+
+                            $usedSwipes = $likedCount + $dislikedCount + $superLikedCount;
 
         } else {
             $freePlan = DatingSubscription::where('type', 'free')->first();
@@ -791,10 +799,19 @@ public function MatchingUsersdetailes(Request $request)
             if ($freePlan) {
                 $allowedInterest = $freePlan->unlimited_swipes;
 
-                $usedSwipes = SlideLike::where('matching_user', $userId)
-                    ->where('liked_user', 1)
-                    ->whereNotIn('status', [2, 3])
-                    ->count();
+                $likedCount = SlideLike::where('matched_user', $user->id)
+                            ->where('liked_user', 1)
+                            ->count();
+                
+                        $dislikedCount = SlideLike::where('matched_user', $user->id)
+                            ->where('dislike', 1)
+                            ->count();
+                
+                        $superLikedCount = SlideLike::where('matched_user', $user->id)
+                            ->where('super_like', 1)
+                            ->count();
+
+                            $usedSwipes = $likedCount + $dislikedCount + $superLikedCount;
             } else {
                 $allowedInterest = 0;
                 $usedSwipes = 0;

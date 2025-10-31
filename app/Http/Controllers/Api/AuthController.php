@@ -978,14 +978,14 @@ class AuthController extends Controller
     })
     ->get();
 
-    if($attendUsers){
+    // if($attendUsers){
     $ghostUsers = OtherInterest::whereIn('activity_id', $activities->pluck('id'))->where('user_id', $user->id)
         ->whereIn('confirm', [3,7])
         ->count();
-        }
-        else{
-            $ghostUsers = 0;
-        }
+        // }
+        // else{
+        //     $ghostUsers = 0;
+        // }
 
     $hostedActivity = Activity::where('user_id', $user->id)->where('status', 2)
     ->where(function ($query) use ($currentTime) {

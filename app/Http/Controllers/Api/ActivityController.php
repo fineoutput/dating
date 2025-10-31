@@ -4283,6 +4283,22 @@ public function friendcount_one(Request $request)
     ->filter()
     ->values();
 
+    // $filteredUserList = $userList->filter(fn($u) => $u['id'] !== $user->id)->values();
+    // $filteredGroupList = $groupUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
+    // $filteredLikeUsers = $likeUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
+    // $filteredCupidUsers = $matchedUsers->filter(fn($u) => $u['id'] !== $user->id)->values();
+    // $filteredactivityChatsUsers = $activitychatList->filter(fn($u) => $u['id'] !== $user->id)->values();
+    // $filteredChatUsers = $chatList->filter(fn($u) => $u['id'] !== $user->id)->values();
+
+
+
+
+    // $matchUsers = collect($filteredLikeUsers)
+    //     ->merge(collect($filteredCupidUsers))
+    //     ->unique('id')
+    //     ->values();
+
+    // ✅ Step 1: Remove auth user from all lists
     $filteredUserList = $userList->filter(fn($u) => $u['id'] !== $user->id)->values();
     $filteredGroupList = $groupUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
     $filteredLikeUsers = $likeUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
@@ -4290,9 +4306,19 @@ public function friendcount_one(Request $request)
     $filteredactivityChatsUsers = $activitychatList->filter(fn($u) => $u['id'] !== $user->id)->values();
     $filteredChatUsers = $chatList->filter(fn($u) => $u['id'] !== $user->id)->values();
 
+    // 🧩 Step 2: Get all user_rendoms from activity_users
+    $activityUserRendoms = $filteredUserList->pluck('user_rendom')->toArray();
 
+    // 🧩 Step 3: Remove any chat/activity_chat user who is already in activity_users
+    $filteredactivityChatsUsers = $filteredactivityChatsUsers
+        ->reject(fn($u) => in_array($u['user_rendom'], $activityUserRendoms))
+        ->values();
 
+    $filteredChatUsers = $filteredChatUsers
+        ->reject(fn($u) => in_array($u['user_rendom'], $activityUserRendoms))
+        ->values();
 
+    // ✅ Step 4: Continue with your merging logic
     $matchUsers = collect($filteredLikeUsers)
         ->merge(collect($filteredCupidUsers))
         ->unique('id')

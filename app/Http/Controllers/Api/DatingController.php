@@ -2266,7 +2266,7 @@ public function handleUserInteractions(Request $request)
         } else {
             $allowedSwipes = $plan ? $plan->unlimited_swipes : 0;
 
-            $usedSwipes = SlideLike::where('matching_user', $user->id)
+            $usedSwipes = SlideLike::where('matched_user', $user->id)
                 ->where('liked_user', 1)
                 ->whereBetween('created_at', [$activeSubscription->activated_at, $activeSubscription->expires_at])
                 ->count();
@@ -2279,7 +2279,7 @@ public function handleUserInteractions(Request $request)
             $allowedSwipes = $freePlan->unlimited_swipes;
 
             // Count all swipes since account creation — no reset
-            $usedSwipes = SlideLike::where('matching_user', $user->id)
+            $usedSwipes = SlideLike::where('matched_user', $user->id)
                 ->where('liked_user', 1)
                 ->count();
         }

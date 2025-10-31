@@ -3896,7 +3896,23 @@ public function contact_users(Request $request)
 
 public function friendcount_one(Request $request)
 {
-    $user = Auth::user(); 
+    
+   $user = Auth::user();
+    $now = Carbon::now('Asia/Kolkata');
+
+    $chatdelete = Chat::where(function ($q) use ($user) {
+            $q->where('sender_id', $user->id)
+            ->orWhere('receiver_id', $user->id);
+        })
+        ->whereIn('chat_type', ['intrest', 'activity'])
+        ->where('created_at', '>=', $now->copy()->subHours(24))
+        ->get();
+
+    if ($chatdelete->isNotEmpty()) {
+        foreach ($chatdelete as $chatdel) {
+            $chatdel->delete();
+        }
+    }
 
     if (!$user) {
         return response()->json(['message' => 'User not authenticated'], 401);

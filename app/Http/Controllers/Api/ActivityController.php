@@ -2200,7 +2200,7 @@ $remainingInterests = max(0, $allowedInterest - $interestCount);
     ];
 
     $attendees = OtherInterest::where('activity_id', $mainActivity->id)
-        ->where('confirm', 3)
+        ->whereIn('confirm', [3,7])
         // ->orWhere('confirm', 3)
         ->with('user')
         ->get();

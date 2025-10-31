@@ -26,7 +26,7 @@ class FirebaseService
             ->withData($data);
 
         $this->messaging->send($message);
-
+ 
         Log::info("FCM notification sent successfully to token: $fcmToken");
         Log::info("FCM notification Message Payload: ", ['payload' => $message->jsonSerialize()]);
         Log::info("Notification details", [

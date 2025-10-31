@@ -422,77 +422,7 @@ public function sendMessage(Request $request)
         }
 
         // Subscription & message limit check
-         
-       if($request->chat_type == 'match'){
-
-            
         $activeSubscription = UserSubscription::where('user_id', $sender->id)
-            ->where('type', 'Dating')
-            ->where('is_active', 1)
-            ->where('activated_at', '<=', $now)
-            ->where('expires_at', '>=', $now)
-            ->first();
-
-        $allowedSwipes = 0;
-        $usedSwipes = 0;
-        $isUnlimited = false;
-        $swipeMessage = null;
-
-        if ($activeSubscription) {
-            // ✅ Paid subscription found
-            $plan = DatingSubscription::find($activeSubscription->plan_id);
-
-            if ($plan) {
-                $swipeMessage = $plan->swipe_message;
-
-                // ✅ Unlimited plan
-                if (strtolower($swipeMessage) === 'unlimited' || $swipeMessage == -1) {
-                    $isUnlimited = true;
-                } else {
-                    $allowedSwipes = (int) $swipeMessage;
-
-                    // ✅ Count total match-type chats within subscription validity
-                    $usedSwipes = Chat::where('chat_type', 'match')
-                        ->where(function ($q) use ($sender) {
-                            $q->where('sender_id', $sender->id)
-                            ->orWhere('receiver_id', $sender->id);
-                        })
-                        ->whereBetween('created_at', [$activeSubscription->activated_at, $activeSubscription->expires_at])
-                        ->count();
-                }
-            }
-        } else {
-            // ✅ Free user
-            $freePlan = DatingSubscription::where('type', 'free')->first();
-
-            if ($freePlan) {
-                $swipeMessage = $freePlan->swipe_message;
-
-                if (strtolower($swipeMessage) === 'unlimited' || $swipeMessage == -1) {
-                    $isUnlimited = true;
-                } else {
-                    $allowedSwipes = (int) $swipeMessage;
-
-                    // ✅ Count total match-type chats (lifetime for free users)
-                    $usedSwipes = Chat::where('chat_type', 'match')
-                        ->where(function ($q) use ($sender) {
-                            $q->where('sender_id', $sender->id)
-                            ->orWhere('receiver_id', $sender->id);
-                        })
-                        ->count();
-                }
-            }
-        }
-
-        // ✅ Enforce limit for non-unlimited users
-        if (!$isUnlimited && $usedSwipes >= $allowedSwipes) {
-            return response()->json([
-                'message' => 'You’ve reached your match chat limit. ' . ($swipeMessage ?? 'Upgrade your plan to continue.'),
-                'status' => 203
-            ]);
-        }
-
-       }else{ $activeSubscription = UserSubscription::where('user_id', $sender->id)
             ->where('type', 'Activitys')
             ->where('is_active', 1)
             ->where('activated_at', '<=', $now)
@@ -535,7 +465,7 @@ public function sendMessage(Request $request)
                     'status' => 203,
                 ]);
             }
-        }
+            
 
             $currentIntervalStart = $currentIntervalEnd->copy()->addSecond();
         }

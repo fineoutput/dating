@@ -4114,7 +4114,7 @@ public function friendcount_one(Request $request)
         return null;
     }
 
-    $confirm->push($user->rendom);
+    $confirm->push($user->rendom,$userItem->rendom);
 
     if ($confirm->isEmpty()) return null;
 

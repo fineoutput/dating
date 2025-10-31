@@ -2266,10 +2266,26 @@ public function handleUserInteractions(Request $request)
         } else {
             $allowedSwipes = $plan ? $plan->unlimited_swipes : 0;
 
-            $usedSwipes = SlideLike::where('matched_user', $user->id)
-                ->where('liked_user', 1)
+            $likedCount = SlideLike::where('matched_user', $user->id)
+                            ->where('liked_user', 1)
+                            ->count();
+                
+                        $dislikedCount = SlideLike::where('matched_user', $user->id)
+                            ->where('dislike', 1)
+                            ->count();
+                
+                        $superLikedCount = SlideLike::where('matched_user', $user->id)
+                            ->where('super_like', 1)
+                            ->count();
+
+                            $usedSwipes = $likedCount + $dislikedCount + $superLikedCount;
+            $usedSwipes
                 ->whereBetween('created_at', [$activeSubscription->activated_at, $activeSubscription->expires_at])
                 ->count();
+            // $usedSwipes = SlideLike::where('matched_user', $user->id)
+            //     ->where('liked_user', 1)
+            //     ->whereBetween('created_at', [$activeSubscription->activated_at, $activeSubscription->expires_at])
+            //     ->count();
         }
     } else {
         // ✅ Handle free users — one-time limited swipes
@@ -2277,11 +2293,22 @@ public function handleUserInteractions(Request $request)
 
         if ($freePlan) {
             $allowedSwipes = $freePlan->unlimited_swipes;
+            $likedCount = SlideLike::where('matched_user', $user->id)
+                            ->where('liked_user', 1)
+                            ->count();
+                
+                        $dislikedCount = SlideLike::where('matched_user', $user->id)
+                            ->where('dislike', 1)
+                            ->count();
+                
+                        $superLikedCount = SlideLike::where('matched_user', $user->id)
+                            ->where('super_like', 1)
+                            ->count();
 
-            // Count all swipes since account creation — no reset
-            $usedSwipes = SlideLike::where('matched_user', $user->id)
-                ->where('liked_user', 1)
-                ->count();
+                            $usedSwipes = $likedCount + $dislikedCount + $superLikedCount;
+            // $usedSwipes = SlideLike::where('matched_user', $user->id)
+            //     ->where('liked_user', 1)
+            //     ->count();
         }
     }
 

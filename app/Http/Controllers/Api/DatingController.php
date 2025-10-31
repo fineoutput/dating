@@ -825,6 +825,7 @@ public function MatchingUsersdetailes(Request $request)
         'status' => 200,
         'total_count' => $totalMatchingUsers,
         'remainingSwipes' => $remainingSwipes,
+        'allowedInterest' => $allowedInterest,
         'data' => $usersWithInterests,
     ]);
 }

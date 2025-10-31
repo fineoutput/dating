@@ -5607,9 +5607,18 @@ public function acceptpactup(Request $request)
     $user_auth = Auth::user();
 
 
+    $currentTime = Carbon::now('Asia/Kolkata'); 
   
     if($activity_id){
-    $activity = Activity::where('id', $activity_id)->first();
+    // $activity = Activity::where('id', $activity_id)->first();
+    $activity = Activity::where('id', $activity_id)->where('status', 2)
+        ->where(function ($query) use ($currentTime) {
+            $query->whereDate('when_time', '>', $currentTime->toDateString())
+                ->orWhereRaw("
+                    STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+                ", [$currentTime->format('Y-m-d H:i:s')]);
+        })
+        ->first();
 
      $confirmedCount = OtherInterest::where('activity_id', $activity->id)
                                         ->whereIn('confirm', [3,7])

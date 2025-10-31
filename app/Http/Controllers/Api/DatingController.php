@@ -742,10 +742,72 @@ public function MatchingUsersdetailes(Request $request)
         $totalMatchingUsers++;
     }
 
+    $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+
+        $reportedUserIds = Report::where('reporting_user_id', $user->id)
+            ->pluck('reported_user_id')
+            ->toArray();
+
+        $userLatitude = $user->latitude;
+        $userLongitude = $user->longitude;
+
+        $matchedUsers = SlideLike::where('matching_user', $user->id)
+        ->where('liked_user', 1)
+        ->whereNotIn('status', [2, 3])
+        ->get();
+
+        
+        $userId = Auth::id();
+        $now = Carbon::now('Asia/Kolkata');
+
+        $remainingSwipes = 0;
+        $allowedInterest = 0;
+        $usedSwipes = 0;
+
+        $activeSubscription = UserSubscription::where('user_id', $userId)
+            ->where('type', 'Dating')
+            ->where('is_active', 1)
+            ->where('activated_at', '<=', $now)
+            ->where('expires_at', '>=', $now)
+            ->first();
+
+        if ($activeSubscription) {
+            $dating = DatingSubscription::find($activeSubscription->plan_id);
+            $allowedInterest = $dating ? $dating->unlimited_swipes : 0;
+
+            $usedSwipes = SlideLike::where('matching_user', $userId)
+                ->where('liked_user', 1)
+                ->whereNotIn('status', [2, 3])
+                ->whereBetween('created_at', [$activeSubscription->activated_at, $activeSubscription->expires_at])
+                ->count();
+
+        } else {
+            $freePlan = DatingSubscription::where('type', 'free')->first();
+
+            if ($freePlan) {
+                $allowedInterest = $freePlan->unlimited_swipes;
+
+                $usedSwipes = SlideLike::where('matching_user', $userId)
+                    ->where('liked_user', 1)
+                    ->whereNotIn('status', [2, 3])
+                    ->count();
+            } else {
+                $allowedInterest = 0;
+                $usedSwipes = 0;
+            }
+        }
+
+        $remainingSwipes = max($allowedInterest - $usedSwipes, 0);
+
     return response()->json([
         'message' => 'Matching users found successfully',
         'status' => 200,
         'total_count' => $totalMatchingUsers,
+        'remainingSwipes' => $remainingSwipes,
         'data' => $usersWithInterests,
     ]);
 }
@@ -2051,8 +2113,123 @@ public function updateCupidMatch(Request $request)
     //     }
 
 
+// latest
+//     public function handleUserInteractions(Request $request)
+// {
+//     $user = Auth::user();
+//     if (!$user) {
+//         return response()->json(['message' => 'User not authenticated'], 401);
+//     }
 
-    public function handleUserInteractions(Request $request)
+//     $matchingUserId = $request->input('matching_user');
+//     $superLike = $request->input('super_like', 0);
+//     $likedUser = $request->input('liked_user', 0);
+//     $dislike = $request->input('dislike', 0);
+//     $matchedUser = $user->id;
+
+//     $responses = [];
+    
+
+//     // Validate matching user
+//     if (!$matchingUserId || !($user_id = User::where('rendom', $matchingUserId)->first())) {
+//         return response()->json([
+//             'message' => 'Matching user not found',
+//             'data' => [],
+//             'status' => 200
+//         ]);
+//     }
+
+//     // Check if interaction already exists
+//     $existingInteraction = SlideLike::where('matching_user', $user_id->id)
+//         ->where('matched_user', $user->id)
+//         ->first();
+
+//     if ($existingInteraction) {
+//         return response()->json([
+//             'message' => 'Interaction already exists',
+//             'status' => 400
+//         ]);
+//     }
+
+//     // Create new SlideLike
+//     $slideLike = new SlideLike();
+//     $slideLike->matching_user = $user_id->id;
+//     $slideLike->matched_user = $user->id;
+
+//     if ($superLike) {
+//         $slideLike->super_like = 1;
+//     }
+
+//     if ($likedUser) {
+//         $slideLike->liked_user = 1;
+
+//         // Notification attempt
+//         $firebaseService = new FirebaseService();
+//         $title = $request->title ?? "{$user->name} liked you";
+
+//         if (!$user_id->fcm_token) {
+//             Log::warning("No FCM token for user ID: {$user_id->id}, rendom: {$user_id->rendom}");
+//             $responses[] = [
+//                 'receiver_rendom' => $user_id->rendom,
+//                 'message' => 'No FCM token available. Notification skipped.',
+//                 'status' => 200
+//             ];
+//         } else {
+//             try {
+//                 $sent = $firebaseService->sendNotification(
+//                     $user_id->fcm_token,
+//                     $title,
+//                     $request->message ?? 'You have a new like!',
+//                     [
+//                         'sender_rendom' => $user->rendom,
+//                         'screen' => 'People',
+//                     ]
+//                 );
+
+//                 if ($sent) {
+//                     Log::info("Notification sent to user ID {$user_id->id}");
+//                     $responses[] = [
+//                         'receiver_rendom' => $user_id->rendom,
+//                         'message' => 'Notification sent successfully.',
+//                         'status' => 200
+//                     ];
+//                 } else {
+//                     Log::warning("Notification failed for user ID: {$user_id->id}, rendom: {$user_id->rendom}");
+//                     $responses[] = [
+//                         'receiver_rendom' => $user_id->rendom,
+//                         'message' => 'Notification failed to send.',
+//                         'status' => 400
+//                     ];
+//                 }
+//             } catch (\Exception $e) {
+//                 Log::error("Failed to send FCM notification to user ID {$user_id->id}: {$e->getMessage()}");
+//                 $responses[] = [
+//                     'receiver_rendom' => $user_id->rendom,
+//                     'message' => 'FCM error: ' . $e->getMessage(),
+//                     'status' => 400
+//                 ];
+//             }
+//         }
+//     }
+
+//     if ($dislike) {
+//         $slideLike->dislike = 1;
+//     }
+
+//     // Save interaction
+//     $slideLike->save();
+
+//     return response()->json([
+//         'message' => 'Interaction saved successfully.',
+//         'data' => [
+//             'interaction' => $slideLike,
+//             'notification_responses' => $responses
+//         ],
+//         'status' => 200
+//     ]);
+// }
+
+public function handleUserInteractions(Request $request)
 {
     $user = Auth::user();
     if (!$user) {
@@ -2063,21 +2240,70 @@ public function updateCupidMatch(Request $request)
     $superLike = $request->input('super_like', 0);
     $likedUser = $request->input('liked_user', 0);
     $dislike = $request->input('dislike', 0);
-    $matchedUser = $user->id;
-
     $responses = [];
 
-    // Validate matching user
-    if (!$matchingUserId || !($user_id = User::where('rendom', $matchingUserId)->first())) {
+    $now = Carbon::now('Asia/Kolkata');
+
+    // ✅ Check if user has active subscription
+    $activeSubscription = UserSubscription::where('user_id', $user->id)
+        ->where('type', 'Dating')
+        ->where('is_active', 1)
+        ->where('activated_at', '<=', $now)
+        ->where('expires_at', '>=', $now)
+        ->first();
+
+    $allowedSwipes = 0;
+    $usedSwipes = 0;
+    $isUnlimited = false;
+
+    if ($activeSubscription) {
+        // ✅ User has an active paid plan
+        $plan = DatingSubscription::find($activeSubscription->plan_id);
+
+        if ($plan && $plan->unlimited_swipes == -1) {
+            // -1 means unlimited swipes for premium plan
+            $isUnlimited = true;
+        } else {
+            $allowedSwipes = $plan ? $plan->unlimited_swipes : 0;
+
+            $usedSwipes = SlideLike::where('matching_user', $user->id)
+                ->where('liked_user', 1)
+                ->whereBetween('created_at', [$activeSubscription->activated_at, $activeSubscription->expires_at])
+                ->count();
+        }
+    } else {
+        // ✅ Handle free users — one-time limited swipes
+        $freePlan = DatingSubscription::where('type', 'free')->first();
+
+        if ($freePlan) {
+            $allowedSwipes = $freePlan->unlimited_swipes;
+
+            // Count all swipes since account creation — no reset
+            $usedSwipes = SlideLike::where('matching_user', $user->id)
+                ->where('liked_user', 1)
+                ->count();
+        }
+    }
+
+    // ✅ Swipe limit enforcement (for non-unlimited users)
+    if (!$isUnlimited && $likedUser && $usedSwipes >= $allowedSwipes) {
         return response()->json([
-            'message' => 'Matching user not found',
-            'data' => [],
-            'status' => 200
+            'message' => 'You’ve reached your free swipe limit. Upgrade your plan to continue swiping.',
+            'status' => 403
         ]);
     }
 
-    // Check if interaction already exists
-    $existingInteraction = SlideLike::where('matching_user', $user_id->id)
+    // ✅ Validate target user
+    $targetUser = User::where('rendom', $matchingUserId)->first();
+    if (!$targetUser) {
+        return response()->json([
+            'message' => 'Matching user not found',
+            'status' => 404
+        ]);
+    }
+
+    // ✅ Prevent duplicate like/dislike/superlike
+    $existingInteraction = SlideLike::where('matching_user', $targetUser->id)
         ->where('matched_user', $user->id)
         ->first();
 
@@ -2088,79 +2314,57 @@ public function updateCupidMatch(Request $request)
         ]);
     }
 
-    // Create new SlideLike
+    // ✅ Create new interaction
     $slideLike = new SlideLike();
-    $slideLike->matching_user = $user_id->id;
+    $slideLike->matching_user = $targetUser->id;
     $slideLike->matched_user = $user->id;
+    $slideLike->super_like = $superLike ? 1 : 0;
+    $slideLike->liked_user = $likedUser ? 1 : 0;
+    $slideLike->dislike = $dislike ? 1 : 0;
+    $slideLike->save();
 
-    if ($superLike) {
-        $slideLike->super_like = 1;
-    }
+    // ✅ Send FCM notification if liked
+    if ($likedUser && $targetUser->fcm_token) {
+        try {
+            $firebaseService = new FirebaseService();
+            $title = $request->title ?? "{$user->name} liked you";
+            $message = $request->message ?? 'You have a new like!';
 
-    if ($likedUser) {
-        $slideLike->liked_user = 1;
+            $sent = $firebaseService->sendNotification(
+                $targetUser->fcm_token,
+                $title,
+                $message,
+                [
+                    'sender_rendom' => $user->rendom,
+                    'screen' => 'People',
+                ]
+            );
 
-        // Notification attempt
-        $firebaseService = new FirebaseService();
-        $title = $request->title ?? "{$user->name} liked you";
-
-        if (!$user_id->fcm_token) {
-            Log::warning("No FCM token for user ID: {$user_id->id}, rendom: {$user_id->rendom}");
             $responses[] = [
-                'receiver_rendom' => $user_id->rendom,
-                'message' => 'No FCM token available. Notification skipped.',
-                'status' => 200
+                'receiver_rendom' => $targetUser->rendom,
+                'message' => $sent ? 'Notification sent successfully.' : 'Notification failed to send.',
+                'status' => $sent ? 200 : 400
             ];
-        } else {
-            try {
-                $sent = $firebaseService->sendNotification(
-                    $user_id->fcm_token,
-                    $title,
-                    $request->message ?? 'You have a new like!',
-                    [
-                        'sender_rendom' => $user->rendom,
-                        'screen' => 'People',
-                    ]
-                );
-
-                if ($sent) {
-                    Log::info("Notification sent to user ID {$user_id->id}");
-                    $responses[] = [
-                        'receiver_rendom' => $user_id->rendom,
-                        'message' => 'Notification sent successfully.',
-                        'status' => 200
-                    ];
-                } else {
-                    Log::warning("Notification failed for user ID: {$user_id->id}, rendom: {$user_id->rendom}");
-                    $responses[] = [
-                        'receiver_rendom' => $user_id->rendom,
-                        'message' => 'Notification failed to send.',
-                        'status' => 400
-                    ];
-                }
-            } catch (\Exception $e) {
-                Log::error("Failed to send FCM notification to user ID {$user_id->id}: {$e->getMessage()}");
-                $responses[] = [
-                    'receiver_rendom' => $user_id->rendom,
-                    'message' => 'FCM error: ' . $e->getMessage(),
-                    'status' => 400
-                ];
-            }
+        } catch (\Exception $e) {
+            Log::error("Failed to send FCM notification: " . $e->getMessage());
+            $responses[] = [
+                'receiver_rendom' => $targetUser->rendom,
+                'message' => 'FCM error: ' . $e->getMessage(),
+                'status' => 400
+            ];
         }
     }
 
-    if ($dislike) {
-        $slideLike->dislike = 1;
-    }
-
-    // Save interaction
-    $slideLike->save();
-
+    // ✅ Final response
     return response()->json([
         'message' => 'Interaction saved successfully.',
         'data' => [
             'interaction' => $slideLike,
-            'notification_responses' => $responses
+            'notification_responses' => $responses,
+            'is_unlimited' => $isUnlimited,
+            'allowed_swipes' => $isUnlimited ? 'Unlimited' : $allowedSwipes,
+            'used_swipes' => $usedSwipes,
+            'remaining_swipes' => $isUnlimited ? 'Unlimited' : max($allowedSwipes - $usedSwipes, 0)
         ],
         'status' => 200
     ]);

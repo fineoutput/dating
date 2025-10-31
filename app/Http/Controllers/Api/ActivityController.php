@@ -5641,13 +5641,25 @@ public function acceptpactup(Request $request)
        $data = [];
 
         foreach ($otherInterest as $interest) {
-            $activity = Activity::find($interest->activity_id);
+            // $activity = Activity::find($interest->activity_id);
+            $activity = Activity::where('id',$interest->activity_id)->where(function ($query) use ($currentTime) {
+            $query->whereDate('when_time', '>', $currentTime->toDateString())
+                ->orWhereRaw("
+                    STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+                ", [$currentTime->format('Y-m-d H:i:s')]);
+        })
+        ->first();
 
+        if($activity){
             $data[] = [
                 'user_name' => $user->name,
                 'activity_title' => $activity->title ?? null,
                 'activity_id' => $activity->id ?? null,
             ];
+            }else{
+                $data = [];
+            }
+            
         }
 
         if($data){

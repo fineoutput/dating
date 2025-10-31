@@ -3900,14 +3900,22 @@ public function friendcount_one(Request $request)
    $user = Auth::user();
     $now = Carbon::now('Asia/Kolkata');
 
-    // 🕒 Delete all chats older than 24 hours
-    Chat::where(function ($q) use ($user) {
-            $q->where('sender_id', $user->id)
-            ->orWhere('receiver_id', $user->id);
-        })
-        ->whereIn('chat_type', ['intrest', 'activity'])
-        ->where('created_at', '<=', $now->copy()->subHours(24))
-        ->delete();
+    if ($user) {
+        $query = Chat::where(function ($q) use ($user) {
+                $q->whereRaw('FIND_IN_SET(?, sender_id)', [$user->id])
+                ->orWhereRaw('FIND_IN_SET(?, receiver_id)', [$user->id]);
+            })
+            ->whereIn('chat_type', ['intrest', 'activity'])
+            ->where('created_at', '<=', $now->copy()->subHours(24));
+
+        // ✅ Delete only if chats exist
+        if ($query->exists()) {
+            $deleted = $query->delete();
+            Log::info("Deleted {$deleted} old chat(s) for user {$user->id}");
+        } else {
+            Log::info("No old chats found for user {$user->id}");
+        }
+    }
 
     if (!$user) {
         return response()->json(['message' => 'User not authenticated'], 401);

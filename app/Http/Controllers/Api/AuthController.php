@@ -961,9 +961,9 @@ class AuthController extends Controller
 
     
 
-    $attendUsers = OtherInterest::where('user_id', $user->id)
-        ->where('confirm', 8)
-        ->count();
+    // $attendUsers = OtherInterest::where('user_id', $user->id)
+    //     ->where('confirm', 8)
+    //     ->count();
 
     $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata
 
@@ -994,6 +994,18 @@ class AuthController extends Controller
 
     // ✅ Get all activity IDs from above
     $activityIds = $activities->pluck('id');
+
+    $attendInterests = OtherInterest::where('user_id', $user->id)
+        ->where('confirm', 8)
+        ->get();
+
+    // ✅ Count only those activities where at least one other user also confirmed = 8
+    $attendUsers = $attendInterests->filter(function ($interest) use ($user) {
+        return OtherInterest::where('activity_id', $interest->activity_id)
+            ->where('user_id', '!=', $user->id)
+            ->where('confirm', 8)
+            ->exists();
+    })->count();
 
     // ✅ Filter OtherInterest where the current user has confirm 3 or 7
     $userInterests = OtherInterest::whereIn('activity_id', $activityIds)

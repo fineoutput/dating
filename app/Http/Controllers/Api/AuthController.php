@@ -961,7 +961,7 @@ class AuthController extends Controller
 
     
 
-    $attendUsers = OtherInterest::where('user_id_1', $user->id)
+    $attendUsers = OtherInterest::where('user_id', $user->id)
         ->where('confirm', 8)
         ->count();
 

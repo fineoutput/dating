@@ -3898,15 +3898,16 @@ public function friendcount_one(Request $request)
 {
 
    $user = Auth::user();
-$now = Carbon::now('Asia/Kolkata');
+    $now = Carbon::now('Asia/Kolkata');
 
-Chat::where(function ($q) use ($user) {
-        $q->where('sender_id', $user->id)
-          ->orWhere('receiver_id', $user->id);
-    })
-    ->whereIn('chat_type', ['intrest', 'activity'])
-    ->where('created_at', '>=', $now->copy()->subHours(24))
-    ->delete();
+    // 🕒 Delete all chats older than 24 hours
+    Chat::where(function ($q) use ($user) {
+            $q->where('sender_id', $user->id)
+            ->orWhere('receiver_id', $user->id);
+        })
+        ->whereIn('chat_type', ['intrest', 'activity'])
+        ->where('created_at', '<=', $now->copy()->subHours(24))
+        ->delete();
 
     if (!$user) {
         return response()->json(['message' => 'User not authenticated'], 401);

@@ -4298,7 +4298,6 @@ public function friendcount_one(Request $request)
     //     ->unique('id')
     //     ->values();
 
-    // ✅ Step 1: Remove auth user from all lists
     $filteredUserList = $userList->filter(fn($u) => $u['id'] !== $user->id)->values();
     $filteredGroupList = $groupUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
     $filteredLikeUsers = $likeUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
@@ -4306,16 +4305,19 @@ public function friendcount_one(Request $request)
     $filteredactivityChatsUsers = $activitychatList->filter(fn($u) => $u['id'] !== $user->id)->values();
     $filteredChatUsers = $chatList->filter(fn($u) => $u['id'] !== $user->id)->values();
 
-    // 🧩 Step 2: Get all user_rendoms from activity_users
-    $activityUserRendoms = $filteredUserList->pluck('user_rendom')->toArray();
+    // ✅ Step 2: Find all users from activity_users who have non-empty user_rendoms
+    $nonEmptyActivityUsers = $filteredUserList
+        ->filter(fn($u) => isset($u['user_rendoms']) && count($u['user_rendoms']) > 0)
+        ->pluck('user_rendom')
+        ->toArray();
 
-    // 🧩 Step 3: Remove any chat/activity_chat user who is already in activity_users
+    // ✅ Step 3: Remove those users from chat & activity_chat lists
     $filteredactivityChatsUsers = $filteredactivityChatsUsers
-        ->reject(fn($u) => in_array($u['user_rendom'], $activityUserRendoms))
+        ->reject(fn($u) => in_array($u['user_rendom'], $nonEmptyActivityUsers))
         ->values();
 
     $filteredChatUsers = $filteredChatUsers
-        ->reject(fn($u) => in_array($u['user_rendom'], $activityUserRendoms))
+        ->reject(fn($u) => in_array($u['user_rendom'], $nonEmptyActivityUsers))
         ->values();
 
     // ✅ Step 4: Continue with your merging logic

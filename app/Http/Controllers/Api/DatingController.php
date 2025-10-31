@@ -2331,7 +2331,7 @@ public function handleUserInteractions(Request $request)
     }
 
     // ✅ Swipe limit enforcement (for non-unlimited users)
-    if (!$isUnlimited && $likedUser && $usedSwipes >= $allowedSwipes) {
+    if (!$isUnlimited && $usedSwipes >= $allowedSwipes) {
         return response()->json([
             'message' => 'You’ve reached your free swipe limit. Upgrade your plan to continue swiping.',
             'status' => 403

@@ -4216,21 +4216,63 @@ public function friendcount_one(Request $request)
     })->filter(); 
 
 
-            $now = Carbon::now('Asia/Kolkata');
-     $interestChats = Chat::where('chat_type', 'intrest')->where('created_at', '>=', $now->copy()->subHours(24))
+    $now = Carbon::now('Asia/Kolkata');
+
+    $interestChats = Chat::where('chat_type', 'intrest')
+        ->where('created_at', '>=', $now->copy()->subHours(24))
         ->where(function ($q) use ($user) {
             $q->where('sender_id', $user->id)
-              ->orWhere('receiver_id', $user->id);
+            ->orWhere('receiver_id', $user->id);
         })
         ->orderBy('id', 'DESC')
         ->get()
         ->unique(function ($chat) use ($user) {
-            // avoid duplicate same pair of users
+            // Avoid duplicate pairs of users
             $pair = [$chat->sender_id, $chat->receiver_id];
             sort($pair);
             return implode('-', $pair);
         })
+        ->filter(function ($chat) {
+    $currentTime = Carbon::now('Asia/Kolkata');
+
+    $activity = Activity::where('rendom', $chat->activity_id)
+        ->where(function ($query) use ($currentTime) {
+            $query
+                // If activity date is in the future
+                ->whereDate('when_time', '>', $currentTime->toDateString())
+                // OR, if same day, then check end time precisely
+                ->orWhere(function ($q) use ($currentTime) {
+                    $q->whereDate('when_time', '=', $currentTime->toDateString())
+                      ->whereRaw("
+                          STR_TO_DATE(
+                              CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')),
+                              '%Y-%m-%d %l:%i %p'
+                          ) >= ?
+                      ", [$currentTime->format('Y-m-d H:i:s')]);
+                });
+        })
+        ->first();
+
+    return $activity !== null;
+})
         ->values();
+
+
+    //         $now = Carbon::now('Asia/Kolkata');
+    //  $interestChats = Chat::where('chat_type', 'intrest')->where('created_at', '>=', $now->copy()->subHours(24))
+    //     ->where(function ($q) use ($user) {
+    //         $q->where('sender_id', $user->id)
+    //           ->orWhere('receiver_id', $user->id);
+    //     })
+    //     ->orderBy('id', 'DESC')
+    //     ->get()
+    //     ->unique(function ($chat) use ($user) {
+    //         // avoid duplicate same pair of users
+    //         $pair = [$chat->sender_id, $chat->receiver_id];
+    //         sort($pair);
+    //         return implode('-', $pair);
+    //     })
+    //     ->values();
 
     // 🔹 Map chat data to desired format
     $chatList = $interestChats->map(function ($chat) use ($user) {

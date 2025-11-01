@@ -3467,8 +3467,8 @@ public function friendcount(Request $request)
     }
 
     // 🔹 Combine and remove duplicates, prioritize 'match'
-    $matchUsers = collect($userList)
-            // ->merge($likeUserList)
+    $matchUsers = collect($matchedUsers)
+            ->merge($likeUserList)
             ->merge($matchedUsers)
             ->merge($contactUsers)
             ->filter(function ($userItem) use ($user) {

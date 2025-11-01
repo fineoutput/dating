@@ -701,6 +701,114 @@ public function sendMessage(Request $request)
     }
 }
 
+// latest code 
+// public function getMessages(Request $request)
+// {
+//     $authUser = Auth::user();
+
+//     if (!$authUser) {
+//         return response()->json(['message' => 'User not authenticated'], 401);
+//     }
+
+//     $receiverRendomss = $request->input('receiver_rendom');
+//     $send_type = $request->input('send_type');
+//     $activityId = $request->input('activity_id'); 
+
+//     // Convert input to array
+//     $receiverRendoms = is_array($receiverRendomss)
+//         ? $receiverRendomss
+//         : json_decode($receiverRendomss, true);
+
+//     // Get receiver users
+//     $receivers = User::whereIn('rendom', $receiverRendoms)->get();
+
+//     if ($receivers->isEmpty()) {
+//         return response()->json([
+//             'message' => 'No users found',
+//             'data' => [],
+//             'status' => 200,
+//         ]);
+//     }
+
+//     $receiverIdMap = $receivers->pluck('id', 'rendom');
+//     $receiverIds = $receiverIdMap->values()->toArray();
+    
+//     $authId = $authUser->id;
+
+//     $allMessages = Chat::where(function ($query) use ($authId, $receiverIds, $send_type, $activityId) {
+
+//     if ($send_type === 'single') {
+//         $query->where('send_type', 'single');
+//         $query->where(function ($q) use ($authId, $receiverIds) {
+//             foreach ($receiverIds as $receiverId) {
+//                 $q->orWhere(function ($q2) use ($authId, $receiverId) {
+//                     $q2->where('sender_id', $authId)
+//                         ->whereRaw("FIND_IN_SET(?, receiver_id)", [$receiverId]);
+//                 });
+
+//                 $q->orWhere(function ($q2) use ($authId, $receiverId) {
+//                     $q2->where('sender_id', $receiverId)
+//                         ->whereRaw("FIND_IN_SET(?, receiver_id)", [$authId]);
+//                 });
+//             }
+//         });
+//     } else {
+//             $query->where('send_type', $send_type)
+//                 ->where(function ($q) use ($authId, $receiverIds) {
+//                     $q->where('sender_id', $authId);
+
+//                     // 🔹 fix here — iterate through receiver IDs
+//                     foreach ($receiverIds as $rid) {
+//                         $q->orWhereRaw("FIND_IN_SET(?, receiver_id)", [$rid]);
+//                     }
+//                 });
+//         }
+//     })
+//     ->when($send_type === 'group' && $activityId, function ($query) use ($activityId) {
+//         $query->where('activity_id', $activityId);
+//     })
+//     ->orderBy('created_at', 'asc')
+//     ->get();
+
+//     // Format messages
+//     $flatMessages = $allMessages->map(function ($message) use ($authId) {
+//         $sender = User::find($message->sender_id);
+//         $receiverIds = explode(',', $message->receiver_id);
+
+//         $otherUserId = $sender && $sender->id == $authId
+//             ? ($receiverIds[0] ?? null)
+//             : ($sender->id ?? null);
+
+//         $otherUser = $otherUserId ? User::find($otherUserId) : null;
+
+//         $profileImageUrl = null;
+//         if ($otherUser && $otherUser->profile_image) {
+//             $images = json_decode($otherUser->profile_image, true);
+//             if (is_array($images) && count($images)) {
+//                 $profileImageUrl = url('') . '/uploads/app/profile_images/' . ltrim(reset($images), '/');
+//             }
+//         }
+
+//         return [
+//             'rendom' => $message->rendom,
+//             'chat_type' => $message->chat_type,
+//             'sender_rendom' => $sender->rendom ?? null,
+//             'receiver_rendom' => implode(',', $receiverIds),
+//             'profile_image' => $profileImageUrl,
+//             'message' => $message->message,
+//             'status' => $message->status,
+//             'send_type' => $message->send_type,
+//             'sent_time' => Carbon::parse($message->created_at)->diffForHumans(),
+//         ];
+//     });
+
+//     return response()->json([
+//         'message' => 'Messages fetched successfully.',
+//         'data' => $flatMessages->values(),
+//         'status' => 200,
+//     ]);
+// }
+
 
 public function getMessages(Request $request)
 {
@@ -713,13 +821,13 @@ public function getMessages(Request $request)
     $receiverRendomss = $request->input('receiver_rendom');
     $send_type = $request->input('send_type');
     $activityId = $request->input('activity_id'); 
+    $lastId = $request->input('last_id', 0); // 👈 last fetched message ID
 
     // Convert input to array
     $receiverRendoms = is_array($receiverRendomss)
         ? $receiverRendomss
         : json_decode($receiverRendomss, true);
 
-    // Get receiver users
     $receivers = User::whereIn('rendom', $receiverRendoms)->get();
 
     if ($receivers->isEmpty()) {
@@ -732,80 +840,97 @@ public function getMessages(Request $request)
 
     $receiverIdMap = $receivers->pluck('id', 'rendom');
     $receiverIds = $receiverIdMap->values()->toArray();
-    
     $authId = $authUser->id;
 
-    $allMessages = Chat::where(function ($query) use ($authId, $receiverIds, $send_type, $activityId) {
+    // 🕒 Streaming Logic — Long Polling
+    $timeout = 30; // seconds
+    $start = time();
 
-    if ($send_type === 'single') {
-        $query->where('send_type', 'single');
-        $query->where(function ($q) use ($authId, $receiverIds) {
-            foreach ($receiverIds as $receiverId) {
-                $q->orWhere(function ($q2) use ($authId, $receiverId) {
-                    $q2->where('sender_id', $authId)
-                        ->whereRaw("FIND_IN_SET(?, receiver_id)", [$receiverId]);
-                });
+    while (time() - $start < $timeout) {
 
-                $q->orWhere(function ($q2) use ($authId, $receiverId) {
-                    $q2->where('sender_id', $receiverId)
-                        ->whereRaw("FIND_IN_SET(?, receiver_id)", [$authId]);
-                });
-            }
-        });
-    } else {
-            $query->where('send_type', $send_type)
-                ->where(function ($q) use ($authId, $receiverIds) {
-                    $q->where('sender_id', $authId);
-
-                    // 🔹 fix here — iterate through receiver IDs
-                    foreach ($receiverIds as $rid) {
-                        $q->orWhereRaw("FIND_IN_SET(?, receiver_id)", [$rid]);
+        // same query logic (no change)
+        $allMessages = Chat::where(function ($query) use ($authId, $receiverIds, $send_type, $activityId) {
+            if ($send_type === 'single') {
+                $query->where('send_type', 'single');
+                $query->where(function ($q) use ($authId, $receiverIds) {
+                    foreach ($receiverIds as $receiverId) {
+                        $q->orWhere(function ($q2) use ($authId, $receiverId) {
+                            $q2->where('sender_id', $authId)
+                                ->whereRaw("FIND_IN_SET(?, receiver_id)", [$receiverId]);
+                        });
+                        $q->orWhere(function ($q2) use ($authId, $receiverId) {
+                            $q2->where('sender_id', $receiverId)
+                                ->whereRaw("FIND_IN_SET(?, receiver_id)", [$authId]);
+                        });
                     }
                 });
-        }
-    })
-    ->when($send_type === 'group' && $activityId, function ($query) use ($activityId) {
-        $query->where('activity_id', $activityId);
-    })
-    ->orderBy('created_at', 'asc')
-    ->get();
-
-    // Format messages
-    $flatMessages = $allMessages->map(function ($message) use ($authId) {
-        $sender = User::find($message->sender_id);
-        $receiverIds = explode(',', $message->receiver_id);
-
-        $otherUserId = $sender && $sender->id == $authId
-            ? ($receiverIds[0] ?? null)
-            : ($sender->id ?? null);
-
-        $otherUser = $otherUserId ? User::find($otherUserId) : null;
-
-        $profileImageUrl = null;
-        if ($otherUser && $otherUser->profile_image) {
-            $images = json_decode($otherUser->profile_image, true);
-            if (is_array($images) && count($images)) {
-                $profileImageUrl = url('') . '/uploads/app/profile_images/' . ltrim(reset($images), '/');
+            } else {
+                $query->where('send_type', $send_type)
+                      ->where(function ($q) use ($authId, $receiverIds) {
+                          $q->where('sender_id', $authId);
+                          foreach ($receiverIds as $rid) {
+                              $q->orWhereRaw("FIND_IN_SET(?, receiver_id)", [$rid]);
+                          }
+                      });
             }
+        })
+        ->when($send_type === 'group' && $activityId, function ($query) use ($activityId) {
+            $query->where('activity_id', $activityId);
+        })
+        ->where('id', '>', $lastId) // 👈 only new messages after lastId
+        ->orderBy('created_at', 'asc')
+        ->get();
+
+        if ($allMessages->count() > 0) {
+            // 👇 Format messages (same as before)
+            $flatMessages = $allMessages->map(function ($message) use ($authId) {
+                $sender = User::find($message->sender_id);
+                $receiverIds = explode(',', $message->receiver_id);
+
+                $otherUserId = $sender && $sender->id == $authId
+                    ? ($receiverIds[0] ?? null)
+                    : ($sender->id ?? null);
+
+                $otherUser = $otherUserId ? User::find($otherUserId) : null;
+
+                $profileImageUrl = null;
+                if ($otherUser && $otherUser->profile_image) {
+                    $images = json_decode($otherUser->profile_image, true);
+                    if (is_array($images) && count($images)) {
+                        $profileImageUrl = url('') . '/uploads/app/profile_images/' . ltrim(reset($images), '/');
+                    }
+                }
+
+                return [
+                    'id' => $message->id,
+                    'rendom' => $message->rendom,
+                    'chat_type' => $message->chat_type,
+                    'sender_rendom' => $sender->rendom ?? null,
+                    'receiver_rendom' => implode(',', $receiverIds),
+                    'profile_image' => $profileImageUrl,
+                    'message' => $message->message,
+                    'status' => $message->status,
+                    'send_type' => $message->send_type,
+                    'sent_time' => Carbon::parse($message->created_at)->diffForHumans(),
+                ];
+            });
+
+            return response()->json([
+                'message' => 'New messages received.',
+                'data' => $flatMessages->values(),
+                'status' => 200,
+            ]);
         }
 
-        return [
-            'rendom' => $message->rendom,
-            'chat_type' => $message->chat_type,
-            'sender_rendom' => $sender->rendom ?? null,
-            'receiver_rendom' => implode(',', $receiverIds),
-            'profile_image' => $profileImageUrl,
-            'message' => $message->message,
-            'status' => $message->status,
-            'send_type' => $message->send_type,
-            'sent_time' => Carbon::parse($message->created_at)->diffForHumans(),
-        ];
-    });
+        // wait for 0.5 sec before checking again
+        usleep(500000);
+    }
 
+    // ⏳ If no new messages after 30 seconds
     return response()->json([
-        'message' => 'Messages fetched successfully.',
-        'data' => $flatMessages->values(),
-        'status' => 200,
+        'message' => 'No new messages',
+        'data' => [],
+        'status' => 204,
     ]);
 }
 

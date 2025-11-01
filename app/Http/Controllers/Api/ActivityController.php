@@ -3486,6 +3486,7 @@ public function friendcount(Request $request)
         'status' => 200,
         'data' => [
             'match_users' => $matchUsers,
+            'contactUsers' => $contactUsers,
             'friend_count' => $matchUsers->count(),
             'like_count' => $interestRelations->count(),
         ]

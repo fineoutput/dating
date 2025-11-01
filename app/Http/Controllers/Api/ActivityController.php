@@ -4394,6 +4394,12 @@ public function friendcount_one(Request $request)
         ->reject(fn($u) => in_array($u['user_rendom'], $existingUserRendoms))
         ->values();
 
+  $existingUserRendomsin_activitychat = $filteredactivityChatsUsers->pluck('user_rendom')->filter()->toArray();
+
+    $filteredChatUsers = $filteredChatUsers
+        ->reject(fn($u) => in_array($u['user_rendom'], $existingUserRendomsin_activitychat))
+        ->values();
+
 
 // ✅ Step 5: Continue with your merging logic
 $matchUsers = collect($filteredLikeUsers)

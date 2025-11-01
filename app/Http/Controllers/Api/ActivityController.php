@@ -3993,7 +3993,15 @@ public function friendcount_one(Request $request)
                     ->orderBy('id', 'DESC')
                     ->first();
 
-        $activity = Activity::where('id', $userItem->interest_activity_id)->first();
+    $currentTime = Carbon::now('Asia/Kolkata');
+
+        $activity = Activity::where('id', $userItem->interest_activity_id)
+        ->where(function ($query) use ($currentTime) {
+            $query->whereDate('when_time', '>', $currentTime->toDateString())
+                ->orWhereRaw("
+                    STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+                ", [$currentTime->format('Y-m-d H:i:s')]);
+        })->first();
         if (!$activity) return null;
 
         $howMany = $activity->how_many ?? 0;

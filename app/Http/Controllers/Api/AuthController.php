@@ -1371,7 +1371,7 @@ public function updateProfile(Request $request)
         return response()->json(['message' => 'User not authenticated'], 401);
     }
 
-    // ✅ Validation rules
+    // ✅ Validation
     $validator = Validator::make($request->all(), [
         'name' => 'nullable|string|max:255',
         'age' => 'nullable|integer|min:18|max:100',
@@ -1387,12 +1387,27 @@ public function updateProfile(Request $request)
         return response()->json(['errors' => $validator->errors()], 400);
     }
 
-    $updateData = [
-        'name' => $request->name,
-        'age' => $request->age,
-        'gender' => $request->gender,
-        'looking_for' => $request->looking_for,
-    ];
+    $updateData = [];
+
+    // ✅ Update only fields that are present in request
+    if ($request->has('name')) {
+        $updateData['name'] = $request->name;
+    }
+    if ($request->has('age')) {
+        $updateData['age'] = $request->age;
+    }
+    if ($request->has('gender')) {
+        $updateData['gender'] = $request->gender;
+    }
+    if ($request->has('looking_for')) {
+        $updateData['looking_for'] = $request->looking_for;
+    }
+    if ($request->has('about')) {
+        $updateData['about'] = $request->about;
+    }
+    if ($request->has('address')) {
+        $updateData['address'] = $request->address;
+    }
 
     $now = Carbon::now('Asia/Kolkata');
 
@@ -1407,14 +1422,6 @@ public function updateProfile(Request $request)
     // ✅ Update interest only if active subscription
     if ($activeSubscription && $request->has('interest') && is_array($request->interest)) {
         $updateData['interest'] = json_encode($request->interest);
-    }
-
-    if ($request->has('about')) {
-        $updateData['about'] = $request->about;
-    }
-
-    if ($request->has('address')) {
-        $updateData['address'] = $request->address;
     }
 
     // ✅ Handle profile image uploads (remove old + save new)
@@ -1453,10 +1460,12 @@ public function updateProfile(Request $request)
         $updateData['profile_image'] = json_encode($imageArray);
     }
 
-    // ✅ Update user
-    $user->update($updateData);
+    // ✅ Update user only if something to update
+    if (!empty($updateData)) {
+        $user->update($updateData);
+    }
 
-    // ✅ Prepare interest response (only if active subscription)
+    // ✅ Prepare interest response
     $interestNamesWithIcons = [];
     $subscriptionStatus = 0;
 
@@ -1474,7 +1483,7 @@ public function updateProfile(Request $request)
         }
     }
 
-    // ✅ Build image URLs from DB JSON
+    // ✅ Build image URLs
     $imageUrls = [];
     if ($user->profile_image) {
         $imagePaths = json_decode($user->profile_image, true);
@@ -1505,6 +1514,7 @@ public function updateProfile(Request $request)
         'status' => 200,
     ]);
 }
+
 
 
    public function updatelatlong(Request $request)

@@ -1381,6 +1381,7 @@ public function updateProfile(Request $request)
         'about' => 'nullable|string|max:1000',
         'address' => 'nullable|string|max:255',
         'profile_image' => 'nullable|array',
+        'remove_profile_image' => 'nullable|array',
     ]);
 
     if ($validator->fails()) {
@@ -1390,23 +1391,10 @@ public function updateProfile(Request $request)
     $updateData = [];
 
     // ✅ Update only fields that are present in request
-    if ($request->has('name')) {
-        $updateData['name'] = $request->name;
-    }
-    if ($request->has('age')) {
-        $updateData['age'] = $request->age;
-    }
-    if ($request->has('gender')) {
-        $updateData['gender'] = $request->gender;
-    }
-    if ($request->has('looking_for')) {
-        $updateData['looking_for'] = $request->looking_for;
-    }
-    if ($request->has('about')) {
-        $updateData['about'] = $request->about;
-    }
-    if ($request->has('address')) {
-        $updateData['address'] = $request->address;
+    foreach (['name', 'age', 'gender', 'looking_for', 'about', 'address'] as $field) {
+        if ($request->has($field)) {
+            $updateData[$field] = $request->$field;
+        }
     }
 
     $now = Carbon::now('Asia/Kolkata');
@@ -1424,43 +1412,69 @@ public function updateProfile(Request $request)
         $updateData['interest'] = json_encode($request->interest);
     }
 
-    // ✅ Handle profile image uploads (remove old + save new)
-    if ($request->hasFile('profile_image')) {
-        $path = public_path('uploads/app/profile_images/');
-        if (!file_exists($path)) {
-            mkdir($path, 0777, true);
-        }
+    // ✅ Handle profile images (add + remove specific)
+    $path = public_path('uploads/app/profile_images/');
+    if (!file_exists($path)) {
+        mkdir($path, 0777, true);
+    }
 
-        // 🧹 Delete old images
-        if ($user->profile_image) {
-            $oldImages = json_decode($user->profile_image, true);
-            if (is_array($oldImages)) {
-                foreach ($oldImages as $oldImage) {
-                    $oldPath = $path . $oldImage;
-                    if (file_exists($oldPath)) {
-                        @unlink($oldPath);
-                    }
-                }
+    // Get existing images from DB
+    $existingImages = [];
+    if ($user->profile_image) {
+        $existingImages = json_decode($user->profile_image, true);
+    }
+
+    // ✅ Remove images if "remove_profile_image" present
+    if ($request->has('remove_profile_image') && is_array($request->remove_profile_image)) {
+        foreach ($request->remove_profile_image as $removeUrl) {
+            // Example URL: https://domain/uploads/app/profile_images/xyz.jpg
+            $fileName = basename($removeUrl);
+
+            // Find and remove from DB array
+            $key = array_search($fileName, $existingImages);
+            if ($key !== false) {
+                unset($existingImages[$key]);
+            }
+
+            // Delete file from storage
+            $filePath = $path . $fileName;
+            if (file_exists($filePath)) {
+                @unlink($filePath);
             }
         }
 
-        // 📸 Save new images
-        $newImages = $request->file('profile_image');
-        $imageArray = [];
+        // Reindex keys properly (1, 2, 3, ...)
+        $existingImages = array_values($existingImages);
+        $newIndexed = [];
         $index = 1;
+        foreach ($existingImages as $img) {
+            $newIndexed[(string)$index] = $img;
+            $index++;
+        }
+        $existingImages = $newIndexed;
+    }
+
+    // ✅ Add new uploaded images
+    if ($request->hasFile('profile_image')) {
+        $newImages = $request->file('profile_image');
+        $index = count($existingImages) + 1;
 
         foreach ($newImages as $image) {
             $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
             $image->move($path, $imageName);
-            $imageArray[(string)$index] = $imageName;
+            $existingImages[(string)$index] = $imageName;
             $index++;
         }
-
-        // 💾 Save JSON
-        $updateData['profile_image'] = json_encode($imageArray);
     }
 
-    // ✅ Update user only if something to update
+    // ✅ Save final image JSON (if changed)
+    if (!empty($existingImages)) {
+        $updateData['profile_image'] = json_encode($existingImages);
+    } else {
+        $updateData['profile_image'] = null;
+    }
+
+    // ✅ Update user
     if (!empty($updateData)) {
         $user->update($updateData);
     }
@@ -1471,7 +1485,6 @@ public function updateProfile(Request $request)
 
     if ($activeSubscription && $request->has('interest') && is_array($request->interest)) {
         $subscriptionStatus = 1;
-
         $interestIds = $request->interest;
         $interests = Interest::whereIn('id', $interestIds)->get();
 

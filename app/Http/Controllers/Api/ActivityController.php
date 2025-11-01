@@ -5730,6 +5730,34 @@ public function acceptnumber(Request $request)
                 'confirm' => $type === 'accept' ? 7 : 4
             ]);
 
+            // Send confirmation notification to the other user via FCM
+            try {
+                $title = $request->title ?? ($type === 'accept' ? 'Invitation Accepted' : 'Invitation Declined');
+                $message = $authUser->name . ($type === 'accept' ? ' accepted your activity invitation.' : ' declined your activity invitation.');
+
+                if (!empty($user->fcm_token)) {
+                    $sent = $this->firebaseService->sendNotification(
+                        $user->fcm_token,
+                        $title,
+                        $message,
+                        [
+                            'screen' => 'ActivityDetails',
+                            'activity_id' => $activity->id,
+                        ]
+                    );
+
+                    if ($sent) {
+                        Log::info("✅ Confirmation notification sent to user ID: {$user->id}, token: {$user->fcm_token}");
+                    } else {
+                        Log::warning("Failed to send confirmation notification to user ID: {$user->id}, token: {$user->fcm_token}");
+                    }
+                } else {
+                    Log::warning("No FCM token found for user ID: {$user->id}");
+                }
+            } catch (\Exception $e) {
+                Log::error('Error sending confirmation notification: ' . $e->getMessage());
+            }
+
             return response()->json([
                 'message' => 'Confirmation updated successfully.',
                 'status' => 200,

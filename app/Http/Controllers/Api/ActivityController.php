@@ -4079,9 +4079,11 @@ public function friendcount_one(Request $request)
         return null;
     }
 
+     $activity_user = User::where('id',$activity->user_id)->first();
+
     $imagePath = null;
-    if ($userItem->profile_image) {
-        $images = json_decode($userItem->profile_image, true);
+    if ($activity_user->profile_image) {
+        $images = json_decode($activity_user->profile_image, true);
         if (is_array($images) && count($images)) {
             $imagePath = reset($images);
         }

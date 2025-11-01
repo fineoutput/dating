@@ -4358,20 +4358,18 @@ public function friendcount_one(Request $request)
     //     ->unique('id')
     //     ->values();
 
-   $filteredUserList = $userList->filter(fn($u) => $u['id'] !== $user->id)->values();
+    $filteredUserList = $userList->filter(fn($u) => $u['id'] !== $user->id)->values();
     $filteredGroupList = $groupUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
     $filteredLikeUsers = $likeUserList->filter(fn($u) => $u['id'] !== $user->id)->values();
     $filteredCupidUsers = $matchedUsers->filter(fn($u) => $u['id'] !== $user->id)->values();
     $filteredactivityChatsUsers = $activitychatList->filter(fn($u) => $u['id'] !== $user->id)->values();
     $filteredChatUsers = $chatList->filter(fn($u) => $u['id'] !== $user->id)->values();
 
-
     // ✅ Step 2: Find all users from activity_users who have non-empty user_rendoms
     $nonEmptyActivityUsers = $filteredUserList
         ->filter(fn($u) => isset($u['user_rendoms']) && count($u['user_rendoms']) > 0)
         ->pluck('user_rendom')
         ->toArray();
-
 
     // ✅ Step 3: Remove those users from chat & activity_chat lists
     $filteredactivityChatsUsers = $filteredactivityChatsUsers
@@ -4382,24 +4380,11 @@ public function friendcount_one(Request $request)
         ->reject(fn($u) => in_array($u['user_rendom'], $nonEmptyActivityUsers))
         ->values();
 
-
-    // ✅ Step 4: NEW FILTER — Remove users already in filteredUserList
-    $existingUserRendoms = $filteredUserList->pluck('user_rendom')->filter()->toArray();
-
-    $filteredactivityChatsUsers = $filteredactivityChatsUsers
-        ->reject(fn($u) => in_array($u['user_rendom'], $existingUserRendoms))
+    // ✅ Step 4: Continue with your merging logic
+    $matchUsers = collect($filteredLikeUsers)
+        ->merge(collect($filteredCupidUsers))
+        ->unique('id')
         ->values();
-
-    $filteredChatUsers = $filteredChatUsers
-        ->reject(fn($u) => in_array($u['user_rendom'], $existingUserRendoms))
-        ->values();
-
-
-// ✅ Step 5: Continue with your merging logic
-$matchUsers = collect($filteredLikeUsers)
-    ->merge(collect($filteredCupidUsers))
-    ->unique('id')
-    ->values();
 
 
     // 🔚 Final Response

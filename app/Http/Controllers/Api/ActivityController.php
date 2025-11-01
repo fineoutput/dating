@@ -443,6 +443,30 @@ class ActivityController extends Controller
                                 'user_id'   => $matchedUser->id,
                                 'confirm'     => 6,
                             ]);
+
+                            // Send FCM notification to the matched user
+                            $title = 'New Activity Invitation';
+                            $firebaseService = new FirebaseService();
+                            
+                            if ($matchedUser->fcm_token) {
+                                $sent = $firebaseService->sendNotification(
+                                    $matchedUser->fcm_token,
+                                    $title,
+                                    $user->name . ' invited you to join their activity: ' . $activity->title,
+                                    [
+                                        'screen' => 'ActivityDetails',
+                                        'activity_id' => $activity->id
+                                    ]
+                                );
+
+                                if ($sent) {
+                                    Log::info("✅ Activity invitation notification sent to user ID: {$matchedUser->id}, FCM Token: {$matchedUser->fcm_token}");
+                                } else {
+                                    Log::warning("Failed to send activity invitation notification to user ID: {$matchedUser->id}, FCM Token: {$matchedUser->fcm_token}");
+                                }
+                            } else {
+                                Log::warning("No FCM token found for user ID: {$matchedUser->id}");
+                            }
                         }
                     }
                 }
@@ -468,6 +492,30 @@ class ActivityController extends Controller
                                 'user_id'   => $matchedUser->id,
                                 'confirm'     => 6,
                             ]);
+                        }
+                        
+                        // Send FCM notification to the matched user
+                        $title = 'New Activity Invitation';
+                        $firebaseService = new FirebaseService();
+                        
+                        if ($matchedUser->fcm_token) {
+                            $sent = $firebaseService->sendNotification(
+                                $matchedUser->fcm_token,
+                                $title,
+                                $user->name . ' invited you to join their activity: ' . $activity->title,
+                                [
+                                    'screen' => 'ActivityDetails',
+                                    'activity_id' => $activity->id
+                                ]
+                            );
+
+                            if ($sent) {
+                                Log::info("✅ Activity invitation notification sent to user ID: {$matchedUser->id}, FCM Token: {$matchedUser->fcm_token}");
+                            } else {
+                                Log::warning("Failed to send activity invitation notification to user ID: {$matchedUser->id}, FCM Token: {$matchedUser->fcm_token}");
+                            }
+                        } else {
+                            Log::warning("No FCM token found for user ID: {$matchedUser->id}");
                         }
                     }
                 }

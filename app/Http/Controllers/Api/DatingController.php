@@ -828,12 +828,7 @@ public function MatchingUsersdetailes(Request $request)
             }
         }
 
-        if (is_numeric($allowedInterest)) {
-            $remainingSwipes = max((int)$allowedInterest - (int)$usedSwipes, 0);
-        } else {
-            // For unlimited plans, give very high value or mark unlimited
-            $remainingSwipes = 'Unlimited';
-        }
+        $remainingSwipes = max($allowedInterest - $usedSwipes, 0);
 
     return response()->json([
         'message' => 'Matching users found successfully',
@@ -2320,7 +2315,6 @@ public function handleUserInteractions(Request $request)
                 ->orWhere('super_like', 1);
             })
             ->count();
-
             // $usedSwipes = SlideLike::where('matched_user', $user->id)
             //     ->where('liked_user', 1)
             //     ->whereBetween('created_at', [$activeSubscription->activated_at, $activeSubscription->expires_at])

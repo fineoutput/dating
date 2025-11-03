@@ -628,7 +628,7 @@ public function MatchingUsersdetailes(Request $request)
     // ✅ Get all activity IDs from above
     $activityIds = $activities->pluck('id');
 
-    $attendInterests = OtherInterest::where('user_id', $user->id)
+    $attendInterests = OtherInterest::where('user_id','!=', $user->id)
         ->where('confirm', 8)
         ->get();
 
@@ -2838,7 +2838,7 @@ public function handleUserInteractions(Request $request)
             // ✅ Get all activity IDs from above
             $activityIds = $activities->pluck('id');
 
-            $attendInterests = OtherInterest::where('user_id', $user->id)
+            $attendInterests = OtherInterest::where('user_id','!=', $user->id)
                 ->where('confirm', 8)
                 ->get();
 
@@ -2852,7 +2852,7 @@ public function handleUserInteractions(Request $request)
 
             // ✅ Filter OtherInterest where the current user has confirm 3 or 7
             $userInterests = OtherInterest::whereIn('activity_id', $activityIds)
-                ->where('user_id', $user->id)
+                ->where('user_id','!=', $user->id)
                 ->whereIn('confirm', [3, 7])
                 ->get();
 

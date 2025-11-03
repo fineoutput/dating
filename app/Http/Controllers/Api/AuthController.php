@@ -997,7 +997,7 @@ class AuthController extends Controller
     // ✅ Get all activity IDs from above
     $activityIds = $activities->pluck('id');
 
-    $attendInterests = OtherInterest::where('user_id', $user->id)
+    $attendInterests = OtherInterest::where('user_id','!=', $user->id)
         ->where('confirm', 8)
         ->get();
 

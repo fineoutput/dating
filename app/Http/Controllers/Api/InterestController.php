@@ -1226,15 +1226,31 @@ public function removeinterest(Request $request)
         })
         ->pluck('id');
 
-    $attended = OtherInterest::where('user_id', $user->id)->where('confirm', 8)->count();
-        if($attended){
-    $ghosted = OtherInterest::where('user_id', $user->id)
-        ->whereIn('confirm', [3, 7])
-        ->whereIn('activity_id', $expiredActivityIds)
-        ->count();
-        }else{
-            $ghosted = 0;
-        }
+
+            $activityIds = $expiredActivityIds->pluck('id');
+
+            $attendInterests = OtherInterest::where('user_id','!=', $user->id)
+                ->where('confirm', 8)
+                ->get();
+
+            $attended = $attendInterests->filter(function ($interest) use ($user) {
+                return OtherInterest::where('activity_id', $interest->activity_id)
+                    ->where('user_id', '!=', $user->id)
+                    ->where('confirm', 8)
+                    ->exists();
+            })->count();
+
+            $userInterests = OtherInterest::whereIn('activity_id', $activityIds)
+                ->where('user_id','!=', $user->id)
+                ->whereIn('confirm', [3, 7])
+                ->get();
+            
+            // ✅ Count only those where that activity also has confirm = 8 from *any* user
+            $ghosted = $userInterests->filter(function ($interest) {
+                return OtherInterest::where('activity_id', $interest->activity_id)
+                    ->where('confirm', 8)
+                    ->exists(); // at least one confirm=8 record
+            })->count();
         
     $created = Activity::where('user_id', $user->id)->count();
 

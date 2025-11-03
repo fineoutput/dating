@@ -2286,6 +2286,7 @@ $isUnlimited = false;
 
 if ($activeSubscription) {
     $plan = DatingSubscription::find($activeSubscription->plan_id);
+    log::alert($plan);
 
     if ($plan) {
         $planValue = trim(strtolower($plan->unlimited_swipes));
@@ -2309,6 +2310,7 @@ if ($activeSubscription) {
 } else {
     // Free user
     $freePlan = DatingSubscription::where('type', 'free')->first();
+    log::alert($freePlan);
 
     if ($freePlan) {
         $allowedSwipes = (int)($freePlan->unlimited_swipes ?? 0);

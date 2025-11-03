@@ -2845,14 +2845,14 @@ public function handleUserInteractions(Request $request)
             // ✅ Count only those activities where at least one other user also confirmed = 8
             $attendUsers = $attendInterests->filter(function ($interest) use ($user) {
                 return OtherInterest::where('activity_id', $interest->activity_id)
-                    ->where('user_id', '!=', $user->id)
+                    // ->where('user_id', '!=', $user->id)
                     ->where('confirm', 8)
                     ->exists();
             })->count();
 
             // ✅ Filter OtherInterest where the current user has confirm 3 or 7
             $userInterests = OtherInterest::whereIn('activity_id', $activityIds)
-                ->where('user_id','!=', $user->id)
+                // ->where('user_id','!=', $user->id)
                 ->whereIn('confirm', [3, 7])
                 ->get();
 

@@ -2271,9 +2271,9 @@ public function handleUserInteractions(Request $request)
     $dislike = $request->input('dislike', 0);
     $responses = [];
 
-    $now = Carbon::now('Asia/Kolkata');
+  $now = Carbon::now('Asia/Kolkata');
 
-  $activeSubscription = UserSubscription::where('user_id', $user->id)
+$activeSubscription = UserSubscription::where('user_id', $user->id)
     ->where('type', 'Dating')
     ->where('is_active', 1)
     ->where('activated_at', '<=', $now)
@@ -2285,34 +2285,36 @@ $usedSwipes = 0;
 $isUnlimited = false;
 
 if ($activeSubscription) {
-    // ✅ User has an active paid plan
     $plan = DatingSubscription::find($activeSubscription->plan_id);
 
-    if ($plan && (int)$plan->unlimited_swipes === -1) {
-        // -1 means unlimited swipes for premium plan
-        $isUnlimited = true;
-    } else {
-        $allowedSwipes = (int) ($plan->unlimited_swipes ?? 0);
+    if ($plan) {
+        $planValue = trim(strtolower($plan->unlimited_swipes));
 
-        $usedSwipes = SlideLike::where('matched_user', $user->id)
-            ->whereBetween('created_at', [$activeSubscription->activated_at, $activeSubscription->expires_at])
-            ->where(function($q) {
-                $q->where('liked_user', 1)
-                  ->orWhere('dislike', 1)
-                  ->orWhere('super_like', 1);
-            })
-            ->count();
+        if ($planValue === 'unlimited' || (int)$planValue === -1) {
+            $isUnlimited = true;
+        } else {
+            $allowedSwipes = (int)$planValue;
+        }
     }
 
+    $usedSwipes = SlideLike::where('matched_user', $user->id)
+        ->whereBetween('created_at', [$activeSubscription->activated_at, $activeSubscription->expires_at])
+        ->where(function ($q) {
+            $q->where('liked_user', 1)
+              ->orWhere('dislike', 1)
+              ->orWhere('super_like', 1);
+        })
+        ->count();
+
 } else {
-    // ✅ Handle free users — one-time limited swipes
+    // Free user
     $freePlan = DatingSubscription::where('type', 'free')->first();
 
     if ($freePlan) {
-        $allowedSwipes = (int) ($freePlan->unlimited_swipes ?? 0);
+        $allowedSwipes = (int)($freePlan->unlimited_swipes ?? 0);
 
         $usedSwipes = SlideLike::where('matched_user', $user->id)
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->where('liked_user', 1)
                   ->orWhere('dislike', 1)
                   ->orWhere('super_like', 1);
@@ -2321,19 +2323,20 @@ if ($activeSubscription) {
     }
 }
 
-// ✅ Calculate remaining swipes safely
+// ✅ Calculate remaining
 if ($isUnlimited) {
     $remainingSwipes = 'Unlimited';
 } else {
     $remainingSwipes = max($allowedSwipes - $usedSwipes, 0);
 }
-    // ✅ Swipe limit enforcement (for non-unlimited users)
-    if (!$isUnlimited && $usedSwipes >= $allowedSwipes) {
-        return response()->json([
-            'message' => 'You’ve reached your free swipe limit. Upgrade your plan to continue swiping.',
-            'status' => 403
-        ]);
-    }
+
+// ✅ Enforce swipe limit
+if (!$isUnlimited && $usedSwipes >= $allowedSwipes) {
+    return response()->json([
+        'message' => 'You’ve reached your free swipe limit. Upgrade your plan to continue swiping.',
+        'status' => 403
+    ]);
+}
 
     // ✅ Validate target user
     $targetUser = User::where('rendom', $matchingUserId)->first();

@@ -607,39 +607,39 @@ public function MatchingUsersdetailes(Request $request)
 
     $activityIds = $activities->pluck('id');
 
-    $attendInterests = OtherInterest::where('user_id', $user->id)
-                ->where('confirm', 8)
-                ->get();
+    // $attendInterests = OtherInterest::where('user_id', $user->id)
+    //             ->where('confirm', 8)
+    //             ->get();
 
-            $attendUsers = $attendInterests->filter(function ($interest) use ($user) {
-                return OtherInterest::where('activity_id', $interest->activity_id)
-                    // ->where('user_id', $user->id)
-                    ->where('confirm', 8)
-                    ->exists();
-            })->count();
+    //         $attendUsers = $attendInterests->filter(function ($interest) use ($user) {
+    //             return OtherInterest::where('activity_id', $interest->activity_id)
+    //                 // ->where('user_id', $user->id)
+    //                 ->where('confirm', 8)
+    //                 ->exists();
+    //         })->count();
 
-            $userInterests = OtherInterest::whereIn('activity_id', $activityIds)
-                ->where('user_id', $user->id)
-                ->whereIn('confirm', [3, 7])
-                ->get();
+    //         $userInterests = OtherInterest::whereIn('activity_id', $activityIds)
+    //             ->where('user_id', $user->id)
+    //             ->whereIn('confirm', [3, 7])
+    //             ->get();
 
-            $ghostUsers = $userInterests->filter(function ($interest) {
-                return OtherInterest::where('activity_id', $interest->activity_id)
-                    ->where('confirm', 8)
-                    ->exists();
-            })->count();
+    //         $ghostUsers = $userInterests->filter(function ($interest) {
+    //             return OtherInterest::where('activity_id', $interest->activity_id)
+    //                 ->where('confirm', 8)
+    //                 ->exists();
+    //         })->count();
 
-    // $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
-    // $hostedActivity = Activity::where('user_id', $user->id)->count();
+    // // $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
+    // // $hostedActivity = Activity::where('user_id', $user->id)->count();
 
-    $hostedActivity = Activity::where('user_id', $user->id)->where('status', 2)
-    ->where(function ($query) use ($currentTime) {
-        $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
-            ->orWhereRaw("
-                STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
-            ", [$currentTime]);
-    })
-        ->count();
+    // $hostedActivity = Activity::where('user_id', $user->id)->where('status', 2)
+    // ->where(function ($query) use ($currentTime) {
+    //     $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
+    //         ->orWhereRaw("
+    //             STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
+    //         ", [$currentTime]);
+    // })
+    //     ->count();
 
     $usersWithInterests = [];
     $totalMatchingUsers = 0;
@@ -706,12 +706,12 @@ public function MatchingUsersdetailes(Request $request)
                     ->exists();
             })->count();
 
-            $userInterests = OtherInterest::whereIn('activity_id', $activityIds)
+            $userInterestsss = OtherInterest::whereIn('activity_id', $activityIds)
                 ->where('user_id', $matchingUser->id)
                 ->whereIn('confirm', [3, 7])
                 ->get();
 
-            $ghostUsers = $userInterests->filter(function ($interest) {
+            $ghostUsers = $userInterestsss->filter(function ($interest) {
                 return OtherInterest::where('activity_id', $interest->activity_id)
                     ->where('confirm', 8)
                     ->exists();
@@ -778,7 +778,7 @@ public function MatchingUsersdetailes(Request $request)
         $allowedInterest = 0;
         $usedSwipes = 0;
 
-$activeSubscription = UserSubscription::where('user_id', $userId)
+ $activeSubscription = UserSubscription::where('user_id', $userId)
     ->where('type', 'Dating')
     ->where('is_active', 1)
     ->where('activated_at', '<=', $now)

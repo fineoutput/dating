@@ -1232,21 +1232,22 @@ public function removeinterest(Request $request)
             $attendInterests = OtherInterest::where('user_id', $user->id)
                 ->where('confirm', 8)
                 ->get();
-
-            $attended = $attendInterests->filter(function ($interest) use ($user) {
+            // ✅ Count only those activities where at least one other user also confirmed = 8
+            $attendUsers = $attendInterests->filter(function ($interest) use ($user) {
                 return OtherInterest::where('activity_id', $interest->activity_id)
-                    ->where('user_id', $user->id)
+                    // ->where('user_id', $user->id)
                     ->where('confirm', 8)
                     ->exists();
             })->count();
 
+            // ✅ Filter OtherInterest where the current user has confirm 3 or 7
             $userInterests = OtherInterest::whereIn('activity_id', $activityIds)
                 ->where('user_id', $user->id)
                 ->whereIn('confirm', [3, 7])
                 ->get();
-            
+
             // ✅ Count only those where that activity also has confirm = 8 from *any* user
-            $ghosted = $userInterests->filter(function ($interest) {
+            $ghostUsers = $userInterests->filter(function ($interest) {
                 return OtherInterest::where('activity_id', $interest->activity_id)
                     ->where('confirm', 8)
                     ->exists(); // at least one confirm=8 record
@@ -1277,8 +1278,8 @@ public function removeinterest(Request $request)
         'activity_rendom' => $interest->activity->rendom ?? '',
         'activity_id' => $interest->activity->id ?? '',
         'confirm' => $interest->confirm,
-        'ghosted' => $ghosted,
-        'attended' => $attended,
+        'ghosted' => $ghostUsers,
+        'attended' => $attendUsers,
         'created' => $created,
     ];
 };

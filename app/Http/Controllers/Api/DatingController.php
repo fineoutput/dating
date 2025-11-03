@@ -593,27 +593,7 @@ public function MatchingUsersdetailes(Request $request)
 
     // $attendUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 8)->count();
        $currentTime = Carbon::now('Asia/Kolkata');  
-    // $activities = Activity::orderBy('id', 'DESC')
-    // ->where('user_id', $user->id)
-    // ->where('status', 2)
-    // ->where(function ($query) use ($currentTime) {
-    //     $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
-    //         ->orWhereRaw("
-    //             STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
-    //         ", [$currentTime]);
-    // })
-    // ->get();
-
-    // if($attendUsers){
-    // $ghostUsers = OtherInterest::whereIn('activity_id', $activities->pluck('id'))
-    // ->where('user_id', $user->id)
-    // ->whereIn('confirm', [3,7]) // ✅ fixed
-    // ->count();
-    // }
-    // else{
-    //     $ghostUsers = 0;
-    // }
-
+  
     $activities = Activity::orderBy('id', 'DESC')
     // ->where('user_id', $user->id)
     ->where('status', 2)
@@ -628,30 +608,29 @@ public function MatchingUsersdetailes(Request $request)
     // ✅ Get all activity IDs from above
     $activityIds = $activities->pluck('id');
 
-    $attendInterests = OtherInterest::where('user_id','!=', $user->id)
-        ->where('confirm', 8)
-        ->get();
+    $attendInterests = OtherInterest::where('user_id', $user->id)
+                ->where('confirm', 8)
+                ->get();
+            // ✅ Count only those activities where at least one other user also confirmed = 8
+            $attendUsers = $attendInterests->filter(function ($interest) use ($user) {
+                return OtherInterest::where('activity_id', $interest->activity_id)
+                    // ->where('user_id', $user->id)
+                    ->where('confirm', 8)
+                    ->exists();
+            })->count();
 
-    // ✅ Count only those activities where at least one other user also confirmed = 8
-    $attendUsers = $attendInterests->filter(function ($interest) use ($user) {
-        return OtherInterest::where('activity_id', $interest->activity_id)
-            ->where('user_id', '!=', $user->id)
-            ->where('confirm', 8)
-            ->exists();
-    })->count();
+            // ✅ Filter OtherInterest where the current user has confirm 3 or 7
+            $userInterests = OtherInterest::whereIn('activity_id', $activityIds)
+                ->where('user_id', $user->id)
+                ->whereIn('confirm', [3, 7])
+                ->get();
 
-    // ✅ Filter OtherInterest where the current user has confirm 3 or 7
-    $userInterests = OtherInterest::whereIn('activity_id', $activityIds)
-        ->where('user_id', $user->id)
-        ->whereIn('confirm', [3, 7])
-        ->get();
-
-    // ✅ Count only those where that activity also has confirm = 8 from *any* user
-    $ghostUsers = $userInterests->filter(function ($interest) {
-        return OtherInterest::where('activity_id', $interest->activity_id)
-            ->where('confirm', 8)
-            ->exists(); // at least one confirm=8 record
-    })->count();
+            // ✅ Count only those where that activity also has confirm = 8 from *any* user
+            $ghostUsers = $userInterests->filter(function ($interest) {
+                return OtherInterest::where('activity_id', $interest->activity_id)
+                    ->where('confirm', 8)
+                    ->exists(); // at least one confirm=8 record
+            })->count();
 
     // $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
     // $hostedActivity = Activity::where('user_id', $user->id)->count();
@@ -2838,14 +2817,13 @@ public function handleUserInteractions(Request $request)
             // ✅ Get all activity IDs from above
             $activityIds = $activities->pluck('id');
 
-            $attendInterests = OtherInterest::where('user_id','!=', $user->id)
+            $attendInterests = OtherInterest::where('user_id', $user->id)
                 ->where('confirm', 8)
                 ->get();
-
             // ✅ Count only those activities where at least one other user also confirmed = 8
             $attendUsers = $attendInterests->filter(function ($interest) use ($user) {
                 return OtherInterest::where('activity_id', $interest->activity_id)
-                    ->where('user_id', $user->id)
+                    // ->where('user_id', $user->id)
                     ->where('confirm', 8)
                     ->exists();
             })->count();

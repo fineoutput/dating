@@ -829,7 +829,7 @@ $activeSubscription = UserSubscription::where('user_id', $userId)
         }
     }
 
-        $remainingSwipes = max($allowedInterest - $usedSwipes, 0);
+        // $remainingSwipes = max($allowedInterest - $usedSwipes, 0);
 
     return response()->json([
         'message' => 'Matching users found successfully',

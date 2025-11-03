@@ -778,55 +778,56 @@ public function MatchingUsersdetailes(Request $request)
         $allowedInterest = 0;
         $usedSwipes = 0;
 
-        $activeSubscription = UserSubscription::where('user_id', $userId)
-            ->where('type', 'Dating')
-            ->where('is_active', 1)
-            ->where('activated_at', '<=', $now)
-            ->where('expires_at', '>=', $now)
-            ->first();
+$activeSubscription = UserSubscription::where('user_id', $userId)
+    ->where('type', 'Dating')
+    ->where('is_active', 1)
+    ->where('activated_at', '<=', $now)
+    ->where('expires_at', '>=', $now)
+    ->first();
 
-        if ($activeSubscription) {
-            $dating = DatingSubscription::find($activeSubscription->plan_id);
-            $allowedInterest = $dating ? $dating->unlimited_swipes : 0;
+    if ($activeSubscription) {
+        // 🔹 Get plan details
+        $dating = DatingSubscription::find($activeSubscription->plan_id);
+        $allowedInterest = $dating ? $dating->unlimited_swipes : 0;
 
-              $likedCount = SlideLike::where('matched_user', $user->id)
-                            ->where('liked_user', 1)
-                            ->count();
-                
-                        $dislikedCount = SlideLike::where('matched_user', $user->id)
-                            ->where('dislike', 1)
-                            ->count();
-                
-                        $superLikedCount = SlideLike::where('matched_user', $user->id)
-                            ->where('super_like', 1)
-                            ->count();
+        // 🔹 Count used swipes
+        $usedSwipes = SlideLike::where('matched_user', $user->id)
+            ->where(function ($q) {
+                $q->where('liked_user', 1)
+                ->orWhere('dislike', 1)
+                ->orWhere('super_like', 1);
+            })
+            ->count();
 
-                            $usedSwipes = $likedCount + $dislikedCount + $superLikedCount;
-
+        // 🔹 Check for unlimited plan
+        if (is_string($allowedInterest) && strtolower($allowedInterest) === 'unlimited') {
+            $remainingSwipes = 'Unlimited';
         } else {
-            $freePlan = DatingSubscription::where('type', 'free')->first();
-
-            if ($freePlan) {
-                $allowedInterest = $freePlan->unlimited_swipes;
-
-                $likedCount = SlideLike::where('matched_user', $user->id)
-                            ->where('liked_user', 1)
-                            ->count();
-                
-                        $dislikedCount = SlideLike::where('matched_user', $user->id)
-                            ->where('dislike', 1)
-                            ->count();
-                
-                        $superLikedCount = SlideLike::where('matched_user', $user->id)
-                            ->where('super_like', 1)
-                            ->count();
-
-                            $usedSwipes = $likedCount + $dislikedCount + $superLikedCount;
-            } else {
-                $allowedInterest = 0;
-                $usedSwipes = 0;
-            }
+            $remainingSwipes = max((int)$allowedInterest - (int)$usedSwipes, 0);
         }
+
+    } else {
+        // 🔹 Free plan fallback
+        $freePlan = DatingSubscription::where('type', 'free')->first();
+
+        if ($freePlan) {
+            $allowedInterest = (int) ($freePlan->unlimited_swipes ?? 0);
+
+            $usedSwipes = SlideLike::where('matched_user', $user->id)
+                ->where(function ($q) {
+                    $q->where('liked_user', 1)
+                    ->orWhere('dislike', 1)
+                    ->orWhere('super_like', 1);
+                })
+                ->count();
+
+            $remainingSwipes = max($allowedInterest - $usedSwipes, 0);
+        } else {
+            $allowedInterest = 0;
+            $usedSwipes = 0;
+            $remainingSwipes = 0;
+        }
+    }
 
         $remainingSwipes = max($allowedInterest - $usedSwipes, 0);
 
@@ -2315,6 +2316,7 @@ public function handleUserInteractions(Request $request)
                 ->orWhere('super_like', 1);
             })
             ->count();
+            
             // $usedSwipes = SlideLike::where('matched_user', $user->id)
             //     ->where('liked_user', 1)
             //     ->whereBetween('created_at', [$activeSubscription->activated_at, $activeSubscription->expires_at])

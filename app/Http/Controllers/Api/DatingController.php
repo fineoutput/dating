@@ -828,7 +828,12 @@ public function MatchingUsersdetailes(Request $request)
             }
         }
 
-        $remainingSwipes = max((int)$allowedInterest - (int)$usedSwipes, 0);
+        if (is_numeric($allowedInterest)) {
+            $remainingSwipes = max((int)$allowedInterest - (int)$usedSwipes, 0);
+        } else {
+            // For unlimited plans, give very high value or mark unlimited
+            $remainingSwipes = 'Unlimited';
+        }
 
     return response()->json([
         'message' => 'Matching users found successfully',

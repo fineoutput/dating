@@ -605,13 +605,12 @@ public function MatchingUsersdetailes(Request $request)
     })
     ->get();
 
-    // ✅ Get all activity IDs from above
     $activityIds = $activities->pluck('id');
 
     $attendInterests = OtherInterest::where('user_id', $user->id)
                 ->where('confirm', 8)
                 ->get();
-            // ✅ Count only those activities where at least one other user also confirmed = 8
+
             $attendUsers = $attendInterests->filter(function ($interest) use ($user) {
                 return OtherInterest::where('activity_id', $interest->activity_id)
                     // ->where('user_id', $user->id)
@@ -619,17 +618,15 @@ public function MatchingUsersdetailes(Request $request)
                     ->exists();
             })->count();
 
-            // ✅ Filter OtherInterest where the current user has confirm 3 or 7
             $userInterests = OtherInterest::whereIn('activity_id', $activityIds)
                 ->where('user_id', $user->id)
                 ->whereIn('confirm', [3, 7])
                 ->get();
 
-            // ✅ Count only those where that activity also has confirm = 8 from *any* user
             $ghostUsers = $userInterests->filter(function ($interest) {
                 return OtherInterest::where('activity_id', $interest->activity_id)
                     ->where('confirm', 8)
-                    ->exists(); // at least one confirm=8 record
+                    ->exists();
             })->count();
 
     // $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
@@ -698,6 +695,40 @@ public function MatchingUsersdetailes(Request $request)
             ->latest()
             ->first();
 
+            $attendInterests = OtherInterest::where('user_id', $matchingUser->id)
+                ->where('confirm', 8)
+                ->get();
+
+            $attendUsers = $attendInterests->filter(function ($interest) use ($matchingUser) {
+                return OtherInterest::where('activity_id', $interest->activity_id)
+                    // ->where('user_id', $user->id)
+                    ->where('confirm', 8)
+                    ->exists();
+            })->count();
+
+            $userInterests = OtherInterest::whereIn('activity_id', $activityIds)
+                ->where('user_id', $matchingUser->id)
+                ->whereIn('confirm', [3, 7])
+                ->get();
+
+            $ghostUsers = $userInterests->filter(function ($interest) {
+                return OtherInterest::where('activity_id', $interest->activity_id)
+                    ->where('confirm', 8)
+                    ->exists();
+            })->count();
+
+    // $ghostUsers = OtherInterest::where('user_id', $user->id)->where('confirm', 3)->count();
+    // $hostedActivity = Activity::where('user_id', $user->id)->count();
+
+    $hostedActivity = Activity::where('user_id', $matchingUser->id)->where('status', 2)
+    ->where(function ($query) use ($currentTime) {
+        $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
+            ->orWhereRaw("
+                STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
+            ", [$currentTime]);
+    })
+        ->count();
+        
         $usersWithInterests[] = [
             'user' => $matchingUser->name,
             'user_rendom' => $matchingUser->rendom,

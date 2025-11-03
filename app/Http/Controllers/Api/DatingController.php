@@ -2307,9 +2307,15 @@ public function handleUserInteractions(Request $request)
                             ->count();
 
                             $usedSwipes = $likedCount + $dislikedCount + $superLikedCount;
-            $usedSwipes
-                ->whereBetween('created_at', [$activeSubscription->activated_at, $activeSubscription->expires_at])
-                ->count();
+            $usedSwipes = SlideLike::where('matched_user', $user->id)
+            ->whereBetween('created_at', [$activeSubscription->activated_at, $activeSubscription->expires_at])
+            ->where(function($q) {
+                $q->where('liked_user', 1)
+                ->orWhere('dislike', 1)
+                ->orWhere('super_like', 1);
+            })
+            ->count();
+            
             // $usedSwipes = SlideLike::where('matched_user', $user->id)
             //     ->where('liked_user', 1)
             //     ->whereBetween('created_at', [$activeSubscription->activated_at, $activeSubscription->expires_at])

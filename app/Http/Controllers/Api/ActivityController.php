@@ -588,6 +588,7 @@ class ActivityController extends Controller
             'message' => 'Unauthorized. Please log in.',
         ], 401);
     }
+    Log::info($request."No FCM token for user ID");
 
     $user = Auth::user();
 

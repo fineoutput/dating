@@ -1424,54 +1424,105 @@ public function updateProfile(Request $request)
     }
 
     // ✅ Remove images if "remove_profile_image" present
+    // if ($request->has('remove_profile_image') && is_array($request->remove_profile_image)) {
+    //     foreach ($request->remove_profile_image as $removeUrl) {
+    //         // Example URL: https://domain/uploads/app/profile_images/xyz.jpg
+    //         $fileName = basename($removeUrl);
+
+    //         // Find and remove from DB array
+    //         $key = array_search($fileName, $existingImages);
+    //         if ($key !== false) {
+    //             unset($existingImages[$key]);
+    //         }
+
+    //         // Delete file from storage
+    //         $filePath = $path . $fileName;
+    //         if (file_exists($filePath)) {
+    //             @unlink($filePath);
+    //         }
+    //     }
+
+    //     // Reindex keys properly (1, 2, 3, ...)
+    //     $existingImages = array_values($existingImages);
+    //     $newIndexed = [];
+    //     $index = 1;
+    //     foreach ($existingImages as $img) {
+    //         $newIndexed[(string)$index] = $img;
+    //         $index++;
+    //     }
+    //     $existingImages = $newIndexed;
+    // }
+
+    // // ✅ Add new uploaded images
+    // if ($request->hasFile('profile_image')) {
+    //     $newImages = $request->file('profile_image');
+    //     $index = count($existingImages) + 1;
+
+    //     foreach ($newImages as $image) {
+    //         $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+    //         $image->move($path, $imageName);
+    //         $existingImages[(string)$index] = $imageName;
+    //         $index++;
+    //     }
+    // }
+
+    // // ✅ Save final image JSON (if changed)
+    // if (!empty($existingImages)) {
+    //     $updateData['profile_image'] = json_encode($existingImages);
+    // } else {
+    //     $updateData['profile_image'] = null;
+    // }
     if ($request->has('remove_profile_image') && is_array($request->remove_profile_image)) {
-        foreach ($request->remove_profile_image as $removeUrl) {
-            // Example URL: https://domain/uploads/app/profile_images/xyz.jpg
-            $fileName = basename($removeUrl);
+    foreach ($request->remove_profile_image as $removeUrl) {
+        $fileName = basename($removeUrl);
 
-            // Find and remove from DB array
-            $key = array_search($fileName, $existingImages);
-            if ($key !== false) {
-                unset($existingImages[$key]);
-            }
-
-            // Delete file from storage
-            $filePath = $path . $fileName;
-            if (file_exists($filePath)) {
-                @unlink($filePath);
-            }
+        // Find and remove from DB array
+        $key = array_search($fileName, $existingImages);
+        if ($key !== false) {
+            unset($existingImages[$key]);
         }
 
-        // Reindex keys properly (1, 2, 3, ...)
-        $existingImages = array_values($existingImages);
-        $newIndexed = [];
-        $index = 1;
-        foreach ($existingImages as $img) {
-            $newIndexed[(string)$index] = $img;
-            $index++;
-        }
-        $existingImages = $newIndexed;
-    }
-
-    // ✅ Add new uploaded images
-    if ($request->hasFile('profile_image')) {
-        $newImages = $request->file('profile_image');
-        $index = count($existingImages) + 1;
-
-        foreach ($newImages as $image) {
-            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-            $image->move($path, $imageName);
-            $existingImages[(string)$index] = $imageName;
-            $index++;
+        // Delete file from storage
+        $filePath = $path . $fileName;
+        if (file_exists($filePath)) {
+            @unlink($filePath);
         }
     }
 
-    // ✅ Save final image JSON (if changed)
-    if (!empty($existingImages)) {
-        $updateData['profile_image'] = json_encode($existingImages);
-    } else {
-        $updateData['profile_image'] = null;
+    // Reindex keys properly (1, 2, 3, ...)
+    $existingImages = array_values($existingImages);
+    $newIndexed = [];
+    $index = 1;
+    foreach ($existingImages as $img) {
+        $newIndexed[(string)$index] = $img;
+        $index++;
     }
+    $existingImages = $newIndexed;
+}
+
+// ✅ Add new uploaded images
+if ($request->hasFile('profile_image')) {
+    $newImages = $request->file('profile_image');
+    $index = count($existingImages) + 1;
+
+    foreach ($newImages as $image) {
+        $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+        $image->move($path, $imageName);
+        $existingImages[(string)$index] = $imageName;
+        $index++;
+    }
+}
+
+// ✅ Validation: ensure at least 1 image remains
+if (empty($existingImages)) {
+    return response()->json([
+        'message' => 'Minimum 1 profile image is required.',
+        'status' => 400,
+    ]);
+}
+
+// ✅ Save final image JSON (if changed)
+$updateData['profile_image'] = json_encode($existingImages);
 
     // ✅ Update user
     if (!empty($updateData)) {

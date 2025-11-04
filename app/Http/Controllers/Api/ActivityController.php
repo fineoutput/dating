@@ -609,12 +609,12 @@ class ActivityController extends Controller
                                 ->pluck('user_id')
                                 ->toArray();
 
-    // if ($activity->update_count > 0) {
-    //     return response()->json([
-    //         'message' => 'You have already updated your activity once.',
-    //         'status' => 208,
-    //     ], 208);
-    // }
+    if ($activity->update_count > 0) {
+        return response()->json([
+            'message' => 'You have already updated your activity once.',
+            'status' => 208,
+        ], 208);
+    }
     
 
     try {

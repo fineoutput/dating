@@ -589,8 +589,7 @@ class ActivityController extends Controller
         ], 401);
     }
 
-   Log::info('Activity edit request:', $request->when_time);
-   Log::info('Activity edit request:', $request->end_time);
+   Log::info('Activity edit request:', $request->all());
 
     $user = Auth::user();
 

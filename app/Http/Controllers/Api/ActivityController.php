@@ -588,8 +588,9 @@ class ActivityController extends Controller
             'message' => 'Unauthorized. Please log in.',
         ], 401);
     }
-    
-   Log::info('Activity edit request:', $request->all());
+
+   Log::info('Activity edit request:', $request->when_time ? $request->when_time : []);
+   Log::info('Activity edit request:', $request->end_time ? $request->end_time : []);
 
     $user = Auth::user();
 

@@ -820,7 +820,6 @@ public function getMessages(Request $request)
 
     $receiverRendomss = $request->input('receiver_rendom');
     $send_type = $request->input('send_type');
-    $chat_type = $request->input('chat_type');
     $activityId = $request->input('activity_id'); 
     $lastId = $request->input('last_id', 0); // 👈 last fetched message ID
 
@@ -850,9 +849,9 @@ public function getMessages(Request $request)
     while (time() - $start < $timeout) {
 
         // same query logic (no change)
-        $allMessages = Chat::where(function ($query) use ($authId, $receiverIds, $send_type, $activityId,$chat_type) {
+        $allMessages = Chat::where(function ($query) use ($authId, $receiverIds, $send_type, $activityId) {
             if ($send_type === 'single') {
-                $query->where('send_type', 'single')->where('chat_type', $chat_type);
+                $query->where('send_type', 'single');
                 $query->where(function ($q) use ($authId, $receiverIds) {
                     foreach ($receiverIds as $receiverId) {
                         $q->orWhere(function ($q2) use ($authId, $receiverId) {
@@ -866,7 +865,7 @@ public function getMessages(Request $request)
                     }
                 });
             } else {
-                $query->where('send_type', $send_type)->where('chat_type', $chat_type)
+                $query->where('send_type', $send_type)
                       ->where(function ($q) use ($authId, $receiverIds) {
                           $q->where('sender_id', $authId);
                           foreach ($receiverIds as $rid) {

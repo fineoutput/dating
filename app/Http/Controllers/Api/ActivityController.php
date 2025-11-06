@@ -4181,11 +4181,13 @@ public function friendcount_one(Request $request)
     $activityimagePath = $activity->image ?? null;
 
     $confirmmatchUsers = [];
+    $userRendoms = collect($confirm ?? [])->unique()->values();
 
-    foreach ($confirmmatch as $match) {
-        $user = $match->user; 
+    $users = User::whereIn('rendom', $userRendoms)->get();
 
+    foreach ($users as $user) {
         $imagePathgroup = null;
+
         if (!empty($user->profile_image)) {
             $images = json_decode($user->profile_image, true);
             if (is_array($images) && count($images)) {
@@ -4194,10 +4196,12 @@ public function friendcount_one(Request $request)
         }
 
         $confirmmatchUsers[] = [
-            'id' => $user->id ?? null,
-            'user_rendom' => $user->rendom ?? null,
-            'name' => $user->name ?? null,
-            'image' => $imagePathgroup ? asset('uploads/app/profile_images/' . $imagePathgroup) : null,
+            'id' => $user->id,
+            'user_rendom' => $user->rendom,
+            'name' => $user->name,
+            'image' => $imagePathgroup
+                ? asset('uploads/app/profile_images/' . $imagePathgroup)
+                : null,
         ];
     }
     return [

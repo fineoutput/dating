@@ -1194,6 +1194,22 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
 
     $cities = AdminCity::where('id', $user->admin_city)->first();
 
+    $now = Carbon::now('Asia/Kolkata');
+
+    // ✅ Check for active subscription
+    $activeSubscription = UserSubscription::where('user_id', $user->id)
+        ->where('type', 'Activitys')
+        ->where('is_active', 1)
+        ->where('activated_at', '<=', $now)
+        ->where('expires_at', '>=', $now)
+        ->first();
+
+        if($activeSubscription){
+            $subscribtionStatus = 1;
+        }else{
+            $subscribtionStatus = 0;
+        }
+
     // Final response
     $userData = [
         'number' => $user->number,
@@ -1213,6 +1229,7 @@ $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
         'attendUsers' => $attendUsers,
         'ghostUsers' => $ghostUsers,
         'hostedActivity' => $hostedActivity,
+        'subscribtionStatus' => $subscribtionStatus,
     ];
 
     return response()->json([

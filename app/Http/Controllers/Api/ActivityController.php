@@ -4160,13 +4160,12 @@ public function friendcount_one(Request $request)
 
     // ✅ All members including confirm 2,3,7 (for filtering logic)
     $confirmmatch = OtherInterest::with('user')
-        ->where('activity_id', $userItem->interest_activity_id)
+        ->where('activity_id', $userItem->interest_activity_id)->whereIn('confirm', [3, 7])
         ->take($howMany)
         ->get()
         ->filter()
         ->values();
 
-    // 🧩 Skip group if auth user has confirm = 2
     $hasRejected = $confirmmatch->contains(function ($cm) use ($user) {
         return $cm->user_id == $user->id && $cm->confirm == 2;
     });
@@ -4184,7 +4183,7 @@ public function friendcount_one(Request $request)
     $confirmmatchUsers = [];
 
     foreach ($confirmmatch as $match) {
-        $user = $match->user; // related user object
+        $user = $match->user; 
 
         $imagePathgroup = null;
         if (!empty($user->profile_image)) {

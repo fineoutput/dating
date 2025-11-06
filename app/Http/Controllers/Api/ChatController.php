@@ -812,6 +812,7 @@ public function sendMessage(Request $request)
 
 public function getMessages(Request $request)
 {
+    
     $authUser = Auth::user();
 
     if (!$authUser) {
@@ -821,7 +822,8 @@ public function getMessages(Request $request)
     $receiverRendomss = $request->input('receiver_rendom');
     $send_type = $request->input('send_type');
     $activityId = $request->input('activity_id'); 
-    $lastId = $request->input('last_id', 0); // 👈 last fetched message ID
+    $lastId = $request->input('last_id', 0); 
+    $chat_type = $request->input('chat_type'); 
 
     // Convert input to array
     $receiverRendoms = is_array($receiverRendomss)
@@ -848,38 +850,82 @@ public function getMessages(Request $request)
 
     while (time() - $start < $timeout) {
 
-        // same query logic (no change)
-        $allMessages = Chat::where(function ($query) use ($authId, $receiverIds, $send_type, $activityId) {
-            if ($send_type === 'single') {
-                $query->where('send_type', 'single');
-                $query->where(function ($q) use ($authId, $receiverIds) {
-                    foreach ($receiverIds as $receiverId) {
-                        $q->orWhere(function ($q2) use ($authId, $receiverId) {
-                            $q2->where('sender_id', $authId)
-                                ->whereRaw("FIND_IN_SET(?, receiver_id)", [$receiverId]);
-                        });
-                        $q->orWhere(function ($q2) use ($authId, $receiverId) {
-                            $q2->where('sender_id', $receiverId)
-                                ->whereRaw("FIND_IN_SET(?, receiver_id)", [$authId]);
-                        });
-                    }
-                });
-            } else {
-                $query->where('send_type', $send_type)
-                      ->where(function ($q) use ($authId, $receiverIds) {
-                          $q->where('sender_id', $authId);
-                          foreach ($receiverIds as $rid) {
-                              $q->orWhereRaw("FIND_IN_SET(?, receiver_id)", [$rid]);
-                          }
-                      });
+        $allMessages = Chat::where(function ($query) use ($authId, $receiverIds, $chat_type, $send_type, $activityId) {
+    if ($send_type === 'single') {
+        $query->where('send_type', 'single')
+              ->where('chat_type', $chat_type);
+
+        // 🟢 👉 Add this condition ONLY in if block
+        $query->where(function ($typeQuery) use ($chat_type) {
+            if (in_array($chat_type, ['contact', 'match'])) {
+                $typeQuery->whereIn('chat_type', ['contact', 'match']);
+            } elseif (in_array($chat_type, ['activity', 'intrest'])) {
+                $typeQuery->whereIn('chat_type', ['activity', 'intrest']);
             }
+        });
+
+        // 🔹 Existing receiver/sender matching logic (don’t remove)
+        $query->where(function ($q) use ($authId, $receiverIds) {
+            foreach ($receiverIds as $receiverId) {
+                $q->orWhere(function ($q2) use ($authId, $receiverId) {
+                    $q2->where('sender_id', $authId)
+                        ->whereRaw("FIND_IN_SET(?, receiver_id)", [$receiverId]);
+                });
+                $q->orWhere(function ($q2) use ($authId, $receiverId) {
+                    $q2->where('sender_id', $receiverId)
+                        ->whereRaw("FIND_IN_SET(?, receiver_id)", [$authId]);
+                });
+            }
+        });
+    } else {
+        $query->where('send_type', $send_type)
+              ->where(function ($q) use ($authId, $receiverIds) {
+                  $q->where('sender_id', $authId);
+                  foreach ($receiverIds as $rid) {
+                      $q->orWhereRaw("FIND_IN_SET(?, receiver_id)", [$rid]);
+                  }
+              });
+    }
         })
         ->when($send_type === 'group' && $activityId, function ($query) use ($activityId) {
             $query->where('activity_id', $activityId);
         })
-        ->where('id', '>', $lastId) // 👈 only new messages after lastId
+        ->where('id', '>', $lastId)
         ->orderBy('created_at', 'asc')
         ->get();
+
+        // same query logic (no change)
+        // $allMessages = Chat::where(function ($query) use ($authId, $receiverIds, $chat_type, $send_type, $activityId) {
+        //     if ($send_type === 'single') {
+        //         $query->where('send_type', 'single');
+        //         $query->where(function ($q) use ($authId, $receiverIds) {
+        //             foreach ($receiverIds as $receiverId) {
+        //                 $q->orWhere(function ($q2) use ($authId, $receiverId) {
+        //                     $q2->where('sender_id', $authId)
+        //                         ->whereRaw("FIND_IN_SET(?, receiver_id)", [$receiverId]);
+        //                 });
+        //                 $q->orWhere(function ($q2) use ($authId, $receiverId) {
+        //                     $q2->where('sender_id', $receiverId)
+        //                         ->whereRaw("FIND_IN_SET(?, receiver_id)", [$authId]);
+        //                 });
+        //             }
+        //         });
+        //     } else {
+        //         $query->where('send_type', $send_type)
+        //               ->where(function ($q) use ($authId, $receiverIds) {
+        //                   $q->where('sender_id', $authId);
+        //                   foreach ($receiverIds as $rid) {
+        //                       $q->orWhereRaw("FIND_IN_SET(?, receiver_id)", [$rid]);
+        //                   }
+        //               });
+        //     }
+        // })
+        // ->when($send_type === 'group' && $activityId, function ($query) use ($activityId) {
+        //     $query->where('activity_id', $activityId);
+        // })
+        // ->where('id', '>', $lastId) // 👈 only new messages after lastId
+        // ->orderBy('created_at', 'asc')
+        // ->get();
 
         if ($allMessages->count() > 0) {
             // 👇 Format messages (same as before)

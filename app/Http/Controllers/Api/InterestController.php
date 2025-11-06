@@ -1253,7 +1253,14 @@ public function removeinterest(Request $request)
                     ->exists(); // at least one confirm=8 record
             })->count();
         
-    $created = Activity::where('user_id', $user->id)->count();
+    $created = Activity::where('user_id', $user->id)
+        ->where(function ($query) use ($currentTime) {
+            $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) 
+                ->orWhereRaw("
+                        STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
+                ", [$currentTime]);
+        })->count();
+    // $created = Activity::where('user_id', $user->id)->count();
 
     $profileImages = json_decode($user->profile_image ?? '[]', true);
     $profileImageUrl = isset($profileImages[1])

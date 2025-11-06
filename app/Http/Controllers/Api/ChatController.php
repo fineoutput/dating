@@ -852,15 +852,14 @@ public function getMessages(Request $request)
 
         $allMessages = Chat::where(function ($query) use ($authId, $receiverIds, $chat_type, $send_type, $activityId) {
     if ($send_type === 'single') {
-        $query->where('send_type', 'single')
-              ->where('chat_type', $chat_type);
+        $query->where('send_type', 'single');
 
         // 🟢 👉 Add this condition ONLY in if block
         $query->where(function ($typeQuery) use ($chat_type) {
             if (in_array($chat_type, ['contact', 'match'])) {
                 $typeQuery->whereIn('chat_type', ['contact', 'match']);
             } elseif (in_array($chat_type, ['activity', 'intrest'])) {
-                $typeQuery->whereIn('chat_type', ['activity', 'intrest']);
+                $typeQuery->whereIn('chat_type', ['activity', 'intrest','activity_intrest']);
             }
         });
 

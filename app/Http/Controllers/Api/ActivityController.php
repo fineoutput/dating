@@ -4386,7 +4386,7 @@ public function friendcount_one(Request $request)
             'authuser_rendom' => $user->rendom,
             'name' => $activitymatchedUser->name,
             'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
-            'form' => 'activity_intrest',
+            'form' => 'activity',
             'last_message' => $activitychat->message ?? null,
             'send_type' => $activitychat->send_type ?? null,
         ];

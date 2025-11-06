@@ -4181,6 +4181,26 @@ public function friendcount_one(Request $request)
 
     $activityimagePath = $activity->image ?? null;
 
+    $confirmmatchUsers = [];
+
+    foreach ($confirmmatch as $match) {
+        $user = $match->user; // related user object
+
+        $imagePathgroup = null;
+        if (!empty($user->profile_image)) {
+            $images = json_decode($user->profile_image, true);
+            if (is_array($images) && count($images)) {
+                $imagePathgroup = reset($images);
+            }
+        }
+
+        $confirmmatchUsers[] = [
+            'id' => $user->id ?? null,
+            'user_rendom' => $user->rendom ?? null,
+            'name' => $user->name ?? null,
+            'image' => $imagePathgroup ? asset('uploads/app/profile_images/' . $imagePathgroup) : null,
+        ];
+    }
     return [
         'id' => $userItem->id,
         'user_rendom' => $userItem->rendom,
@@ -4196,7 +4216,7 @@ public function friendcount_one(Request $request)
         'last_message' => $chat->message ?? null,
         'send_type' => $chat->send_type ?? null,
         'user_rendoms' => $confirm,
-        'confirmmatch' => $confirmmatch,
+        'confirmmatch' => $confirmmatchUsers,
         'z' => 'z',
     ];
     })

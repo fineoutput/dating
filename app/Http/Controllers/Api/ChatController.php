@@ -821,8 +821,7 @@ public function getMessages(Request $request)
     $receiverRendomss = $request->input('receiver_rendom');
     $send_type = $request->input('send_type');
     $activityId = $request->input('activity_id'); 
-    $lastId = $request->input('last_id', 0); 
-    $chat_type = $request->input('chat_type'); 
+    $lastId = $request->input('last_id', 0); // 👈 last fetched message ID
 
     // Convert input to array
     $receiverRendoms = is_array($receiverRendomss)
@@ -850,7 +849,7 @@ public function getMessages(Request $request)
     while (time() - $start < $timeout) {
 
         // same query logic (no change)
-        $allMessages = Chat::where(function ($query) use ($authId, $receiverIds, $send_type, $activityId,$chat_type) {
+        $allMessages = Chat::where(function ($query) use ($authId, $receiverIds, $send_type, $activityId) {
             if ($send_type === 'single') {
                 $query->where('send_type', 'single');
                 $query->where(function ($q) use ($authId, $receiverIds) {
@@ -867,16 +866,16 @@ public function getMessages(Request $request)
                 });
             } else {
                 $query->where('send_type', $send_type)
-                      ->where(function ($q) use ($authId, $receiverIds,$chat_type) {
-                          $q->where('sender_id', $authId)->where('chat_type', $chat_type);
+                      ->where(function ($q) use ($authId, $receiverIds) {
+                          $q->where('sender_id', $authId);
                           foreach ($receiverIds as $rid) {
                               $q->orWhereRaw("FIND_IN_SET(?, receiver_id)", [$rid]);
                           }
                       });
             }
         })
-        ->when($send_type === 'group' && $activityId, function ($query) use ($activityId,$chat_type) {
-            $query->where('activity_id', $activityId)->where('chat_type', $chat_type);
+        ->when($send_type === 'group' && $activityId, function ($query) use ($activityId) {
+            $query->where('activity_id', $activityId);
         })
         ->where('id', '>', $lastId) // 👈 only new messages after lastId
         ->orderBy('created_at', 'asc')

@@ -5751,8 +5751,21 @@ public function acceptnumber(Request $request)
         })->where('activity_id', $activity->id)->first();
 
         if ($otherInterest) {
+           $contact = Contact::where(function ($q) use ($authUser, $user) {
+                $q->where('user_id', $authUser->id)
+                ->orWhere('user_id', $user->id);
+            })
+            ->first();
+            if(!$contact){
+                 $contact = Contact::create([
+                    'user_id' => $authUser->id,
+                    'number' => $user->number,
+                    'status' => 1,
+                ]);
+            }
+
             $otherInterest->update([
-                'confirm' => $type === 'accept' ? 7 : 4
+                'confirm' => $type === 'accept' ? 7 : 0
             ]);
 
             // Send confirmation notification to the other user via FCM

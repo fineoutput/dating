@@ -3956,7 +3956,7 @@ public function friendcount_one(Request $request)
                 $q->whereRaw('FIND_IN_SET(?, sender_id)', [$user->id])
                 ->orWhereRaw('FIND_IN_SET(?, receiver_id)', [$user->id]);
             })
-            ->whereIn('chat_type', ['intrest', 'activity'])
+            ->whereIn('chat_type', ['intrest', 'activity','activity_intrest'])
             ->where('created_at', '<=', $now->copy()->subHours(24));
 
         // ✅ Delete only if chats exist

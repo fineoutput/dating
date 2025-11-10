@@ -1395,7 +1395,7 @@ public function updateProfile(Request $request)
         'looking_for' => 'nullable|string|max:255',
         'interest' => 'nullable|array',
         'about' => 'nullable|string|max:1000',
-        'address' => 'nullable|string|max:255',
+        'address' => 'nullable',
         'profile_image' => 'nullable|array',
         'remove_profile_image' => 'nullable|array',
     ]);

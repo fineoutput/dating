@@ -3719,7 +3719,7 @@ public function contact_users(Request $request)
     }
 
    
-     $contacts = Contact::all(); 
+     $contacts = Contact::where('status',1)->get(); 
     //  return $contacts;
 
     $contactUsers = collect();

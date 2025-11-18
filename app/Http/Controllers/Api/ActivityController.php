@@ -4294,7 +4294,7 @@ public function friendcount_one(Request $request)
     $endDateTimeString = $activity->when_time . ' ' . str_replace(' ', ' ', $activity->end_time);
     $activityEndDateTime = Carbon::createFromFormat('Y-m-d h:i A', $endDateTimeString, 'Asia/Kolkata');
 
-    if ($activityEndDateTime->lt($currentTime->copy()->subMinute(1))) {
+    if ($activityEndDateTime->lt($currentTime->copy()->subHours(24))) {
         return null;
     }
 

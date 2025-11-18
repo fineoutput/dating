@@ -1493,23 +1493,23 @@ public function userinterestnumber(Request $request)
 
 //     $currentTime = Carbon::now('Asia/Kolkata');
 
-//  $activityIds = OtherInterest::where('user_id', $user->id)
-//     ->where(function($query) {
-//         $query->where('confirm', 3)
-//         // $query->where('confirm', 1)
-//             //   ->orWhere('confirm', 3)
-//               ->orWhere('confirm', 7);
-//     })
-//     ->pluck('activity_id')
-//     ->toArray();
+//     $activityIds = OtherInterest::where('user_id', $user->id)
+//         ->where(function($query) {
+//             $query->where('confirm', 3)
+//             // $query->where('confirm', 1)
+//                 //   ->orWhere('confirm', 3)
+//                 ->orWhere('confirm', 7);
+//         })
+//         ->pluck('activity_id')
+//         ->toArray();
 
-//  if (empty($activityIds) || count($activityIds) == 0) {
-//     return response()->json([
-//         'message' => 'No matching activities found',
-//         'status'  => 200,
-//         'data'    => [],
-//     ]);
-//  }
+//     if (empty($activityIds) || count($activityIds) == 0) {
+//         return response()->json([
+//             'message' => 'No matching activities found',
+//             'status'  => 200,
+//             'data'    => [],
+//         ]);
+//     }
 
 //     $currentTime = Carbon::now('Asia/Kolkata'); 
 //     $todayDate = Carbon::today('Asia/Kolkata');  
@@ -1525,7 +1525,21 @@ public function userinterestnumber(Request $request)
 //         })
 //         ->get();
 
-//                   ->get(); 
+//     $authactivities = Activity::orderBy('id', 'DESC')
+//         ->where('user_id', $user->id)
+//         // ->where('status', 2)
+//         ->where(function ($query) use ($currentTime) {
+//             $query->whereDate('when_time', '>', $currentTime->toDateString())
+//                 ->orWhereRaw("
+//                     STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+//                 ", [$currentTime->format('Y-m-d H:i:s')]);
+//         })
+//         ->get();
+
+
+//     // $activities = Activity::whereIn('id', $activityIds)
+//     //                 ->orderBy('id', 'DESC')
+//     //                 ->get(); 
 
 //     if ($activities->isEmpty()) {
 //         return response()->json([
@@ -1650,7 +1664,7 @@ public function userconfirmactivitys(Request $request)
 
     $currentTime = Carbon::now('Asia/Kolkata');
 
-    // Fetch activity IDs based on confirm status
+    // Already Confirmed activity IDs
     $activityIds = OtherInterest::where('user_id', $user->id)
         ->where(function($query) {
             $query->where('confirm', 3)
@@ -1667,8 +1681,9 @@ public function userconfirmactivitys(Request $request)
         ]);
     }
 
-    // Fetch main activities
+    // OTHER USERS ACTIVITIES
     $activities = Activity::whereIn('id', $activityIds)
+        ->where('user_id', '!=', $user->id)
         ->orderBy('id', 'DESC')
         ->where(function ($query) use ($currentTime) {
             $query->whereDate('when_time', '>', $currentTime->toDateString())
@@ -1678,19 +1693,25 @@ public function userconfirmactivitys(Request $request)
         })
         ->get();
 
-    if ($activities->isEmpty()) {
-        return response()->json([
-            'message' => 'No activities found',
-            'status' => 200,
-            'data' => [],
-        ]);
-    }
+    // AUTH USER'S OWN ACTIVITIES
+    $authactivities = Activity::where('user_id', $user->id)
+        ->orderBy('id', 'DESC')
+        ->where(function ($query) use ($currentTime) {
+            $query->whereDate('when_time', '>', $currentTime->toDateString())
+                ->orWhereRaw("
+                    STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') >= ?
+                ", [$currentTime->format('Y-m-d H:i:s')]);
+        })
+        ->get();
 
-    // Arrays for separate data
-    $authUserActivities = [];
-    $otherUserActivities = [];
+    // FINAL RESPONSE ARRAYS
+    $otherActivitiesData = [];
+    $authActivitiesData = [];
 
-    foreach ($activities as $activity) {
+    // -------------------------------
+    // FUNCTION TO FORMAT ACTIVITY DATA
+    // -------------------------------
+    $formatActivity = function($activity, $userId) {
 
         $activityUser = User::find($activity->user_id);
 
@@ -1698,13 +1719,12 @@ public function userconfirmactivitys(Request $request)
         $profileImageUrl = null;
         if ($activityUser && $activityUser->profile_image) {
             $profileImages = json_decode($activityUser->profile_image, true);
-
             if (!empty($profileImages) && isset($profileImages[1])) {
                 $profileImageUrl = url('uploads/app/profile_images/' . $profileImages[1]);
             }
         }
 
-        // Random bg color
+        // BG COLOR
         $hash = md5($activity->id);
         $r = hexdec(substr($hash, 0, 2));
         $g = hexdec(substr($hash, 2, 2));
@@ -1729,26 +1749,23 @@ public function userconfirmactivitys(Request $request)
         }
 
         // Expense
-        $expenseIds = json_decode($activity->expense_id, true);
         $firstExpenseName = null;
+        $expenseIds = json_decode($activity->expense_id, true);
         if (is_array($expenseIds) && count($expenseIds) > 0) {
-            $firstExpense = Expense::find($expenseIds[0]);
-            $firstExpenseName = $firstExpense->name ?? null;
+            $expense = Expense::find($expenseIds[0]);
+            $firstExpenseName = $expense->name ?? null;
         }
 
-        // Like status
-        $likedAct = LikeActivity::where('activity_id', $activity->id)
-            ->where('user_id', $user->id)
+        // Like
+        $liked = LikeActivity::where('activity_id', $activity->id)
+            ->where('user_id', $userId)
             ->where('status', 1)
-            ->first();
+            ->exists();
 
-        $actlike = $likedAct ? true : false;
+        // Image
+        $activityImage = $activity->image ? asset($activity->image) : null;
 
-        // Activity image
-        $activimage = $activity->image ? asset($activity->image) : null;
-
-        // Final Structured Data
-        $singleActivity = [
+        return [
             'rendom'             => $activity->rendom,
             'when_time'          => $activity->when_time,
             'end_time'           => $activity->end_time,
@@ -1756,35 +1773,41 @@ public function userconfirmactivitys(Request $request)
             'location'           => $activity->location,
             'bg_color'           => $bgColor,
             'how_many'           => $activity->how_many,
-            'like'               => $actlike,
+            'like'               => $liked,
             'is_like'            => false,
             'vibe_name'          => $vibeNames,
             'vibe_image'         => $vibeImages,
             'expense_name'       => $firstExpenseName,
             'user_name'          => $activityUser->name ?? '',
             'user_profile_image' => $profileImageUrl,
-            'activity_image'     => $activimage,
-            'user_time'          => Carbon::parse($activity->when_time)->format('d M') . ' at ' . Carbon::parse($activity->end_time)->format('g:i A'),
-            'status'             => $activity->status == 1 ? 'pending' : ($activity->status == 2 ? 'approved' : 'unknown'),
+            'activity_image'     => $activityImage,
+            'user_time'          => Carbon::parse($activity->when_time)->format('d M') . 
+                                   ' at ' . Carbon::parse($activity->end_time)->format('g:i A'),
+            'status'             => $activity->status == 1 ? 'pending' :
+                                   ($activity->status == 2 ? 'approved' : 'unknown'),
         ];
+    };
 
-        // SEPARATE ARRAY LOGIC
-        if ($activity->user_id == $user->id) {
-            $authUserActivities[] = $singleActivity;    // user ki khud ki activities
-        } else {
-            $otherUserActivities[] = $singleActivity;   // doosre users ki activities
-        }
+    // OTHER USERS LOOP
+    foreach ($activities as $activity) {
+        $otherActivitiesData[] = $formatActivity($activity, $user->id);
+    }
+
+    // AUTH USER ACTIVITIES LOOP
+    foreach ($authactivities as $activity) {
+        $authActivitiesData[] = $formatActivity($activity, $user->id);
     }
 
     return response()->json([
         'message' => 'Confirm Activities fetched successfully',
         'status'  => 200,
-        'data' => [
-            'auth_user_activities'  => $authUserActivities,
-            'other_user_activities' => $otherUserActivities,
+        'data'    => [
+            'other_user_activities' => $otherActivitiesData,
+            'auth_user_activities'  => $authActivitiesData,
         ]
     ]);
 }
+
 
 
 public function likedactivitys(Request $request)

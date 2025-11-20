@@ -6037,6 +6037,7 @@ public function acceptpactup(Request $request)
 
     $currentTime = Carbon::now('Asia/Kolkata'); 
   
+    if($pactup == 'accept'){
     if($activity_id){
     // $activity = Activity::where('id', $activity_id)->first();
     $activity = Activity::where('id', $activity_id)->where('status', 2)
@@ -6057,7 +6058,7 @@ public function acceptpactup(Request $request)
             'status' => 201,
             'data' => [],
         ], 201);
-    }}
+    }}}
 
     if($pactup == null){
 

@@ -4372,10 +4372,11 @@ public function friendcount_one(Request $request)
                 : null,
         ];
     }
+    $auth_user = Auth::user();
     return [
         'id' => $userItem->id,
         'user_rendom' => $userItem->rendom,
-        'authuser_rendom' => $user->rendom,
+        'authuser_rendom' => $auth_user->rendom,
         'name' => $userItem->name,
         'activity_name' => $activity->title,
         'activity_image' => $activityimagePath

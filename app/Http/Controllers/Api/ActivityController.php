@@ -4275,7 +4275,42 @@ public function friendcount_one(Request $request)
 
     // 🔹 Map group users
 
-    $groupUserList = $userDetailsFromInterest2->map(function ($userItem) use ($user) {
+    $interestRelationsgroup = OtherInterest::where(function ($query) use ($user) {
+        $query->where('user_id', $user->id)
+            ->orWhere('user_id_1', $user->id);
+    })->where(function ($query) {
+        $query->where('confirm', 3)
+            ->orWhere('confirm', 7);
+            // ->orWhere('confirm', 4);
+            // ->orWhere('confirm', 2);
+    })->get();         
+    // return $interestRelations;    
+    
+
+    $oppositeUserIdsgroup = $interestRelationsgroup->map(function ($relation) use ($user) {
+        return $relation->user_id == $user->id ? $relation->user_id_1 : $relation->user_id;
+    })->unique()->values();
+    
+
+    $userDetailsFromInterest2group = collect();
+
+    foreach ($oppositeUserIdsgroup as $oppositeId) {
+
+        $relations = $interestRelationsgroup->filter(function ($relation) use ($user, $oppositeId) {
+            return ($relation->user_id == $user->id && $relation->user_id_1 == $oppositeId)
+                || ($relation->user_id_1 == $user->id && $relation->user_id == $oppositeId);
+        });
+
+        foreach ($relations as $relation) {
+            $u = User::find($oppositeId);
+            if ($u) {
+                $u->interest_activity_id = $relation->activity_id;
+                $userDetailsFromInterest2group->push($u);
+            }
+        }
+    }
+
+    $groupUserList = $userDetailsFromInterest2group->map(function ($userItem) use ($user) {
     if (!$userItem->interest_activity_id) {
         return null;
     }

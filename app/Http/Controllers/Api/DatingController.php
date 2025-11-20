@@ -522,17 +522,17 @@ public function MatchingUsersdetailes(Request $request)
         ->pluck('reported_user_id')
         ->toArray();
 
-    $OtherInterestRelations = OtherInterest::whereIn('confirm', [3, 7])
-        ->where(function ($query) use ($user) {
-            $query->where('user_id', $user->id)
-                ->orWhere('user_id_1', $user->id);
-        })
-        ->get(['user_id', 'user_id_1']);
+    // $OtherInterestRelations = OtherInterest::whereIn('confirm', [3, 7])
+    //     ->where(function ($query) use ($user) {
+    //         $query->where('user_id', $user->id)
+    //             ->orWhere('user_id_1', $user->id);
+    //     })
+    //     ->get(['user_id', 'user_id_1']);
 
-    $OtherInterestUserIds = $OtherInterestRelations->map(function ($relation) use ($user) {
-        // If logged-in user is user_id, take user_id_1 — otherwise take user_id
-        return $relation->user_id == $user->id ? $relation->user_id_1 : $relation->user_id;
-    })->unique()->values()->toArray();
+    // $OtherInterestUserIds = $OtherInterestRelations->map(function ($relation) use ($user) {
+    //     // If logged-in user is user_id, take user_id_1 — otherwise take user_id
+    //     return $relation->user_id == $user->id ? $relation->user_id_1 : $relation->user_id;
+    // })->unique()->values()->toArray();
 
         $contacts = Contact::all();
         $contactUserIds = [];
@@ -561,7 +561,7 @@ public function MatchingUsersdetailes(Request $request)
         $excludedUserIdStatus3,
         $reportedUserIds,
         $excludedUserIddislike,
-        $OtherInterestUserIds,
+        // $OtherInterestUserIds,
         $contactUserIds,
     );
 

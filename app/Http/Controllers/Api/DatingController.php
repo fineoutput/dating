@@ -502,6 +502,11 @@ public function MatchingUsersdetailes(Request $request)
     ->pluck('matching_user')
     ->toArray();
 
+   $excludedUserIdsrevrece = SlideLike::where('matching_user', $user->id)
+    ->where('liked_user', 1)
+    ->pluck('matched_user')
+    ->toArray();
+
     $excludedUserIdStatus = SlideLike::where('matched_user', $user->id)
         ->where('status', 2)
         ->pluck('matching_user')
@@ -514,9 +519,10 @@ public function MatchingUsersdetailes(Request $request)
         ->toArray();
 
     $excludedUserIddislike = SlideLike::where('matched_user', $user->id)
-        ->where('dislike', 1)
+        ->where('dislike', 1)->where('created_at', '>=', Carbon::now()->subHours(24))
         ->pluck('matching_user')
         ->toArray();
+        // return $excludedUserIddislike;
 
     $reportedUserIds = Report::where('reporting_user_id', $user->id)
         ->pluck('reported_user_id')
@@ -558,6 +564,7 @@ public function MatchingUsersdetailes(Request $request)
     $excludeIds = array_merge(
         $excludedUserIds,
         $excludedUserIdStatus,
+        $excludedUserIdsrevrece,
         $excludedUserIdStatus3,
         $reportedUserIds,
         $excludedUserIddislike,

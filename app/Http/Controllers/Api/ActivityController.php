@@ -5916,7 +5916,7 @@ public function acceptnumber(Request $request)
  {
         $request->validate([
             'random' => 'required|string',
-            'type' => 'required|in:accept,reject',
+            'type' => 'required|in:accept,decline',
             'activity_rendom' => 'required|string',
         ]);
 

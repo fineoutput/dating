@@ -435,19 +435,6 @@ class ActivityController extends Controller
                             ->where('user_id_1', $matchedUser->id)
                             ->where('activity_id', $activity->id)
                             ->exists();
-                            
-                        $contact = Contact::where('user_id', $user->id)
-                                        ->where('number', $matchedUser->id) // <-- check number column, not id
-                                        ->first();
-
-                        if (!$contact) {
-                            Contact::create([
-                                'user_id'=> $user->id,
-                                'number' => $matchedUser->id,
-                                'status' => 4,
-                            ]);
-                        }
-
 
                         if (!$exists) {
                             OtherInterest::create([
@@ -5968,17 +5955,21 @@ public function acceptnumber(Request $request)
         })->where('activity_id', $activity->id)->first();
 
         if ($otherInterest) {
-           $contact = Contact::where(function ($q) use ($authUser, $user) {
+            if($type == 'accept'){
+           $contact = Contact::where(function($q) use ($authUser, $user) {
                 $q->where('user_id', $authUser->id)
-                ->orWhere('user_id', $user->id);
-            })
-            ->first();
+                ->where('number', $user->id);
+            })->orWhere(function($q) use ($authUser, $user) {
+                $q->where('user_id', $user->id)
+                ->where('number', $authUser->id);
+            })->first();
             if(!$contact){
                  $contact = Contact::create([
                     'user_id' => $authUser->id,
                     'number' => $user->number,
                     'status' => 1,
                 ]);
+            }
             }
 
             $otherInterest->update([

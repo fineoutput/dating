@@ -435,6 +435,19 @@ class ActivityController extends Controller
                             ->where('user_id_1', $matchedUser->id)
                             ->where('activity_id', $activity->id)
                             ->exists();
+                            
+                        $contact = Contact::where('user_id', $user->id)
+                                        ->where('number', $matchedUser->id) // <-- check number column, not id
+                                        ->first();
+
+                        if (!$contact) {
+                            Contact::create([
+                                'user_id'=> $user->id,
+                                'number' => $matchedUser->id,
+                                'status' => 4,
+                            ]);
+                        }
+
 
                         if (!$exists) {
                             OtherInterest::create([

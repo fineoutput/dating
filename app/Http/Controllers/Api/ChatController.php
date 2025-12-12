@@ -845,7 +845,7 @@ public function getMessages(Request $request)
     $authId = $authUser->id;
 
     // 🕒 Streaming Logic — Long Polling
-    $timeout = 30; // seconds
+    $timeout = 5; // seconds
     $start = time();
 
     while (time() - $start < $timeout) {

@@ -422,53 +422,53 @@ public function sendMessage(Request $request)
         }
 
         // Subscription & message limit check
-        $activeSubscription = UserSubscription::where('user_id', $sender->id)
-            ->where('type', 'Activitys')
-            ->where('is_active', 1)
-            ->where('activated_at', '<=', $now)
-            ->where('expires_at', '>=', $now)
-            ->first();
+        // $activeSubscription = UserSubscription::where('user_id', $sender->id)
+        //     ->where('type', 'Activitys')
+        //     ->where('is_active', 1)
+        //     ->where('activated_at', '<=', $now)
+        //     ->where('expires_at', '>=', $now)
+        //     ->first();
 
-        $allowedCount = 0;
-        if ($activeSubscription) {
-            $coinCategory = CoinCategory::find($activeSubscription->plan_id);
-            $allowedCount = $coinCategory ? $coinCategory->interest_messages_coin : 0;
-        } else {
-            $activitySub = ActivitySubscription::orderBy('id', 'desc')->first();
-            $allowedCount = $activitySub ? (int)$activitySub->message_count : 0;
-        }
+        // $allowedCount = 0;
+        // if ($activeSubscription) {
+        //     $coinCategory = CoinCategory::find($activeSubscription->plan_id);
+        //     $allowedCount = $coinCategory ? $coinCategory->interest_messages_coin : 0;
+        // } else {
+        //     $activitySub = ActivitySubscription::orderBy('id', 'desc')->first();
+        //     $allowedCount = $activitySub ? (int)$activitySub->message_count : 0;
+        // }
 
-        $startDate = Carbon::parse($sender->created_at)->startOfDay();
-        $nowStartOfDay = $now->copy()->startOfDay();
-        $currentIntervalStart = $startDate;
+        // $startDate = Carbon::parse($sender->created_at)->startOfDay();
+        // $nowStartOfDay = $now->copy()->startOfDay();
+        // $currentIntervalStart = $startDate;
 
-        while ($currentIntervalStart->lessThanOrEqualTo($nowStartOfDay)) {
-            $currentIntervalEnd = $currentIntervalStart->copy()->addDays(30)->subSecond();
-            $count = Chat::where('sender_id', $sender->id)
-                ->where('chat_type', 'activity')
-                ->whereBetween('created_at', [$currentIntervalStart, $currentIntervalEnd])
-                ->count();
+        // while ($currentIntervalStart->lessThanOrEqualTo($nowStartOfDay)) {
+        //     $currentIntervalEnd = $currentIntervalStart->copy()->addDays(30)->subSecond();
+        //     $count = Chat::where('sender_id', $sender->id)
+        //         ->where('chat_type', 'activity')
+        //         ->whereBetween('created_at', [$currentIntervalStart, $currentIntervalEnd])
+        //         ->count();
 
-            if ($count >= $allowedCount) {
-                $messageText = $activeSubscription
-                    ? 'You have used all your message coins for this month. Please purchase or renew your plan.'
-                    : 'Please subscribe to send more messages.';
+        //     if ($count >= $allowedCount) {
+        //         $messageText = $activeSubscription
+        //             ? 'You have used all your message coins for this month. Please purchase or renew your plan.'
+        //             : 'Please subscribe to send more messages.';
 
-                return response()->json([
-                    'message' => $messageText,
-                    'data' => [
-                        'interval_start' => $currentIntervalStart->toDateString(),
-                        'interval_end' => $currentIntervalEnd->toDateString(),
-                        'messages_sent' => $count,
-                        'allowed_messages' => $allowedCount,
-                    ],
-                    'status' => 203,
-                ]);
-            }
+        //         return response()->json([
+        //             'message' => $messageText,
+        //             'data' => [
+        //                 'interval_start' => $currentIntervalStart->toDateString(),
+        //                 'interval_end' => $currentIntervalEnd->toDateString(),
+        //                 'messages_sent' => $count,
+        //                 'allowed_messages' => $allowedCount,
+        //             ],
+        //             'status' => 203,
+        //         ]);
+        //     }
             
 
-            $currentIntervalStart = $currentIntervalEnd->copy()->addSecond();
-        }
+        //     $currentIntervalStart = $currentIntervalEnd->copy()->addSecond();
+        // }
 
         $implodedReceiverIds = implode(',', $validReceiverIds);
 
@@ -579,52 +579,52 @@ public function sendMessage(Request $request)
             ]);
         }
 
-        $activeSubscription = UserSubscription::where('user_id', $sender->id)
-            ->where('type', 'Activitys')
-            ->where('is_active', 1)
-            ->where('activated_at', '<=', $now)
-            ->where('expires_at', '>=', $now)
-            ->first();
+        // $activeSubscription = UserSubscription::where('user_id', $sender->id)
+        //     ->where('type', 'Activitys')
+        //     ->where('is_active', 1)
+        //     ->where('activated_at', '<=', $now)
+        //     ->where('expires_at', '>=', $now)
+        //     ->first();
 
-        $allowedCount = 0;
-        if ($activeSubscription) {
-            $coinCategory = CoinCategory::find($activeSubscription->plan_id);
-            $allowedCount = $coinCategory ? $coinCategory->interest_messages_coin : 0;
-        } else {
-            $activitySub = ActivitySubscription::orderBy('id', 'desc')->first();
-            $allowedCount = $activitySub ? (int)$activitySub->message_count : 0;
-        }
+        // $allowedCount = 0;
+        // if ($activeSubscription) {
+        //     $coinCategory = CoinCategory::find($activeSubscription->plan_id);
+        //     $allowedCount = $coinCategory ? $coinCategory->interest_messages_coin : 0;
+        // } else {
+        //     $activitySub = ActivitySubscription::orderBy('id', 'desc')->first();
+        //     $allowedCount = $activitySub ? (int)$activitySub->message_count : 0;
+        // }
 
-        $startDate = Carbon::parse($sender->created_at)->startOfDay();
-        $nowStartOfDay = $now->copy()->startOfDay();
-        $currentIntervalStart = $startDate;
+        // $startDate = Carbon::parse($sender->created_at)->startOfDay();
+        // $nowStartOfDay = $now->copy()->startOfDay();
+        // $currentIntervalStart = $startDate;
 
-        while ($currentIntervalStart->lessThanOrEqualTo($nowStartOfDay)) {
-            $currentIntervalEnd = $currentIntervalStart->copy()->addDays(30)->subSecond();
-            $count = Chat::where('sender_id', $sender->id)
-                ->where('chat_type', 'activity')
-                ->whereBetween('created_at', [$currentIntervalStart, $currentIntervalEnd])
-                ->count();
+        // while ($currentIntervalStart->lessThanOrEqualTo($nowStartOfDay)) {
+        //     $currentIntervalEnd = $currentIntervalStart->copy()->addDays(30)->subSecond();
+        //     $count = Chat::where('sender_id', $sender->id)
+        //         ->where('chat_type', 'activity')
+        //         ->whereBetween('created_at', [$currentIntervalStart, $currentIntervalEnd])
+        //         ->count();
 
-            if ($count >= $allowedCount) {
-                $messageText = $activeSubscription
-                    ? 'You have used all your message coins for this month. Please purchase or renew your plan.'
-                    : 'Please subscribe to send more messages.';
+        //     if ($count >= $allowedCount) {
+        //         $messageText = $activeSubscription
+        //             ? 'You have used all your message coins for this month. Please purchase or renew your plan.'
+        //             : 'Please subscribe to send more messages.';
 
-                return response()->json([
-                    'message' => $messageText,
-                    'data' => [
-                        'interval_start' => $currentIntervalStart->toDateString(),
-                        'interval_end' => $currentIntervalEnd->toDateString(),
-                        'messages_sent' => $count,
-                        'allowed_messages' => $allowedCount,
-                    ],
-                    'status' => 203,
-                ]);
-            }
+        //         return response()->json([
+        //             'message' => $messageText,
+        //             'data' => [
+        //                 'interval_start' => $currentIntervalStart->toDateString(),
+        //                 'interval_end' => $currentIntervalEnd->toDateString(),
+        //                 'messages_sent' => $count,
+        //                 'allowed_messages' => $allowedCount,
+        //             ],
+        //             'status' => 203,
+        //         ]);
+        //     }
 
-            $currentIntervalStart = $currentIntervalEnd->copy()->addSecond();
-        }
+        //     $currentIntervalStart = $currentIntervalEnd->copy()->addSecond();
+        // }
 
         $code = rand(100000, 999999);
         while (Chat::where('rendom', $code)->exists()) {

@@ -5844,7 +5844,7 @@ public function vibeactivitydetails(Request $request)
                                         ->count();
             if ($confirmedCount >= $howMany) {
                 return response()->json([
-                    'message' => 'The activity has reached its maximum number of confirmed participants.',
+                    'message' => 'Maximum participants reached.',
                     'status' => 201,
                     'data' => [],
                 ], 201);

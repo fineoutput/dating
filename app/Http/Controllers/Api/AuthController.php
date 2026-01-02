@@ -1194,9 +1194,12 @@ public function userprofile(Request $request)
         ->get(['id','name','icon']);
 
     // images
-    $imageUrls = collect(json_decode($user->profile_image, true))
-        ->map(fn($img) => asset('uploads/app/profile_images/'.$img));
-
+     $profileImages = json_decode($user->profile_image, true);
+        $imageUrls = [];
+        foreach ($profileImages as $image) {
+            $imageUrls[] = asset('uploads/app/profile_images/' . $image);
+        }
+    $cities = AdminCity::where('id', $user->admin_city)->first();
     return response()->json([
         'status' => 200,
         'data' => [
@@ -1211,7 +1214,7 @@ public function userprofile(Request $request)
             'profile_images' => $imageUrls,
             'about' => $user->about ?? '',
             'address' => $user->address ?? '',
-            'city' => optional($user->city)->city_name,
+            'city' => $cities->city_name ?? '',
             'location' => null,
         ]
     ]);

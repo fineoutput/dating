@@ -77,6 +77,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('chat-update-status', [ChatController::class, 'updateMessageStatus']);
 
     Route::get('user-profile', [AuthController::class, 'userprofile']);
+    Route::get('user-profile-stats', [AuthController::class, 'userProfileStats']);
     
     Route::post('update-profile', [AuthController::class, 'updateProfile']);
     Route::post('update-city', [AuthController::class, 'updateCity']);

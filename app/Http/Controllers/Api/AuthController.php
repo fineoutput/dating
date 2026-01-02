@@ -891,492 +891,381 @@ class AuthController extends Controller
     }
         
  
-    // public function userprofile(Request $request)
-    //     {
-    //         $user = Auth::user();
-            
-    //         if (!$user) {
-
-    //             return response()->json([
-    //                 'status' => false,
-    //                 'message' => 'User not authenticated',
-    //             ], 401);
-    //         }
-            
-    //         $interestField = $user->interest;
-
-    //         $interestFieldDecoded = json_decode($interestField, true);
-
-    //         if (!is_array($interestFieldDecoded)) {
-    //             return response()->json([
-    //                 'status' => false,
-    //                 'message' => 'Invalid interest data',
-    //             ], 400);
-    //         }
-
-    //         $interestIds = [];
-    //         foreach ($interestFieldDecoded as $item) {
-    //             $interestIds = array_merge($interestIds, explode(',', $item));
-    //         }
-
-    //         $interestIds = array_map('trim', $interestIds);
-
-    //         $interests = Interest::whereIn('id', $interestIds)->get(['id','name', 'icon']);
-
-    //         \Log::info("Interest IDs: ", $interestIds);
-    //         \Log::info("Fetched Interests: ", $interests->toArray());
-
-    //         $profileImages = json_decode($user->profile_image, true);
-    //         $imageUrls = [];
-    //         foreach ($profileImages as $image) {
-    //             $imageUrls[] = asset('uploads/app/profile_images/' . $image);
-    //         }
- 
-    //         $userData = [
-    //             // 'id' => $user->id,
-    //             'number' => $user->number,
-    //             'name' => $user->name,
-    //             'email' => $user->email,
-    //             'age' => $user->age,
-    //             'gender' => $user->gender,
-    //             'looking_for' => $user->looking_for,
-    //             'interest' => $interests,  
-    //             'status' => $user->status,
-    //             'profile_images' => $imageUrls,
-    //             'about' => $user->about ?? '',
-    //             'address' => $user->address ?? '',
-    //         ];
-
-    //         return response()->json([
-    //             'status' => 200,
-    //             'message' => 'User profile fetched successfully',
-    //             'data' => $userData,
-    //         ], 200);
-    //     }
 
 
-    public function userprofile(Request $request)
+//     public function userprofile(Request $request)
+// {
+//     $user = Auth::user()->load('city');
+
+    
+
+//     // $attendUsers = OtherInterest::where('user_id', $user->id)
+//     //     ->where('confirm', 8)
+//     //     ->count();
+
+//     $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata
+
+//     // $activities = Activity::orderBy('id', 'DESC')
+//     // // ->where('user_id', $user->id)
+//     // ->where('status', 2)
+//     // ->where(function ($query) use ($currentTime) {
+//     //     $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
+//     //         ->orWhereRaw("
+//     //             STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
+//     //         ", [$currentTime]);
+//     // })
+//     // ->get();
+
+//     // $ghostUsers = OtherInterest::whereIn('activity_id', $activities->pluck('id'))->where('user_id', $user->id)
+//     //     ->whereIn('confirm', [3,7])
+//     //     ->count();
+
+
+//            $activities = Activity::orderBy('id', 'DESC')
+//     // ->where('user_id', $user->id)
+//     ->where('status', 2)
+//     ->where(function ($query) use ($currentTime) {
+//         $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
+//             ->orWhereRaw("
+//                 STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
+//             ", [$currentTime]);
+//     })
+//     ->get();
+
+//     // ✅ Get all activity IDs from above
+//     $activityIds = $activities->pluck('id');
+
+//     $attendInterests = OtherInterest::where('user_id', $user->id)
+//                 ->where('confirm', 8)
+//                 ->get();
+//             // ✅ Count only those activities where at least one other user also confirmed = 8
+//             $attendUsers = $attendInterests->filter(function ($interest) use ($user) {
+//                 return OtherInterest::where('activity_id', $interest->activity_id)
+//                     // ->where('user_id', $user->id)
+//                     ->where('confirm', 8)
+//                     ->exists();
+//             })->count();
+
+//             // ✅ Filter OtherInterest where the current user has confirm 3 or 7
+//             $userInterests = OtherInterest::whereIn('activity_id', $activityIds)
+//                 ->where('user_id', $user->id)
+//                 ->whereIn('confirm', [3, 7])
+//                 ->get();
+
+//             // ✅ Count only those where that activity also has confirm = 8 from *any* user
+//             $ghostUsers = $userInterests->filter(function ($interest) {
+//                 return OtherInterest::where('activity_id', $interest->activity_id)
+//                     ->where('confirm', 8)
+//                     ->exists(); // at least one confirm=8 record
+//             })->count();
+
+        
+//     $hostedActivity = Activity::where('user_id', $user->id)->where('status', 2)
+//     ->where(function ($query) use ($currentTime) {
+//         $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
+//             ->orWhereRaw("
+//                 STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
+//             ", [$currentTime]);
+//     })
+//         ->count();
+
+//     $matchingActivities = Activity::where('user_id', $user->id)
+//                                 ->where('status', 2)
+//                                 ->get();
+
+//     $activityIds = $matchingActivities->pluck('id'); 
+
+//     $interestIds = OtherInterest::whereIn('activity_id', $activityIds)->get();
+
+//     $userDetailsFromInterest = $interestIds->pluck('user_id');
+
+//     $userDetailsFromInterest2 = User::whereIn('id', $userDetailsFromInterest)->get();
+
+//     $userList = $userDetailsFromInterest2->map(function ($user) {
+//         $imagePath = null;
+//         if ($user->profile_image) {
+//             $images = json_decode($user->profile_image, true); 
+//             if (is_array($images) && count($images)) {
+//                 $imagePath = reset($images);
+//             }
+//         }
+
+//         $chat = Chat::where('sender_id', Auth::id())
+//                     ->where('receiver_id', $user->id)
+//                     ->orderBy('id','DESC')
+//                     ->first();
+
+//         return [
+//             'id' => $user->id,
+//             'user_rendom' => $user->rendom,
+//             'name' => $user->name,
+//             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+//             'form' => 'match',
+//             'last_message' => $chat->message ?? null,
+//         ];
+//     });
+
+//     /* -------------------- 2. FRIENDS FROM LIKES (SlideLike) -------------------- */
+//     $likeUser = SlideLike::where('matched_user', $user->id);
+//     $likeUserDetails = $likeUser->pluck('matching_user'); 
+
+//     $likeUserDetails2 = User::whereIn('id', $likeUserDetails)->get();
+
+//     $likeUserList = $likeUserDetails2->map(function ($user) {
+//         $imagePath = null;
+//         if ($user->profile_image) {
+//             $images = json_decode($user->profile_image, true); 
+//             if (is_array($images) && count($images)) {
+//                 $imagePath = reset($images);
+//             }
+//         }
+
+//         $chat = Chat::where('sender_id', Auth::id())
+//                     ->where('receiver_id', $user->id)
+//                     ->orderBy('id','DESC')
+//                     ->first();
+
+//         return [
+//             'id' => $user->id,
+//             'user_rendom' => $user->rendom,
+//             'name' => $user->name,
+//             'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
+//             'form' => 'activity',
+//             'last_message' => $chat->message ?? null,
+//         ];
+//     });
+
+//     /* -------------------- 3. FRIENDS FROM CUPID MATCHES -------------------- */
+//     $CupidMatches = Cupid::where('user_id_1', $user->id)
+//                         ->orWhere('user_id_2', $user->id)
+//                         ->get()
+//                         ->unique();
+
+//     $matchedUsers = $CupidMatches->map(function ($match) use ($user) {
+//         $matchedUserId = $match->user_id_1 == $user->id ? $match->user_id_2 : $match->user_id_1;
+//         $matchedUser = User::find($matchedUserId);
+
+//         if (!$matchedUser) return null;
+
+//         $images = json_decode($matchedUser->profile_image, true);
+//         $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
+
+//         $chat = Chat::where('sender_id', Auth::id())
+//                     ->where('receiver_id', $matchedUser->id)
+//                     ->orderBy('id','DESC')
+//                     ->first();
+
+//         return [
+//             'id' => $matchedUser->id,
+//             'user_rendom' => $matchedUser->rendom,
+//             'name' => $matchedUser->name,
+//             'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
+//             'form' => 'match',
+//             'last_message' => $chat->message ?? null,
+//         ];
+//     })->filter();
+
+//     /* -------------------- 4. CALCULATE FRIEND COUNTS -------------------- */
+//     $friendFromInterestsCount = $userList->count();
+//     $friendFromLikesCount = $likeUserList->count();
+//     $friendFromCupidCount = $matchedUsers->count();
+
+//     $totalFriendCount = $friendFromInterestsCount + $friendFromLikesCount + $friendFromCupidCount;
+
+//     /* -------------------- 5. MERGE ALL USERS -------------------- */
+//     $userList = collect($userList);
+//     $likeUserList = collect($likeUserList);
+//     $matchedUsers = collect($matchedUsers);
+
+//     $matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
+        
+//     if (!$user) {
+//         return response()->json([
+//             'status' => false,
+//             'message' => 'User not authenticated',
+//         ], 401);
+//     }
+
+//     // Decode interest field
+//     $interestFieldDecoded = json_decode($user->interest, true);
+
+//     if (!is_array($interestFieldDecoded)) {
+//         return response()->json([
+//             'status' => false,
+//             'message' => 'Invalid interest data',
+//         ], 400);
+//     }
+
+//     $interestIds = [];
+//     foreach ($interestFieldDecoded as $item) {
+//         $interestIds = array_merge($interestIds, explode(',', $item));
+//     }
+
+//     $interestIds = array_map('trim', $interestIds);
+//     $interests = Interest::whereIn('id', $interestIds)->get(['id','name', 'icon']);
+
+//     // Profile images
+//     $profileImages = json_decode($user->profile_image, true);
+//     $imageUrls = [];
+//     foreach ($profileImages as $image) {
+//         $imageUrls[] = asset('uploads/app/profile_images/' . $image);
+//     }
+
+//     // 🗺️ Reverse geocoding (if lat/lng available)
+//     $locationString = null;
+
+//     if ($user->latitude && $user->longitude) {
+//         try {
+//             $response = Http::get("https://nominatim.openstreetmap.org/reverse", [
+//                 'lat' => $user->latitude,
+//                 'lon' => $user->longitude,
+//                 'format' => 'json'
+//             ]);
+
+//             if ($response->successful()) {
+//                 $locationString = $response['display_name'] ?? null;
+//             }
+//         } catch (\Exception $e) {
+//             \Log::error("Reverse geocoding failed: " . $e->getMessage());
+//         }
+//     }
+
+//     $cities = AdminCity::where('id', $user->admin_city)->first();
+
+//     $now = Carbon::now('Asia/Kolkata');
+
+//     // ✅ Check for active subscription
+//     $activeSubscription = UserSubscription::where('user_id', $user->id)
+//         ->where('type', 'Activitys')
+//         ->where('is_active', 1)
+//         ->where('activated_at', '<=', $now)
+//         ->where('expires_at', '>=', $now)
+//         ->first();
+
+//         if($activeSubscription){
+//             $subscribtionStatus = 1;
+//         }else{
+//             $subscribtionStatus = 0;
+//         }
+
+//     // Final response
+//     $userData = [
+//         'number' => $user->number,
+//         'name' => $user->name,
+//         'email' => $user->email,
+//         'age' => $user->age,
+//         'gender' => $user->gender,
+//         'looking_for' => $user->looking_for,
+//         'interest' => $interests,
+//         'status' => $user->status,
+//         'profile_images' => $imageUrls,
+//         'about' => $user->about ?? '',
+//         'address' => $user->address ?? '',
+//         'city' => $cities->city_name ?? '',
+//         'location' => $locationString,
+//         'friend_count' => $userList->count() + $likeUserList->count() + $matchedUsers->count(),
+//         'attendUsers' => $attendUsers,
+//         'ghostUsers' => $ghostUsers,
+//         'hostedActivity' => $hostedActivity,
+//         'subscribtionStatus' => $subscribtionStatus,
+//     ];
+
+//     return response()->json([
+//         'status' => 200,
+//         'message' => 'User profile fetched successfully',
+//         'data' => $userData,
+//     ], 200);
+// }
+
+public function userprofile(Request $request)
 {
     $user = Auth::user()->load('city');
 
-    
-
-    // $attendUsers = OtherInterest::where('user_id', $user->id)
-    //     ->where('confirm', 8)
-    //     ->count();
-
-    $currentTime = Carbon::now('Asia/Kolkata');  // Current time in Asia/Kolkata
-
-    // $activities = Activity::orderBy('id', 'DESC')
-    // // ->where('user_id', $user->id)
-    // ->where('status', 2)
-    // ->where(function ($query) use ($currentTime) {
-    //     $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
-    //         ->orWhereRaw("
-    //             STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
-    //         ", [$currentTime]);
-    // })
-    // ->get();
-
-    // $ghostUsers = OtherInterest::whereIn('activity_id', $activities->pluck('id'))->where('user_id', $user->id)
-    //     ->whereIn('confirm', [3,7])
-    //     ->count();
-
-
-           $activities = Activity::orderBy('id', 'DESC')
-    // ->where('user_id', $user->id)
-    ->where('status', 2)
-    ->where(function ($query) use ($currentTime) {
-        $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
-            ->orWhereRaw("
-                STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
-            ", [$currentTime]);
-    })
-    ->get();
-
-    // ✅ Get all activity IDs from above
-    $activityIds = $activities->pluck('id');
-
-    $attendInterests = OtherInterest::where('user_id', $user->id)
-                ->where('confirm', 8)
-                ->get();
-            // ✅ Count only those activities where at least one other user also confirmed = 8
-            $attendUsers = $attendInterests->filter(function ($interest) use ($user) {
-                return OtherInterest::where('activity_id', $interest->activity_id)
-                    // ->where('user_id', $user->id)
-                    ->where('confirm', 8)
-                    ->exists();
-            })->count();
-
-            // ✅ Filter OtherInterest where the current user has confirm 3 or 7
-            $userInterests = OtherInterest::whereIn('activity_id', $activityIds)
-                ->where('user_id', $user->id)
-                ->whereIn('confirm', [3, 7])
-                ->get();
-
-            // ✅ Count only those where that activity also has confirm = 8 from *any* user
-            $ghostUsers = $userInterests->filter(function ($interest) {
-                return OtherInterest::where('activity_id', $interest->activity_id)
-                    ->where('confirm', 8)
-                    ->exists(); // at least one confirm=8 record
-            })->count();
-
-        
-    $hostedActivity = Activity::where('user_id', $user->id)->where('status', 2)
-    ->where(function ($query) use ($currentTime) {
-        $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
-            ->orWhereRaw("
-                STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
-            ", [$currentTime]);
-    })
-        ->count();
-
-    $matchingActivities = Activity::where('user_id', $user->id)
-                                ->where('status', 2)
-                                ->get();
-
-$activityIds = $matchingActivities->pluck('id'); 
-
-$interestIds = OtherInterest::whereIn('activity_id', $activityIds)->get();
-
-$userDetailsFromInterest = $interestIds->pluck('user_id');
-
-$userDetailsFromInterest2 = User::whereIn('id', $userDetailsFromInterest)->get();
-
-$userList = $userDetailsFromInterest2->map(function ($user) {
-    $imagePath = null;
-    if ($user->profile_image) {
-        $images = json_decode($user->profile_image, true); 
-        if (is_array($images) && count($images)) {
-            $imagePath = reset($images);
-        }
-    }
-
-    $chat = Chat::where('sender_id', Auth::id())
-                ->where('receiver_id', $user->id)
-                ->orderBy('id','DESC')
-                ->first();
-
-    return [
-        'id' => $user->id,
-        'user_rendom' => $user->rendom,
-        'name' => $user->name,
-        'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
-        'form' => 'match',
-        'last_message' => $chat->message ?? null,
-    ];
-});
-
-/* -------------------- 2. FRIENDS FROM LIKES (SlideLike) -------------------- */
-$likeUser = SlideLike::where('matched_user', $user->id);
-$likeUserDetails = $likeUser->pluck('matching_user'); 
-
-$likeUserDetails2 = User::whereIn('id', $likeUserDetails)->get();
-
-$likeUserList = $likeUserDetails2->map(function ($user) {
-    $imagePath = null;
-    if ($user->profile_image) {
-        $images = json_decode($user->profile_image, true); 
-        if (is_array($images) && count($images)) {
-            $imagePath = reset($images);
-        }
-    }
-
-    $chat = Chat::where('sender_id', Auth::id())
-                ->where('receiver_id', $user->id)
-                ->orderBy('id','DESC')
-                ->first();
-
-    return [
-        'id' => $user->id,
-        'user_rendom' => $user->rendom,
-        'name' => $user->name,
-        'image' => $imagePath ? asset('uploads/app/profile_images/' . $imagePath) : null,
-        'form' => 'activity',
-        'last_message' => $chat->message ?? null,
-    ];
-});
-
-/* -------------------- 3. FRIENDS FROM CUPID MATCHES -------------------- */
-$CupidMatches = Cupid::where('user_id_1', $user->id)
-                    ->orWhere('user_id_2', $user->id)
-                    ->get()
-                    ->unique();
-
-$matchedUsers = $CupidMatches->map(function ($match) use ($user) {
-    $matchedUserId = $match->user_id_1 == $user->id ? $match->user_id_2 : $match->user_id_1;
-    $matchedUser = User::find($matchedUserId);
-
-    if (!$matchedUser) return null;
-
-    $images = json_decode($matchedUser->profile_image, true);
-    $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
-
-    $chat = Chat::where('sender_id', Auth::id())
-                ->where('receiver_id', $matchedUser->id)
-                ->orderBy('id','DESC')
-                ->first();
-
-    return [
-        'id' => $matchedUser->id,
-        'user_rendom' => $matchedUser->rendom,
-        'name' => $matchedUser->name,
-        'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
-        'form' => 'match',
-        'last_message' => $chat->message ?? null,
-    ];
-})->filter();
-
-/* -------------------- 4. CALCULATE FRIEND COUNTS -------------------- */
-$friendFromInterestsCount = $userList->count();
-$friendFromLikesCount = $likeUserList->count();
-$friendFromCupidCount = $matchedUsers->count();
-
-$totalFriendCount = $friendFromInterestsCount + $friendFromLikesCount + $friendFromCupidCount;
-
-/* -------------------- 5. MERGE ALL USERS -------------------- */
-$userList = collect($userList);
-$likeUserList = collect($likeUserList);
-$matchedUsers = collect($matchedUsers);
-
-$matchUsers = $userList->merge($likeUserList)->merge($matchedUsers);
-    
     if (!$user) {
-        return response()->json([
-            'status' => false,
-            'message' => 'User not authenticated',
-        ], 401);
+        return response()->json(['status' => false], 401);
     }
 
-    // Decode interest field
-    $interestFieldDecoded = json_decode($user->interest, true);
-
-    if (!is_array($interestFieldDecoded)) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Invalid interest data',
-        ], 400);
-    }
-
+    // interests
     $interestIds = [];
-    foreach ($interestFieldDecoded as $item) {
+    foreach (json_decode($user->interest, true) as $item) {
         $interestIds = array_merge($interestIds, explode(',', $item));
     }
+    $interests = Interest::whereIn('id', $interestIds)
+        ->get(['id','name','icon']);
 
-    $interestIds = array_map('trim', $interestIds);
-    $interests = Interest::whereIn('id', $interestIds)->get(['id','name', 'icon']);
-
-    // Profile images
-    $profileImages = json_decode($user->profile_image, true);
-    $imageUrls = [];
-    foreach ($profileImages as $image) {
-        $imageUrls[] = asset('uploads/app/profile_images/' . $image);
-    }
-
-    // 🗺️ Reverse geocoding (if lat/lng available)
-    $locationString = null;
-
-    if ($user->latitude && $user->longitude) {
-        try {
-            $response = Http::get("https://nominatim.openstreetmap.org/reverse", [
-                'lat' => $user->latitude,
-                'lon' => $user->longitude,
-                'format' => 'json'
-            ]);
-
-            if ($response->successful()) {
-                $locationString = $response['display_name'] ?? null;
-            }
-        } catch (\Exception $e) {
-            \Log::error("Reverse geocoding failed: " . $e->getMessage());
-        }
-    }
-
-    $cities = AdminCity::where('id', $user->admin_city)->first();
-
-    $now = Carbon::now('Asia/Kolkata');
-
-    // ✅ Check for active subscription
-    $activeSubscription = UserSubscription::where('user_id', $user->id)
-        ->where('type', 'Activitys')
-        ->where('is_active', 1)
-        ->where('activated_at', '<=', $now)
-        ->where('expires_at', '>=', $now)
-        ->first();
-
-        if($activeSubscription){
-            $subscribtionStatus = 1;
-        }else{
-            $subscribtionStatus = 0;
-        }
-
-    // Final response
-    $userData = [
-        'number' => $user->number,
-        'name' => $user->name,
-        'email' => $user->email,
-        'age' => $user->age,
-        'gender' => $user->gender,
-        'looking_for' => $user->looking_for,
-        'interest' => $interests,
-        'status' => $user->status,
-        'profile_images' => $imageUrls,
-        'about' => $user->about ?? '',
-        'address' => $user->address ?? '',
-        'city' => $cities->city_name ?? '',
-        'location' => $locationString,
-        'friend_count' => $userList->count() + $likeUserList->count() + $matchedUsers->count(),
-        'attendUsers' => $attendUsers,
-        'ghostUsers' => $ghostUsers,
-        'hostedActivity' => $hostedActivity,
-        'subscribtionStatus' => $subscribtionStatus,
-    ];
+    // images
+    $imageUrls = collect(json_decode($user->profile_image, true))
+        ->map(fn($img) => asset('uploads/app/profile_images/'.$img));
 
     return response()->json([
         'status' => 200,
-        'message' => 'User profile fetched successfully',
-        'data' => $userData,
-    ], 200);
+        'data' => [
+            'number' => $user->number,
+            'name' => $user->name,
+            'email' => $user->email,
+            'age' => $user->age,
+            'gender' => $user->gender,
+            'looking_for' => $user->looking_for,
+            'interest' => $interests,
+            'status' => $user->status,
+            'profile_images' => $imageUrls,
+            'about' => $user->about ?? '',
+            'address' => $user->address ?? '',
+            'city' => optional($user->city)->city_name,
+            'location' => null,
+        ]
+    ]);
 }
 
 
-//   public function updateProfile(Request $request)
-//     {
-//         $user = Auth::user();
+public function userProfileStats()
+{
+    $user = Auth::user();
+    $now = Carbon::now('Asia/Kolkata');
 
-//         if (!$user) {
-//             return response()->json(['message' => 'User not authenticated'], 401);
-//         }
+    // attend users
+    $attendUsers = OtherInterest::where('user_id', $user->id)
+        ->where('confirm', 8)
+        ->count();
 
-//         $validator = Validator::make($request->all(), [
-//             'name' => 'nullable|string|max:255',
-//             'age' => 'nullable|integer|min:18|max:100',
-//             'gender' => 'nullable|string',
-//             'looking_for' => 'nullable|string|max:255',
-//             'interest' => 'nullable|array',
-//             'about' => 'nullable|string|max:1000',
-//             'address' => 'nullable|string|max:255',
-//             'profile_image' => 'nullable|array',
-//         ]);
+    // ghost users
+    $ghostUsers = OtherInterest::where('user_id', $user->id)
+        ->whereIn('confirm', [3,7])
+        ->count();
 
-//         if ($validator->fails()) {
-//             return response()->json(['errors' => $validator->errors()], 400);
-//         }
+    // hosted activities
+    $hostedActivity = Activity::where('user_id', $user->id)
+        ->where('status', 2)
+        ->count();
 
-//         $updateData = [
-//             'name' => $request->name,
-//             'age' => $request->age,
-//             'gender' => $request->gender,
-//             'looking_for' => $request->looking_for,
-//         ];
+    // friend count
+    $friendCount =
+        SlideLike::where('matched_user', $user->id)->count()
+        + Cupid::where('user_id_1', $user->id)
+              ->orWhere('user_id_2', $user->id)
+              ->count();
 
-//         $now = Carbon::now('Asia/Kolkata');
+    // subscription
+    $subscription = UserSubscription::where('user_id', $user->id)
+        ->where('is_active', 1)
+        ->where('activated_at', '<=', $now)
+        ->where('expires_at', '>=', $now)
+        ->exists();
 
-//         // ✅ Check for active subscription
-//         $activeSubscription = UserSubscription::where('user_id', $user->id)
-//             ->where('type', 'Activitys')
-//             ->where('is_active', 1)
-//             ->where('activated_at', '<=', $now)
-//             ->where('expires_at', '>=', $now)
-//             ->first();
+    return response()->json([
+        'status' => 200,
+        'data' => [
+            'friend_count' => $friendCount,
+            'attendUsers' => $attendUsers,
+            'ghostUsers' => $ghostUsers,
+            'hostedActivity' => $hostedActivity,
+            'subscribtionStatus' => $subscription ? 1 : 0
+        ]
+    ]);
+}
 
-//         // ✅ Update interest only if active subscription
-//         if ($activeSubscription && $request->has('interest') && is_array($request->interest)) {
-//             $updateData['interest'] = json_encode($request->interest);
-//         }
 
-//         if ($request->has('about')) {
-//             $updateData['about'] = $request->about;
-//         }
 
-//         if ($request->has('address')) {
-//             $updateData['address'] = $request->address;
-//         }
-
-//         // ✅ Handle profile image uploads
-//         if ($request->hasFile('profile_image')) {
-//             $existingImages = [];
-//             if ($user->profile_image) {
-//                 $existingImages = json_decode($user->profile_image, true);
-//             }
-
-//             $newImages = $request->file('profile_image');
-//             $availableSlots = 9 - count($existingImages);
-
-//             if ($availableSlots <= 0) {
-//                 return response()->json(['message' => 'You already have maximum 9 images.'], 400);
-//             }
-
-//             $imagePaths = $existingImages;
-//             $uploadedCount = 0;
-
-//             foreach ($newImages as $image) {
-//                 if ($uploadedCount >= $availableSlots) break;
-
-//                 $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-
-//                 if (in_array($imageName, $existingImages)) continue;
-
-//                 $image->move(public_path('uploads/app/profile_images/'), $imageName);
-//                 $imagePaths[] = $imageName;
-//                 $uploadedCount++;
-//             }
-
-//             $updateData['profile_image'] = json_encode($imagePaths);
-//         }
-
-//         $user->update($updateData);
-
-//         // ✅ Prepare interest response only if subscription is active
-//         $interestNamesWithIcons = [];
-//         $subscriptionStatus = 0;
-
-//         if ($activeSubscription && $request->has('interest') && is_array($request->interest)) {
-//             $subscriptionStatus = 1;
-
-//             $interestIds = $request->interest;
-//             $interests = Interest::whereIn('id', $interestIds)->get();
-
-//             foreach ($interests as $interest) {
-//                 $interestNamesWithIcons[] = [
-//                     'name' => $interest->name,
-//                     'icon' => $interest->icon,
-//                 ];
-//             }
-//         }
-
-//         // ✅ Build image URLs
-//         $imageUrls = [];
-//         if ($user->profile_image) {
-//             $imagePaths = json_decode($user->profile_image, true);
-
-//             if (is_array($imagePaths)) {
-//                 foreach ($imagePaths as $imageName) {
-//                     $imageUrls[] = url('uploads/app/profile_images/' . $imageName);
-//                 }
-//             }
-//         }
-
-//         // ✅ Final response
-//         return response()->json([
-//             'message' => 'Profile updated successfully',
-//             'subscription' => $subscriptionStatus,
-//             'data' => [
-//                 [
-//                     'rendom' => $user->rendom,
-//                     'name' => $user->name,
-//                     'age' => $user->age,
-//                     'gender' => $user->gender,
-//                     'looking_for' => $user->looking_for,
-//                     'interest' => $interestNamesWithIcons,
-//                     'profile_image' => $imageUrls,
-//                     'about' => $user->about,
-//                     'address' => $user->address,
-//                 ]
-//             ],
-//             'status' => 200,
-//         ]);
-//     }
 
         
 public function updateProfile(Request $request)

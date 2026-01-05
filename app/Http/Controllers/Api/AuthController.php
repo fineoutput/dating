@@ -17,7 +17,9 @@ use App\Models\AdminCity;
 use App\Models\Chat;
 use App\Models\Contact;
 use App\Models\Cupid;
+use App\Models\LikeActivity;
 use App\Models\OtherInterest;
+use App\Models\PreDating;
 use App\Models\SlideLike;
 use App\Models\UserSubscription;
 use Illuminate\Support\Facades\Mail;
@@ -1282,6 +1284,7 @@ public function updateProfile(Request $request)
     // ✅ Validation
     $validator = Validator::make($request->all(), [
         'name' => 'nullable|string|max:255',
+        'email' => 'nullable',
         'age' => 'nullable|integer|min:18|max:100',
         'gender' => 'nullable|string',
         'looking_for' => 'nullable|string|max:255',
@@ -1299,7 +1302,7 @@ public function updateProfile(Request $request)
     $updateData = [];
 
     // ✅ Update only fields that are present in request
-    foreach (['name', 'age', 'gender', 'looking_for', 'about', 'address'] as $field) {
+    foreach (['name', 'email', 'age', 'gender', 'looking_for', 'about', 'address'] as $field) {
         if ($request->has($field)) {
             $updateData[$field] = $request->$field;
         }
@@ -1407,31 +1410,31 @@ public function updateProfile(Request $request)
         $index++;
     }
     $existingImages = $newIndexed;
-}
-
-// ✅ Add new uploaded images
-if ($request->hasFile('profile_image')) {
-    $newImages = $request->file('profile_image');
-    $index = count($existingImages) + 1;
-
-    foreach ($newImages as $image) {
-        $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-        $image->move($path, $imageName);
-        $existingImages[(string)$index] = $imageName;
-        $index++;
     }
-}
 
-// ✅ Validation: ensure at least 1 image remains
-if (empty($existingImages)) {
-    return response()->json([
-        'message' => 'Minimum 1 profile image is required.',
-        'status' => 400,
-    ]);
-}
+    // ✅ Add new uploaded images
+    if ($request->hasFile('profile_image')) {
+        $newImages = $request->file('profile_image');
+        $index = count($existingImages) + 1;
 
-// ✅ Save final image JSON (if changed)
-$updateData['profile_image'] = json_encode($existingImages);
+        foreach ($newImages as $image) {
+            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $image->move($path, $imageName);
+            $existingImages[(string)$index] = $imageName;
+            $index++;
+        }
+    }
+
+    // ✅ Validation: ensure at least 1 image remains
+    if (empty($existingImages)) {
+        return response()->json([
+            'message' => 'Minimum 1 profile image is required.',
+            'status' => 400,
+        ]);
+    }
+
+    // ✅ Save final image JSON (if changed)
+    $updateData['profile_image'] = json_encode($existingImages);
 
     // ✅ Update user
     if (!empty($updateData)) {
@@ -1474,6 +1477,7 @@ $updateData['profile_image'] = json_encode($existingImages);
             [
                 'rendom' => $user->rendom,
                 'name' => $user->name,
+                'email' => $user->email,
                 'age' => $user->age,
                 'gender' => $user->gender,
                 'looking_for' => $user->looking_for,
@@ -1486,6 +1490,51 @@ $updateData['profile_image'] = json_encode($existingImages);
         'status' => 200,
     ]);
 }
+
+ public function deleteProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+
+        $chat = Chat::where('sender_id', $user->id)
+                    ->orWhere('receiver_id', $user->id)
+                    ->delete();
+                    
+        $chat = SlideLike::where('matching_user', $user->id)
+                    ->orWhere('matched_user', $user->id)
+                    ->delete();
+
+        $activity = Activity::where('user_id', $user->id)
+                    ->delete();
+
+        $PreDating = PreDating::where('user_id', $user->id)
+                    ->delete();
+
+        $LikeActivity = LikeActivity::where('user_id', $user->id)
+                    ->delete();
+
+        $Contact = Contact::where('user_id', $user->id)
+                    ->delete();
+
+        Cupid::where(function($query) use ($user) {
+            $query->where('user_id_1', $user->id)
+                ->orWhere('user_id_2', $user->id)
+                ->orWhere('maker_id', $user->id);
+        })->delete();
+
+                
+        $user->delete();
+
+        // ✅ Final response
+        return response()->json([
+            'message' => 'Profile delete successfully',
+            'data' => [],
+            'status' => 200,
+        ]);
+    }
 
 
 

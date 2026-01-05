@@ -26,6 +26,7 @@ use App\Models\LikeActivity;
 use App\Models\SlideLike;
 use Illuminate\Support\Facades\Http;
 use App\Models\OtherInterest;
+use App\Models\PreDating;
 use App\Models\UserSubscription;
 use Carbon\Carbon;
 
@@ -3710,6 +3711,95 @@ public function friendcount(Request $request)
     ]);
 }
 
+// public function contact_users(Request $request)
+// {
+//     $user = Auth::user(); 
+
+//     if (!$user) {
+//         return response()->json(['message' => 'User not authenticated'], 401);
+//     }
+
+   
+//      $contacts = Contact::where('status',1)->get(); 
+//     //  return $contacts;
+
+//     $contactUsers = collect();
+
+//     foreach ($contacts as $contact) {
+//         if ($contact->user_id == $user->id) {
+//             $matchedUser = User::where('number', $contact->number)->first();
+
+//             if ($matchedUser) {
+//                 $images = json_decode($matchedUser->profile_image, true);
+//                 $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
+
+//                 $chat = Chat::where('sender_id', $user->id)
+//                             ->where('receiver_id', $matchedUser->id)
+//                             ->orderBy('id', 'DESC')
+//                             ->first();
+
+//                 $contactUsers->push([
+//                     'id' => $matchedUser->id,
+//                     'user_rendom' => $matchedUser->rendom,
+//               'authuser_rendom' => $user->rendom,
+//                     'name' => $matchedUser->name,
+//                     'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
+//                     'form' => 'contact',
+//                     'last_message' => $chat->message ?? null,
+//             'z' => 'z',
+
+//                 ]);
+//             }
+//         } 
+//         // case 2: auth user ka number == contact.number
+//         elseif ($user->number == $contact->number) {
+//             $matchedUser = User::find($contact->user_id);
+
+//             if ($matchedUser) {
+//                 $images = json_decode($matchedUser->profile_image, true);
+//                 $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
+
+//                 $chat = Chat::where('sender_id', $user->id)
+//                             ->where('receiver_id', $matchedUser->id)
+//                             ->orderBy('id', 'DESC')
+//                             ->first();
+
+//                 $contactUsers->push([
+//                     'id' => $matchedUser->id,
+//                     'user_rendom' => $matchedUser->rendom,
+//                   'authuser_rendom' => $user->rendom,
+//                     'name' => $matchedUser->name,
+//                     'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
+//                     'form' => 'contact',
+//                     'last_message' => $chat->message ?? null,
+//             'z' => 'z',
+
+//                 ]);
+//             }
+//         }
+//     }
+
+//     // $matchUsers = collect($userList)
+//     //         ->merge($likeUserList)
+//     //         ->merge($matchedUsers)
+//     //         ->merge($contactUsers)
+//     //         ->filter(function ($userItem) use ($user) {
+//     //             return $userItem['id'] !== $user->id; 
+//     //         })
+//     //         ->sortByDesc(function ($user) {
+//     //             return $user['form'] === 'match' ? 2 : 1;
+//     //         })
+//     //         ->unique('id')
+//     //         ->values();
+
+//     // 🔚 Final Response
+//     return response()->json([
+//         'message' => 'Friends fetched successfully',
+//         'status' => 200,
+//         'data' =>  $contactUsers,
+//     ]);
+// }
+
 public function contact_users(Request $request)
 {
     $user = Auth::user(); 
@@ -3718,84 +3808,115 @@ public function contact_users(Request $request)
         return response()->json(['message' => 'User not authenticated'], 401);
     }
 
-   
-     $contacts = Contact::where('status',1)->get(); 
-    //  return $contacts;
-
+    $contacts = Contact::where('status', 1)->get(); 
     $contactUsers = collect();
 
     foreach ($contacts as $contact) {
         if ($contact->user_id == $user->id) {
             $matchedUser = User::where('number', $contact->number)->first();
-
-            if ($matchedUser) {
-                $images = json_decode($matchedUser->profile_image, true);
-                $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
-
-                $chat = Chat::where('sender_id', $user->id)
-                            ->where('receiver_id', $matchedUser->id)
-                            ->orderBy('id', 'DESC')
-                            ->first();
-
-                $contactUsers->push([
-                    'id' => $matchedUser->id,
-                    'user_rendom' => $matchedUser->rendom,
-              'authuser_rendom' => $user->rendom,
-                    'name' => $matchedUser->name,
-                    'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
-                    'form' => 'contact',
-                    'last_message' => $chat->message ?? null,
-            'z' => 'z',
-
-                ]);
-            }
-        } 
-        // case 2: auth user ka number == contact.number
-        elseif ($user->number == $contact->number) {
+        } elseif ($user->number == $contact->number) {
             $matchedUser = User::find($contact->user_id);
+        } else {
+            continue;
+        }
 
-            if ($matchedUser) {
-                $images = json_decode($matchedUser->profile_image, true);
-                $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
+        if ($matchedUser) {
+            $images = json_decode($matchedUser->profile_image, true);
+            $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
 
-                $chat = Chat::where('sender_id', $user->id)
-                            ->where('receiver_id', $matchedUser->id)
-                            ->orderBy('id', 'DESC')
-                            ->first();
+            $chat = Chat::where('sender_id', $user->id)
+                        ->where('receiver_id', $matchedUser->id)
+                        ->orderBy('id', 'DESC')
+                        ->first();
 
-                $contactUsers->push([
-                    'id' => $matchedUser->id,
-                    'user_rendom' => $matchedUser->rendom,
-                  'authuser_rendom' => $user->rendom,
-                    'name' => $matchedUser->name,
-                    'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
-                    'form' => 'contact',
-                    'last_message' => $chat->message ?? null,
-            'z' => 'z',
-
-                ]);
-            }
+            $contactUsers->push([
+                'id' => $matchedUser->id,
+                'user_rendom' => $matchedUser->rendom,
+                'authuser_rendom' => $user->rendom,
+                'name' => $matchedUser->name,
+                'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
+                'form' => 'contact',
+                'last_message' => $chat->message ?? null,
+                'z' => 'z',
+            ]);
         }
     }
 
-    // $matchUsers = collect($userList)
-    //         ->merge($likeUserList)
-    //         ->merge($matchedUsers)
-    //         ->merge($contactUsers)
-    //         ->filter(function ($userItem) use ($user) {
-    //             return $userItem['id'] !== $user->id; 
-    //         })
-    //         ->sortByDesc(function ($user) {
-    //             return $user['form'] === 'match' ? 2 : 1;
-    //         })
-    //         ->unique('id')
-    //         ->values();
+    // Remove duplicate users
+    $contactUsers = $contactUsers->unique('id')->values();
 
-    // 🔚 Final Response
     return response()->json([
         'message' => 'Friends fetched successfully',
         'status' => 200,
-        'data' =>  $contactUsers,
+        'data' => $contactUsers,
+    ]);
+}
+
+
+
+public function cupid_contact_users(Request $request)
+{
+    $user = Auth::user(); 
+
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], 401);
+    }
+
+    $contacts = Contact::where('status', 1)->get(); 
+    $contactUsers = collect();
+
+    foreach ($contacts as $contact) {
+
+        // Match user based on contact
+        if ($contact->user_id == $user->id) {
+            $matchedUser = User::where('number', $contact->number)->first();
+        } elseif ($user->number == $contact->number) {
+            $matchedUser = User::find($contact->user_id);
+        } else {
+            continue; // skip if no match
+        }
+
+        if (!$matchedUser) {
+            continue;
+        }
+
+        // ✅ Check if PreDating exists and cupid = true
+        $preDating = PreDating::where('user_id', $matchedUser->id)
+                               ->where('cupid', true)
+                               ->first();
+
+        if (!$preDating) {
+            continue; // skip if no cupid = true
+        }
+
+        // Prepare user data
+        $images = json_decode($matchedUser->profile_image, true);
+        $firstImage = is_array($images) && count($images) > 0 ? reset($images) : null;
+
+        $chat = Chat::where('sender_id', $user->id)
+                    ->where('receiver_id', $matchedUser->id)
+                    ->orderBy('id', 'DESC')
+                    ->first();
+
+        $contactUsers->push([
+            'id' => $matchedUser->id,
+            'user_rendom' => $matchedUser->rendom,
+            'authuser_rendom' => $user->rendom,
+            'name' => $matchedUser->name,
+            'image' => $firstImage ? asset('uploads/app/profile_images/' . $firstImage) : null,
+            'form' => 'contact',
+            'last_message' => $chat->message ?? null,
+            'z' => 'z',
+        ]);
+    }
+
+    // Remove duplicate users if any
+    $contactUsers = $contactUsers->unique('id')->values();
+
+    return response()->json([
+        'message' => 'Friends fetched successfully',
+        'status' => 200,
+        'data' => $contactUsers,
     ]);
 }
 

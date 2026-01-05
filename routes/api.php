@@ -58,6 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('friend-count', [ActivityController::class, 'friendcount']);
     Route::get('contact-users', [ActivityController::class, 'contact_users']);
+    Route::get('cupid-contact-users', [ActivityController::class, 'cupid_contact_users']);
     Route::get('friend-count-one', [ActivityController::class, 'friendcount_one']);
 
     Route::post('add-interest', [InterestController::class, 'addinterest']);
@@ -80,6 +81,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user-profile-stats', [AuthController::class, 'userProfileStats']);
     
     Route::post('update-profile', [AuthController::class, 'updateProfile']);
+    Route::post('delete-profile', [AuthController::class, 'deleteProfile']);
     Route::post('update-city', [AuthController::class, 'updateCity']);
     Route::post('update-latlong', [AuthController::class, 'updatelatlong']);
 

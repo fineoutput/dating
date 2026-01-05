@@ -117,6 +117,8 @@ Route::post('/user/{id}/create-coin', [UserController::class, 'createCoin'])->na
 
 // Route::get('/vibes', [VibeController::class, 'index'])->name('vibe.index');
 
+Route::get('/report-users', [VibeController::class, 'report_users'])->name('report_users.index');
+
 Route::get('/vibe', [VibeController::class, 'index'])->name('vibe.index');
 Route::get('/vibe/create', [VibeController::class, 'create'])->name('vibe.create');
 Route::post('/vibe/store', [VibeController::class, 'store'])->name('vibe.store');

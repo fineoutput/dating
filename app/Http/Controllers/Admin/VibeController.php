@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Mail\OtpMail;
 use App\Models\Interest;
+use App\Models\Report;
 use App\Models\Vibes;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
@@ -26,6 +27,13 @@ class VibeController extends Controller
         $data['vibe'] = Vibes::orderBy('id','DESC')->get();
         $data['tital'] = 'Vibes';
       return view('admin.vibe.index',$data);
+    }
+
+    public function report_users()
+    {
+        $data['vibe'] = Report::orderBy('id','DESC')->get();
+        $data['tital'] = 'Report';
+      return view('admin.vibe.Report',$data);
     }
 
 

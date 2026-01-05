@@ -16,6 +16,16 @@ class Report extends Model
         'status'
     ];
 
+    public function reportingUser()
+    {
+        return $this->belongsTo(User::class, 'reporting_user_id');
+    }
+
+    public function reportedUser()
+    {
+        return $this->belongsTo(User::class, 'reported_user_id');
+    }
+
     public function users()
     {
         return $this->belongsToMany(User::class, 'interest', 'id');

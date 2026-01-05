@@ -20,6 +20,7 @@ use App\Models\OtherInterest;
 use App\Models\Vibes;
 use App\Models\Expense;
 use App\Models\LikeActivity;
+use App\Models\SlideLike;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -39,6 +40,23 @@ class InterestController extends Controller
         $this->firebaseService = $firebaseService;
     }
 
+
+    public function deletedatinginterest()
+    {
+        $data = SlideLike::where('dislike', 1)->get();
+        $data->delete();
+        $message = "Data Delete successfully";
+        $statusCode = 200; 
+
+        // Hide unnecessary fields
+        $data->makeHidden(['created_at', 'updated_at', 'deleted_at']);
+
+        return response()->json([
+            'message' => $message,
+            'data' => $data,
+            'status' => $statusCode,
+        ], $statusCode);
+    }
 
     public function interest()
     {

@@ -138,6 +138,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 });   
 
+Route::get('delete-dating-interest', [InterestController::class, 'deletedatinginterest']);
 Route::get('interest', [InterestController::class, 'interest']);
 Route::post('cashfree/webhook', [CashfreeController::class, 'handleWebhook']);
 

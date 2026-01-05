@@ -27,6 +27,7 @@ use App\Models\SlideLike;
 use Illuminate\Support\Facades\Http;
 use App\Models\OtherInterest;
 use App\Models\PreDating;
+use App\Models\Report;
 use App\Models\UserSubscription;
 use Carbon\Carbon;
 
@@ -3684,19 +3685,23 @@ public function friendcount(Request $request)
         }
     }
 
+     $reportedUserIds = Report::where('reporting_user_id', $user->id)
+        ->pluck('reported_user_id')
+        ->toArray();
     // 🔹 Combine and remove duplicates, prioritize 'match'
     $matchUsers = collect($matchedUsers)
-            ->merge($likeUserList)
-            ->merge($matchedUsers)
-            ->merge($contactUsers)
-            ->filter(function ($userItem) use ($user) {
-                return $userItem['id'] !== $user->id; 
-            })
-            ->sortByDesc(function ($user) {
-                return $user['form'] === 'match' ? 2 : 1;
-            })
-            ->unique('id')
-            ->values();
+        ->merge($likeUserList)
+        ->merge($matchedUsers)
+        ->merge($contactUsers)
+        ->filter(function ($userItem) use ($reportedUserIds) {
+            // Sirf reported users ko remove karo
+            return !in_array($userItem['id'], $reportedUserIds);
+        })
+        ->sortByDesc(function ($userItem) {
+            return $userItem['form'] === 'match' ? 2 : 1;
+        })
+        ->unique('id')
+        ->values();
 
     // 🔚 Final Response
     return response()->json([

@@ -1502,8 +1502,12 @@ public function updateProfile(Request $request)
         $chat = Chat::where('sender_id', $user->id)
                     ->orWhere('receiver_id', $user->id)
                     ->delete();
+
+        $OtherInterest = OtherInterest::where('user_id', $user->id)
+                    ->orWhere('user_id_1', $user->id)
+                    ->delete();
                     
-        $chat = SlideLike::where('matching_user', $user->id)
+        $SlideLike = SlideLike::where('matching_user', $user->id)
                     ->orWhere('matched_user', $user->id)
                     ->delete();
 

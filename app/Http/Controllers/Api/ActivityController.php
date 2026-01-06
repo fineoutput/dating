@@ -3886,11 +3886,11 @@ public function cupid_contact_users(Request $request)
         }
 
         // ✅ Check if PreDating exists and cupid = true
-        $preDating = PreDating::where('user_id', $matchedUser->id)
-                               ->where('cupid', true)
-                               ->first();
+       $hasCupid = PreDating::where('user_id', $matchedUser->id)
+                     ->where('cupid', 'true')
+                     ->exists();
 
-        if (!$preDating) {
+        if (!$hasCupid) {
             continue; // skip if no cupid = true
         }
 

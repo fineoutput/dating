@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log; 
 use Illuminate\Support\Facades\Http;
 
-
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
@@ -1491,54 +1491,81 @@ public function updateProfile(Request $request)
     ]);
 }
 
- public function deleteProfile(Request $request)
-    {
-        $user = Auth::user();
 
-        if (!$user) {
-            return response()->json(['message' => 'User not authenticated'], 401);
-        }
 
-        $chat = Chat::where('sender_id', $user->id)
-                    ->orWhere('receiver_id', $user->id)
-                    ->delete();
+public function deleteProfile(Request $request)
+{
+    $user = Auth::user();
 
-        $OtherInterest = OtherInterest::where('user_id', $user->id)
-                    ->orWhere('user_id_1', $user->id)
-                    ->delete();
-                    
-        $SlideLike = SlideLike::where('matching_user', $user->id)
-                    ->orWhere('matched_user', $user->id)
-                    ->delete();
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], 401);
+    }
 
-        $activity = Activity::where('user_id', $user->id)
-                    ->delete();
+    DB::beginTransaction();
 
-        $PreDating = PreDating::where('user_id', $user->id)
-                    ->delete();
+    try {
 
-        $LikeActivity = LikeActivity::where('user_id', $user->id)
-                    ->delete();
-
-        $Contact = Contact::where('user_id', $user->id)
-                    ->delete();
-
-        Cupid::where(function($query) use ($user) {
-            $query->where('user_id_1', $user->id)
-                ->orWhere('user_id_2', $user->id)
-                ->orWhere('maker_id', $user->id);
+        // Chats
+        Chat::where(function ($q) use ($user) {
+            $q->where('sender_id', $user->id)
+              ->orWhere('receiver_id', $user->id);
         })->delete();
 
-                
+        // Other Interests
+        OtherInterest::where(function ($q) use ($user) {
+            $q->where('user_id', $user->id)
+              ->orWhere('user_id_1', $user->id);
+        })->delete();
+
+        // Slide Likes
+        SlideLike::where(function ($q) use ($user) {
+            $q->where('matching_user', $user->id)
+              ->orWhere('matched_user', $user->id);
+        })->delete();
+
+        // Activities
+        Activity::where('user_id', $user->id)->delete();
+
+        // PreDating
+        PreDating::where('user_id', $user->id)->delete();
+
+        // Like Activity
+        LikeActivity::where('user_id', $user->id)->delete();
+
+        // Contacts (IMPORTANT FIX)
+        Contact::where('user_id', $user->id)
+               ->orWhere('number', $user->number)
+               ->delete();
+
+        // Cupid Table
+        Cupid::where(function ($q) use ($user) {
+            $q->where('user_id_1', $user->id)
+              ->orWhere('user_id_2', $user->id)
+              ->orWhere('maker_id', $user->id);
+        })->delete();
+
+        // Finally User
         $user->delete();
 
-        // ✅ Final response
+        DB::commit();
+
         return response()->json([
-            'message' => 'Profile delete successfully',
-            'data' => [],
+            'message' => 'Profile deleted successfully',
             'status' => 200,
+            'data' => [],
+        ]);
+
+    } catch (\Exception $e) {
+
+        DB::rollBack();
+
+        return response()->json([
+            'message' => 'Something went wrong',
+            'error' => $e->getMessage(),
+            'status' => 500,
         ]);
     }
+}
 
 
 

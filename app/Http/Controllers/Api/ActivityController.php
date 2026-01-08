@@ -1675,13 +1675,13 @@ public function userconfirmactivitys(Request $request)
         ->pluck('activity_id')
         ->toArray();
 
-    if (empty($activityIds)) {
-        return response()->json([
-            'message' => 'No matching activities found',
-            'status'  => 200,
-            'data'    => [],
-        ]);
-    }
+    // if (empty($activityIds)) {
+    //     return response()->json([
+    //         'message' => 'No matching activities found',
+    //         'status'  => 200,
+    //         'data'    => [],
+    //     ]);
+    // }
 
     // OTHER USERS ACTIVITIES
     $activities = Activity::whereIn('id', $activityIds)
@@ -1696,6 +1696,7 @@ public function userconfirmactivitys(Request $request)
         ->get();
 
     // AUTH USER'S OWN ACTIVITIES
+
     $authactivities = Activity::where('user_id', $user->id)
         ->orderBy('id', 'DESC')
         ->where(function ($query) use ($currentTime) {
@@ -1705,6 +1706,8 @@ public function userconfirmactivitys(Request $request)
                 ", [$currentTime->format('Y-m-d H:i:s')]);
         })
         ->get();
+        
+    // return $authactivities;
 
     // FINAL RESPONSE ARRAYS
     $otherActivitiesData = [];

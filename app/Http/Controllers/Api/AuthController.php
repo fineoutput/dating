@@ -214,7 +214,7 @@ class AuthController extends Controller
 
             $otp = $this->sendOtp($request->number); 
             return response()->json([
-                'message' => 'User already exists, OTP sent!',
+                'message' => 'OTP sent successfully!',
                 'data' => [],
                 'status' => 200
             ], 200);

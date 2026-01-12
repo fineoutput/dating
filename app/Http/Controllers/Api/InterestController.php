@@ -43,20 +43,15 @@ class InterestController extends Controller
 
     public function deletedatinginterest()
     {
-        $data = SlideLike::where('dislike', 1)->get();
-        $data->delete();
-        $message = "Data Delete successfully";
-        $statusCode = 200; 
-
-        // Hide unnecessary fields
-        $data->makeHidden(['created_at', 'updated_at', 'deleted_at']);
+        $deletedCount = SlideLike::where('dislike', 1)->delete();
 
         return response()->json([
-            'message' => $message,
-            'data' => $data,
-            'status' => $statusCode,
-        ], $statusCode);
+            'message' => 'Data deleted successfully',
+            'deleted_records' => $deletedCount,
+            'status' => 200,
+        ], 200);
     }
+
 
     public function interest()
     {

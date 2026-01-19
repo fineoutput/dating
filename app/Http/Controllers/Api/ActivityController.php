@@ -6182,6 +6182,14 @@ public function acceptpactup(Request $request)
         })
         ->first();
 
+        if (!$activity) {
+            return response()->json([
+                'message' => 'Activity not found or already expired',
+                'status' => 404,
+                'data' => []
+            ], 404);
+        }
+
      $confirmedCount = OtherInterest::where('activity_id', $activity->id)
                                         ->whereIn('confirm', [3,7])
                                         ->count();
@@ -6191,7 +6199,8 @@ public function acceptpactup(Request $request)
             'status' => 201,
             'data' => [],
         ], 201);
-    }}}
+    }}
+    }
 
     if($pactup == null){
 

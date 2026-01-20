@@ -4492,7 +4492,7 @@ public function friendcount_one(Request $request)
 
     // ✅ All members including confirm 2,3,7 (for filtering logic)
     $confirmmatch = OtherInterest::with('user')
-        ->where('activity_id', $userItem->interest_activity_id)->whereIn('confirm', [3, 7])
+        ->where('activity_id', $userItem->interest_activity_id)->whereIn('confirm', [3, 7,8])
         ->take($howMany)
         ->get()
         ->filter()

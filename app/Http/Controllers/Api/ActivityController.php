@@ -4409,7 +4409,8 @@ public function friendcount_one(Request $request)
             ->orWhere('user_id_1', $user->id);
     })->where(function ($query) {
         $query->where('confirm', 3)
-            ->orWhere('confirm', 7);
+            ->orWhere('confirm', 7)
+            ->orWhere('confirm', 8);
             // ->orWhere('confirm', 4);
             // ->orWhere('confirm', 2);
     })->get();         
@@ -4483,7 +4484,7 @@ public function friendcount_one(Request $request)
     // ✅ Confirmed (3,7) members rendoms
     $confirm = OtherInterest::with('user')
         ->where('activity_id', $userItem->interest_activity_id)
-        ->whereIn('confirm', [3, 7])
+        ->whereIn('confirm', [3, 7, 8])
         ->take($howMany)
         ->get()
         ->pluck('user.rendom')
@@ -4492,7 +4493,7 @@ public function friendcount_one(Request $request)
 
     // ✅ All members including confirm 2,3,7 (for filtering logic)
     $confirmmatch = OtherInterest::with('user')
-        ->where('activity_id', $userItem->interest_activity_id)->whereIn('confirm', [3, 7,8])
+        ->where('activity_id', $userItem->interest_activity_id)->whereIn('confirm', [3, 7, 8])
         ->take($howMany)
         ->get()
         ->filter()

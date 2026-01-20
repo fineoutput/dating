@@ -25,15 +25,28 @@ class NotificationController extends Controller
             $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
-                'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',  // If you're uploading an image
+                'image' => 'nullable|image',  // If you're uploading an image
             ]);
     
             // Handle file upload (if 'image' is uploaded)
-            if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store('images', 'public');
-            } else {
-                $imagePath = null;  // If no image is uploaded
+         if ($request->hasFile('image')) {
+
+            $image      = $request->file('image');
+            $fileName   = time().'_'.$image->getClientOriginalName();
+            $destinationPath = public_path('images');
+
+            // folder exist na ho to create karo
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
             }
+
+            $image->move($destinationPath, $fileName);
+
+            $imagePath = 'images/' . $fileName; // DB me save karne ke liye
+        } else {
+            $imagePath = null;
+        }
+
     
             // Create a new notification
             Notification::create([

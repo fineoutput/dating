@@ -66,9 +66,10 @@
                         <td>{{ $team->title ?? ''}}</td>
                         <td>{{ $team->description ?? ''}}</td>
                         <td>{{ $team->created_at ?? ''}}</td>
-                        @if($team->image && file_exists(storage_path('app/public/' . $team->image)))
+                        @if($team->image)
                             <td>
-                                <img id="slide_img_path" height="100" width="100" src="{{ asset('storage/' . $team->image) }}">
+                                <img id="slide_img_path" height="100" width="100" 
+                                src="{{ asset($team->image) }}">
                             </td>
                         @else
                             <td>Sorry, No Image!</td>

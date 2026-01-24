@@ -65,8 +65,17 @@
                       @foreach($vibe as $data)
                       <tr>
                         <th>{{$a = $loop->index+1}}</th>
-                        <td>{{ $data->reportingUser->name ?? 'N/A' }}</td>
-                        <td>{{ $data->reportedUser->name ?? 'N/A' }}</td>
+                        <td>
+                          <a href="{{route('users.index')}}">
+                              {{ $data->reportingUser->name ?? 'N/A' }}
+                          </a>
+                       </td>
+
+                        <td>
+                          <a href="{{route('users.index')}}">
+                              {{ $data->reportedUser->name ?? 'N/A' }}
+                          </a>
+                          {{-- {{ $data->reportedUser->name ?? 'N/A' }}</td> --}}
                         <td>{{ $data->reason}}</td>
                       </tr>
                       @endforeach

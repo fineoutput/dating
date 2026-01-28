@@ -41,9 +41,27 @@ class InterestController extends Controller
     }
 
 
+    // public function deletedatinginterest()
+    // {
+    //     $deletedCount = SlideLike::where('dislike', 1)->delete();
+
+    //     return response()->json([
+    //         'message' => 'Data deleted successfully',
+    //         'deleted_records' => $deletedCount,
+    //         'status' => 200,
+    //     ], 200);
+    // }
+
+
     public function deletedatinginterest()
     {
-        $deletedCount = SlideLike::where('dislike', 1)->delete();
+        $days = (int) env('DELETEDAY', 1); // default 1 day
+
+        $cutoffDate = Carbon::now()->subDays($days);
+
+        $deletedCount = SlideLike::where('dislike', 1)
+            ->where('created_at', '<=', $cutoffDate)
+            ->delete();
 
         return response()->json([
             'message' => 'Data deleted successfully',

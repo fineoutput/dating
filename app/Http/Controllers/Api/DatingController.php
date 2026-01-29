@@ -397,7 +397,7 @@ class DatingController extends Controller
                     foreach ($profileImages as $image) {
                         $profileImageUrls[] = asset('uploads/app/profile_images/' . $image);
                     }
-}
+            }
 
                 $matchedUserLatitude = $matchingUser->latitude;
                 $matchedUserLongitude = $matchingUser->longitude;
@@ -469,6 +469,7 @@ public function MatchingUsersdetailes(Request $request)
     $interestIds = array_map('trim', $interestIds);
 
     $userLatitude = $user->latitude;
+    $authUser = $user;
     $userLongitude = $user->longitude;
 
     // Step 1: Fetch PreDating record if exists
@@ -695,7 +696,7 @@ public function MatchingUsersdetailes(Request $request)
         // if ($maxDistance && $distance > $maxDistance) {
         //     continue;
         // }
-        if ($user->admin_city == $matchingUser->admin_city) {
+        if ($authUser->admin_city != $matchingUser->admin_city) {
             continue;
         }
 

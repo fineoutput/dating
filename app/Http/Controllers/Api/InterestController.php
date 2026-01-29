@@ -55,13 +55,13 @@ class InterestController extends Controller
 
     public function deletedatinginterest()
     {
-        $days = (int) env('DELETEDAY', 1); // default 1 day
+        $days = (int) config('app.deleteday');
 
         $cutoffDate = Carbon::now()->subDays($days);
 
-        $deletedCount = SlideLike::where('dislike', 1)
-            ->where('created_at', '<=', $cutoffDate)
-            ->delete();
+         $deletedCount = SlideLike::where('dislike', 1)
+        ->where('created_at', '<=', $cutoffDate)
+        ->delete();
 
         return response()->json([
             'message' => 'Data deleted successfully',

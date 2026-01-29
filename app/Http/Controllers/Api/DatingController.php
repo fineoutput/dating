@@ -692,7 +692,10 @@ public function MatchingUsersdetailes(Request $request)
         );
 
         // Apply distance filter (if set)
-        if ($maxDistance && $distance > $maxDistance) {
+        // if ($maxDistance && $distance > $maxDistance) {
+        //     continue;
+        // }
+        if ($user->admin_city == $matchingUser->admin_city) {
             continue;
         }
 
@@ -3016,6 +3019,7 @@ if (!$isUnlimited && $usedSwipes >= $allowedSwipes) {
                 'status' => $user->status,
                 'profile_images' => $imageUrls,
                 'attendUsers' => $attendUsers,
+                // 'ghostUsers' => $userInterests->count(),
                 'ghostUsers' => $ghostUsers,
                 'hostedActivity' => $hostedActivity,
                 'friend_count' => $totalFriendCount,

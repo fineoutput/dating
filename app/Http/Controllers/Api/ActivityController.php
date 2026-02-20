@@ -3720,7 +3720,6 @@ public function friendcount(Request $request)
         }
     }
 
-    return $likeUserList;
 
      $reportedUserIds = Report::where('reporting_user_id', $user->id)
         ->pluck('reported_user_id')

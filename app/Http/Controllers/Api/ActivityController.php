@@ -1366,7 +1366,7 @@ public function userinterestnumber(Request $request)
 
             $activityIds = OtherInterest::where('user_id', $user->id)
                 ->where(function($query) {
-                    $query->where('confirm', 6);
+                    $query->whereIn('confirm', [6,1,2,3,4,5]);
                 })
                 ->pluck('activity_id')
                 ->toArray();

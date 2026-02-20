@@ -1364,11 +1364,39 @@ public function userinterestnumber(Request $request)
 
         $currentTime = Carbon::now('Asia/Kolkata');
 
-            $activityIds = OtherInterest::where('user_id', $user->id)
-                ->where(function($query) {
-                    $query->whereIn('confirm', [6,1,2,3,4,5]);
-                })
+            // $activityIds = OtherInterest::where('user_id', $user->id)
+            //     ->where(function($query) {
+            //         $query->where('confirm', 6);
+            //     })
+            //     ->pluck('activity_id')
+            //     ->toArray();
+
+
+            $currentTime = now();
+
+            $activityIdstest = OtherInterest::where('user_id', $user->id)
+                ->whereIn('confirm', [6,1,2,3,4,5])
                 ->pluck('activity_id')
+                ->toArray();
+
+            $activityIds = Activity::whereIn('id', $activityIdstest)
+                ->where(function ($query) use ($currentTime) {
+
+                    $query->whereDate('when_time', '>', $currentTime->toDateString())
+
+                    ->orWhere(function ($q) use ($currentTime) {
+                        $q->whereDate('when_time', '=', $currentTime->toDateString())
+                        ->whereRaw("
+                            STR_TO_DATE(
+                                CONCAT(DATE(when_time), ' ', end_time),
+                                '%Y-%m-%d %h:%i %p'
+                            ) >= ?
+                        ", [$currentTime->format('Y-m-d H:i:s')]);
+                    });
+
+                })
+                ->orderBy('id', 'DESC')
+                ->pluck('id')   // 👈 Sirf IDs
                 ->toArray();
 
     if (empty($activityIds) || count($activityIds) == 0) {
@@ -3530,6 +3558,7 @@ public function friendcount(Request $request)
                 ->orWhere('matching_user', $user->id);
         })
         ->get();
+        // return $likeUser;
 
     // ✅ Extract the opposite user IDs
     $likeUserIds = $likeUser->map(function ($like) use ($user) {
@@ -3538,6 +3567,7 @@ public function friendcount(Request $request)
 
     // ✅ Fetch User details for these opposite users
     $likeUserDetails2 = User::whereIn('id', $likeUserIds)->get();
+
 
     // 🔹 Map interest users
     $userList = $userDetailsFromInterest2->map(function ($userItem) use ($user) {
@@ -3601,6 +3631,7 @@ public function friendcount(Request $request)
                          ->get()
                          ->unique();
 
+
     $matchedUsers = $CupidMatches->map(function ($match) use ($user) {
         $matchedUserId = $match->user_id_1 == $user->id ? $match->user_id_2 : $match->user_id_1;
         $matchedUser = User::find($matchedUserId);
@@ -3628,6 +3659,7 @@ public function friendcount(Request $request)
 
         ];
     })->filter(); 
+
 
      $contacts = Contact::where('status',1)->get(); 
     //  return $contacts;
@@ -3687,6 +3719,8 @@ public function friendcount(Request $request)
             }
         }
     }
+
+    return $likeUserList;
 
      $reportedUserIds = Report::where('reporting_user_id', $user->id)
         ->pluck('reported_user_id')

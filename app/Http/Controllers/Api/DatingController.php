@@ -3058,7 +3058,9 @@ if (!$isUnlimited && $usedSwipes >= $allowedSwipes) {
         $report->reported_user_id = $reportedUser->id;
 
         // Convert reasons array to comma-separated string
-        $report->reason = implode(', ', $request->reasons); 
+        $report->reason = is_array($request->reasons) 
+            ? implode(', ', $request->reasons) 
+            : '';
 
         $report->status = $request->status;
         $report->save();

@@ -418,6 +418,7 @@ public function addinterest(Request $request)
     ->whereIn('confirm', [3, 7])
     ->count();
     $how_many = Activity::where('id', $activity->id)->first();
+    
 
     if ($how_many_user >= $how_many->how_many) {
         return response()->json([
@@ -461,6 +462,7 @@ public function addinterest(Request $request)
     }
 
     $activity_user = User::find($activity->user_id);
+
 
     // Check existing interest (including confirm=5)
     $existingInterest = OtherInterest::where('user_id', $user->id)
@@ -535,7 +537,6 @@ public function addinterest(Request $request)
         }
     }
 
-    // Create new interest
     try {
         $otherInterest = OtherInterest::create([
             'user_id'     => $user->id,

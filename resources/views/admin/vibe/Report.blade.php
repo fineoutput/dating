@@ -57,6 +57,7 @@
                         <th>#</th>
                         <th data-priority="1">Reporting User</th>
                         <th data-priority="2">Reported User</th>
+                        <th data-priority="2">Status</th>
                         <th data-priority="2">Reason</th>
                         {{-- <th data-priority="3">Image</th> --}}
                       </tr>
@@ -76,6 +77,7 @@
                               {{ $data->reportedUser->name ?? 'N/A' }}
                           </a>
                           {{-- {{ $data->reportedUser->name ?? 'N/A' }}</td> --}}
+                        <td>{{ $data->status}}</td>
                         <td>{{ $data->reason}}</td>
                       </tr>
                       @endforeach

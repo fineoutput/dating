@@ -3040,7 +3040,7 @@ if (!$isUnlimited && $usedSwipes >= $allowedSwipes) {
             'user_rendom' => 'required|string',
             'reasons' => 'nullable|array',
             'reasons.*' => 'string',
-            'status' => 'nullable|integer',
+            'status' => 'nullable',
         ]);
 
         $reportingUser = Auth::user();

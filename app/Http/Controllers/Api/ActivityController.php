@@ -1375,7 +1375,8 @@ public function userinterestnumber(Request $request)
             $currentTime = now();
 
             $activityIdstest = OtherInterest::where('user_id', $user->id)
-                ->whereIn('confirm', [6,1,2,3,4,5])
+                // ->whereIn('confirm', [6,1,2,3,4,5])
+                ->where('confirm', 6)
                 ->pluck('activity_id')
                 ->toArray();
 

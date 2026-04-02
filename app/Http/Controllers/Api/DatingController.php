@@ -3055,8 +3055,6 @@ if (!$isUnlimited && $usedSwipes >= $allowedSwipes) {
     {
         $request->validate([
             'user_rendom' => 'required|string',
-            'reasons' => 'nullable|array',
-            'reasons.*' => 'string',
             'status' => 'nullable',
         ]);
 

@@ -2848,18 +2848,35 @@ if (!$isUnlimited && $usedSwipes >= $allowedSwipes) {
             })
             ->get();
 
-            // ✅ Get all activity IDs from above
             $activityIds = $activities->pluck('id');
+
+            // $attendInterests = OtherInterest::where('user_id', $user->id)
+            //     ->where('confirm', 8)
+            //     ->get();
+
+            // $attendUsers = $attendInterests->filter(function ($interest) use ($user) {
+            //     return OtherInterest::where('activity_id', $interest->activity_id)
+            //         // ->where('user_id', $user->id)
+            //         ->where('confirm', 8)
+            //         ->exists();
+            // })->count();
 
             $attendInterests = OtherInterest::where('user_id', $user->id)
                 ->where('confirm', 8)
                 ->get();
-            // ✅ Count only those activities where at least one other user also confirmed = 8
-            $attendUsers = $attendInterests->filter(function ($interest) use ($user) {
-                return OtherInterest::where('activity_id', $interest->activity_id)
-                    // ->where('user_id', $user->id)
-                    ->where('confirm', 8)
+
+            $attendUsers = $attendInterests->filter(function ($interest) use ($currentTime) {
+
+                return Activity::where('id', $interest->activity_id)
+                    ->where('status', 2)
+                    ->where(function ($query) use ($currentTime) {
+                        $query->whereDate('when_time', '<', substr($currentTime, 0, 10))
+                            ->orWhereRaw("
+                                STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
+                            ", [$currentTime]);
+                    })
                     ->exists();
+
             })->count();
 
             // ✅ Filter OtherInterest where the current user has confirm 3 or 7

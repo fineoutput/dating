@@ -1243,6 +1243,17 @@ public function userProfileStats()
         ->where('status', 2)
         ->count();
 
+         $currentTime = Carbon::now('Asia/Kolkata');
+
+        $expiredActivitiesCount = Activity::where('user_id', $user->id)
+        ->where(function ($query) use ($currentTime) {
+            $query->whereDate('when_time', '<', $currentTime->toDateString())
+                ->orWhereRaw("
+                    STR_TO_DATE(CONCAT(DATE(when_time), ' ', end_time), '%Y-%m-%d %l:%i %p') < ?
+                ", [$currentTime]);
+        })
+        ->count();
+
     // friend count
     $friendCount =
         SlideLike::where('matched_user', $user->id)->count()
@@ -1263,7 +1274,7 @@ public function userProfileStats()
             'friend_count' => $friendCount,
             'attendUsers' => $attendUsers,
             'ghostUsers' => $ghostUsers,
-            'hostedActivity' => $hostedActivity,
+            'hostedActivity' => $expiredActivitiesCount,
             'subscribtionStatus' => $subscription ? 1 : 0
         ]
     ]);

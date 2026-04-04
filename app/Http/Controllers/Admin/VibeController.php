@@ -31,7 +31,7 @@ class VibeController extends Controller
 
     public function report_users()
     {
-        $data['vibe'] = Report::orderBy('id','DESC')->get();
+        $data['vibe'] = Report::orderBy('id','DESC')->where('status','report')->get();
         $data['tital'] = 'Report';
       return view('admin.vibe.Report',$data);
     }

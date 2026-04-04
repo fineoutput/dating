@@ -3080,8 +3080,13 @@ if (!$isUnlimited && $usedSwipes >= $allowedSwipes) {
         $report->status = $request->status;
         $report->save();
 
+        $msg = $request->status === 'report'
+        ? 'User reported successfully'
+        : 'User unmatched successfully';
+
+
         return response()->json([
-            'message' => 'User reported successfully',
+            'message' => $msg,
             'status' => 200,
             'data' => [
                 'report_id' => $report->id,

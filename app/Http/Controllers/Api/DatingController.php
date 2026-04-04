@@ -525,7 +525,7 @@ public function MatchingUsersdetailes(Request $request)
         ->toArray();
         // return $excludedUserIddislike;
 
-    $reportedUserIds = Report::where('reporting_user_id', $user->id)
+    $reportedUserIds = Report::where('reporting_user_id', $user->id)->where('status','report')
         ->pluck('reported_user_id')
         ->toArray();
 

@@ -1239,13 +1239,13 @@ public function userProfileStats()
         ->count();
 
     // hosted activities
-    $hostedActivity = Activity::where('user_id', $user->id)
+    $hostedActivitysss = Activity::where('user_id', $user->id)
         ->where('status', 2)
         ->count();
 
          $currentTime = Carbon::now('Asia/Kolkata');
 
-        $activities = Activity::where('user_id', $user->id)
+        $hostedActivity = Activity::where('user_id', $user->id)
             ->where('status', 2)
             ->where(function ($query) use ($currentTime) {
                 $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
@@ -1275,7 +1275,7 @@ public function userProfileStats()
             'friend_count' => $friendCount,
             'attendUsers' => $attendUsers,
             'ghostUsers' => $ghostUsers,
-            'hostedActivity' => $expiredActivitiesCount,
+            'hostedActivity' => $hostedActivity,
             'subscribtionStatus' => $subscription ? 1 : 0
         ]
     ]);

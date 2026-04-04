@@ -1245,14 +1245,15 @@ public function userProfileStats()
 
          $currentTime = Carbon::now('Asia/Kolkata');
 
-        $expiredActivitiesCount = Activity::where('user_id', $user->id)
-        ->where(function ($query) use ($currentTime) {
-            $query->whereDate('when_time', '<', $currentTime->toDateString())
-                ->orWhereRaw("
-                    STR_TO_DATE(CONCAT(DATE(when_time), ' ', end_time), '%Y-%m-%d %l:%i %p') < ?
-                ", [$currentTime]);
-        })
-        ->count();
+        $activities = Activity::where('user_id', $user->id)
+            ->where('status', 2)
+            ->where(function ($query) use ($currentTime) {
+                $query->whereDate('when_time', '<', substr($currentTime, 0, 10)) // Past date
+                    ->orWhereRaw("
+                        STR_TO_DATE(CONCAT(DATE(when_time), ' ', REPLACE(end_time, ' ', ' ')), '%Y-%m-%d %l:%i %p') < ?
+                    ", [$currentTime]);
+            })
+            ->count();
 
     // friend count
     $friendCount =

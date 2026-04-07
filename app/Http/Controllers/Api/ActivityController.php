@@ -130,6 +130,10 @@ class ActivityController extends Controller
 
     public function activitystore(Request $request)
     {
+        Log::info('Activity Store Request', [
+            'user_id' => Auth::check() ? Auth::id() : null,
+            'data' => $request->all(),
+        ]);
         // if (!Auth::check()) {
         //     return response()->json([
         //         'message' => 'Unauthorized. Please log in.',

@@ -20,6 +20,7 @@ use App\Models\Cupid;
 use App\Models\LikeActivity;
 use App\Models\OtherInterest;
 use App\Models\PreDating;
+use App\Models\Report;
 use App\Models\SlideLike;
 use App\Models\UserSubscription;
 use Illuminate\Support\Facades\Mail;
@@ -1682,5 +1683,25 @@ public function deleteProfile(Request $request)
         ]);
     }
 
+
+  public function myReports()
+    {
+         $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Unauthorized. Please log in.',
+            ], 401);
+        }
+
+        $reports = Report::where('reporting_user_id', $user->id)->orderBy('id','DESC')
+            ->get();
+
+        return response()->json([
+            'message' => 'My reports list',
+            'status' => 200,
+            'data' => $reports
+        ]);
+    }
         
 }

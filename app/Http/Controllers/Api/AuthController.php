@@ -1714,5 +1714,38 @@ public function deleteProfile(Request $request)
             'data' => $reports
         ]);
 }
+
+
+public function deleteReport(Request $request)
+{
+    $user = Auth::user();
+
+    if (!$user) {
+        return response()->json([
+            'message' => 'Unauthorized. Please log in.',
+        ], 401);
+    }
+
+    $request->validate([
+        'report_id' => 'required'
+    ]);
+
+    $report = Report::where('id', $request->report_id)
+        ->where('reporting_user_id', $user->id) 
+        ->first();
+
+    if (!$report) {
+        return response()->json([
+            'message' => 'Report not found or not authorized',
+        ], 404);
+    }
+
+    $report->delete();
+
+    return response()->json([
+        'message' => 'Report deleted successfully',
+        'status' => 200
+    ]);
+}
         
 }

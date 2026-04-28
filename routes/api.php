@@ -35,6 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/contact-get', [AuthController::class, 'contact_get']);
 
     Route::get('my-reports', [AuthController::class, 'myReports']);
+    Route::post('delete-reports', [AuthController::class, 'deleteReport']);
 
     Route::post('/user/device', [AuthController::class, 'fcmUpdate']);
     Route::post('logout', [AuthController::class, 'logout']);

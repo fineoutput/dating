@@ -1686,7 +1686,7 @@ public function deleteProfile(Request $request)
 
   public function myReports()
     {
-         $user = Auth::user();
+        $user = Auth::user();
 
         if (!$user) {
             return response()->json([
@@ -1694,14 +1694,25 @@ public function deleteProfile(Request $request)
             ], 401);
         }
 
-        $reports = Report::where('reporting_user_id', $user->id)->orderBy('id','DESC')
-            ->get();
+        $reports = Report::where('reporting_user_id', $user->id)
+            ->orderBy('id','DESC')
+            ->get()
+            ->map(function ($report) {
+                return [
+                    'id' => $report->id,
+                    'reported_user_id' => $report->reportingUser->name,
+                    'reported_user_name' => $report->reportedUser->name ?? null,
+                    'reason' => $report->reason,
+                    'status' => $report->status,
+                    'created_at' => $report->created_at,
+                ];
+            });
 
         return response()->json([
             'message' => 'My reports list',
             'status' => 200,
             'data' => $reports
         ]);
-    }
+}
         
 }

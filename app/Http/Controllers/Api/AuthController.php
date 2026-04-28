@@ -209,7 +209,7 @@ class AuthController extends Controller
         if ($existingUser) {
             
             if($existingUser->status == 0){
-                return response()->json(['message' => 'You have been blocked by Admin, You cannot log in yet', 'status' => 200], 200);
+                return response()->json(['message' => 'Your account has been blocked. Please reach out to support for further assistance.', 'status' => 200], 200);
             }
 
             $otp = $this->sendOtp($request->number); 

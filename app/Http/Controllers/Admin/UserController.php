@@ -148,20 +148,42 @@ class UserController extends Controller
     }
 
 
-    public function updateStatus($action, $encodedId)
-    {
-     $userId = base64_decode($encodedId);
-     $newStatus = ($action === 'active') ? 1 : 0;
+//     public function updateStatus($action, $encodedId)
+//     {
+//      $userId = base64_decode($encodedId);
+//      $newStatus = ($action === 'active') ? 1 : 0;
 
    
-        $user = User::find($userId); 
-        if ($user) {
-            $user->status = $newStatus;
-            $user->save();
+//         $user = User::find($userId); 
+//         if ($user) {
+//             $user->status = $newStatus;
+//             $user->save();
 
-            return redirect()->back()->with('success', 'User status updated successfully.');
+//             return redirect()->back()->with('success', 'User status updated successfully.');
+//         }
+//         return redirect()->back()->with('error', 'User not found.');
+// }
+
+public function updateStatus($action, $encodedId)
+{
+    $userId = base64_decode($encodedId);
+    $newStatus = ($action === 'active') ? 1 : 0;
+
+    $user = User::find($userId);
+
+    if ($user) {
+        $user->status = $newStatus;
+        $user->save();
+
+        // 🔥 If user is being deactivated → delete all tokens
+        if ($newStatus == 0) {
+            $user->tokens()->delete(); // logout from all devices
         }
-        return redirect()->back()->with('error', 'User not found.');
+
+        return redirect()->back()->with('success', 'User status updated successfully.');
+    }
+
+    return redirect()->back()->with('error', 'User not found.');
 }
 
 
